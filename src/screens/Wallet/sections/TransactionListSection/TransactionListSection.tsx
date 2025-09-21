@@ -1,113 +1,51 @@
 import React, { useState } from "react";
+import { Table } from "../../../../components/shared/Table/Table";
+import { Pagination } from "../../../../components/shared/Pagination/Pagination";
+import {
+  transactionData,
+  fuelData,
+  timeFilters,
+} from "../../../../constants/data";
 
 export const TransactionListSection = (): JSX.Element => {
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(3);
 
-  const fuelData = [
-    {
-      type: "ديزل",
-      amount: "185 .L",
-      color: "text-color-mode-text-icons-t-orange",
-    },
-    {
-      type: "بنزين 95",
-      amount: "548 .L",
-      color: "text-color-mode-text-icons-t-red",
-    },
-    {
-      type: "بنزين 91",
-      amount: "845 .L",
-      color: "text-color-mode-text-icons-t-green",
-    },
-  ];
-
-  const timeFilters = ["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"];
-
-  const transactionData = [
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 200,
-    },
-    {
-      id: "21A254",
-      type: "منتج",
-      driver: "--",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 180,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 160,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 140,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 120,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 100,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 80,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 60,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 40,
-    },
-    {
-      id: "21A254",
-      type: "وقود 91",
-      driver: "أحمد محمد",
-      date: "21 فبراير 2025 - 5:05 ص",
-      amount: 20,
-      cumulative: 20,
-    },
-  ];
-
   const pageNumbers = [1, 2, 3, 4, 5, 6, 7, "...", 20];
+
+  // Define table columns for transactions
+  const transactionColumns = [
+    {
+      key: "id",
+      label: "رقم العملية",
+      width: "w-[133px]",
+    },
+    {
+      key: "type",
+      label: "نوع العملية",
+      width: "w-[123px]",
+    },
+    {
+      key: "driver",
+      label: "اسم السائق",
+      width: "w-40",
+    },
+    {
+      key: "date",
+      label: "تاريخ العملية",
+      width: "w-[214px]",
+    },
+    {
+      key: "amount",
+      label: "قيمة العملية",
+      width: "w-[117px]",
+    },
+    {
+      key: "cumulative",
+      label: "تراكمي العمليات (ر.س)",
+      width: "w-[175px]",
+    },
+  ];
 
   return (
     <section className="flex flex-col w-[1057px] items-end gap-[var(--corner-radius-extra-large)] absolute top-[106px] left-[60px]">
@@ -154,7 +92,11 @@ export const TransactionListSection = (): JSX.Element => {
                       </div>
 
                       <div
-                        className={`relative ${index === 2 ? "self-stretch" : "w-[66px]"} mt-[-3px] font-caption-caption-2 font-[number:var(--caption-caption-2-font-weight)] ${fuel.color} text-[length:var(--caption-caption-2-font-size)] text-center tracking-[var(--caption-caption-2-letter-spacing)] leading-[var(--caption-caption-2-line-height)] [direction:rtl] [font-style:var(--caption-caption-2-font-style)]`}
+                        className={`relative ${
+                          index === 2 ? "self-stretch" : "w-[66px]"
+                        } mt-[-3px] font-caption-caption-2 font-[number:var(--caption-caption-2-font-weight)] ${
+                          fuel.color
+                        } text-[length:var(--caption-caption-2-font-size)] text-center tracking-[var(--caption-caption-2-letter-spacing)] leading-[var(--caption-caption-2-line-height)] [direction:rtl] [font-style:var(--caption-caption-2-font-style)]`}
                       >
                         {fuel.type}
                       </div>
@@ -367,212 +309,18 @@ export const TransactionListSection = (): JSX.Element => {
         </div>
 
         <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-          <div className="flex items-start justify-end relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex-col items-end flex-1 grow flex relative">
-              <div className="relative self-stretch w-full h-[42px] bg-color-mode-surface-bg-icon-gray" />
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex h-[42px] items-center justify-end gap-1 pl-[var(--corner-radius-none)] pr-[11px] py-2.5 relative self-stretch w-full border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div className="relative w-9 h-[18px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                    تصدير
-                  </div>
-
-                  <div className="relative w-[21.26px] h-[14.55px]">
-                    <div className="relative w-[21px] h-[15px]">
-                      <img
-                        className="absolute w-[13px] h-3 top-px left-1"
-                        alt="Icon"
-                        src={
-                          index === 0 ? "/img/icon-1.svg" : "/img/icon-10.svg"
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-[175px] items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  تراكمي العمليات (ر.س)
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div className="mt-[-0.20px] font-[number:var(--body-body-2-font-weight)] text-black tracking-[var(--body-body-2-letter-spacing)] relative w-fit font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                    {transaction.cumulative}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-[117px] items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  قيمة العملية
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div
-                    className="mt-[-0.20px] font-[number:var(--body-body-2-font-weight)] text-black tracking-[var(--
-body-body-2-letter-spacing)] relative w-fit font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]"
-                  >
-                    {transaction.amount}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-[214px] items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  تاريخ العملية
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <p className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                    {transaction.date}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-40 items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  اسم السائق
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                    {transaction.driver}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-[123px] items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  نوع العملية
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                    {transaction.type}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col w-[133px] items-end relative">
-              <div className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-                <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  رقم العملية
-                </div>
-              </div>
-
-              {transactionData.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
-                >
-                  <div className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                    {transaction.id}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Table
+            columns={transactionColumns}
+            data={transactionData}
+            className="relative self-stretch w-full flex-[0_0_auto]"
+          />
         </div>
 
-        <nav
-          className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-          aria-label="Pagination"
-        >
-          <div className="inline-flex items-start gap-2 relative flex-[0_0_auto]">
-            <button
-              onClick={() => setCurrentPage(Math.min(currentPage + 1, 20))}
-              className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors"
-              disabled={currentPage === 20}
-            >
-              <img
-                className="relative w-4 h-4"
-                alt="Icon arrow right"
-                src="/img/icon-16-arrow-right.svg"
-              />
-
-              <div className="relative w-fit font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                التالي
-              </div>
-            </button>
-
-            {pageNumbers.map((page, index) => (
-              <button
-                key={index}
-                onClick={() => typeof page === "number" && setCurrentPage(page)}
-                disabled={typeof page !== "number"}
-                className={`flex flex-col w-8 h-8 items-center justify-center gap-2.5 px-2 py-0 relative rounded overflow-hidden transition-colors ${
-                  page === currentPage
-                    ? "bg-color-mode-surface-primary-blue"
-                    : "bg-color-mode-surface-bg-screen border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex flex-col w-[22px] h-[22px] items-center justify-center gap-2.5 p-2.5 relative ml-[-3.00px] mr-[-3.00px] rounded-sm">
-                  <div
-                    className={`mt-[-11.00px] mb-[-9.00px] ${page === "..." ? "ml-[-5.00px] mr-[-5.00px]" : page === 1 ? "ml-[-2.00px] mr-[-2.00px]" : page === 2 ? "ml-[-2.50px] mr-[-2.50px]" : page === 3 ? "ml-[-2.50px] mr-[-2.50px]" : page === 4 ? "ml-[-3.00px] mr-[-3.00px]" : page === 5 ? "ml-[-3.00px] mr-[-3.00px]" : page === 6 ? "ml-[-3.00px] mr-[-3.00px]" : page === 7 ? "ml-[-2.00px] mr-[-2.00px]" : "ml-[-6.50px] mr-[-6.50px]"} font-[number:${page === currentPage ? "var(--subtitle-subtitle-3-font-weight)" : "var(--body-body-2-font-weight)"}] text-${page === currentPage ? "color-mode-text-icons-t-btn-negative" : "color-mode-text-icons-t-sec"} tracking-[${page === currentPage ? "var(--subtitle-subtitle-3-letter-spacing)" : "var(--body-body-2-letter-spacing)"}] relative w-fit font-${page === currentPage ? "subtitle-subtitle-3" : "body-body-2"} text-[length:${page === currentPage ? "var(--subtitle-subtitle-3-font-size)" : "var(--body-body-2-font-size)"}] leading-[${page === currentPage ? "var(--subtitle-subtitle-3-line-height)" : "var(--body-body-2-line-height)"}] whitespace-nowrap [font-style:${page === currentPage ? "var(--subtitle-subtitle-3-font-style)" : "var(--body-body-2-font-style)"}]`}
-                  >
-                    {page}
-                  </div>
-                </div>
-              </button>
-            ))}
-
-            <button
-              onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-              className="flex w-[72px] h-8 items-center justify-center gap-[5px] px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors"
-              disabled={currentPage === 1}
-            >
-              <div className="relative w-fit ml-[-3.50px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                السابق
-              </div>
-
-              <img
-                className="mr-[-3.50px] relative w-4 h-4"
-                alt="Icon arrow left"
-                src="/img/icon-16-arrow-left.svg"
-              />
-            </button>
-          </div>
-        </nav>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={20}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </section>
   );

@@ -1,4 +1,6 @@
 import React from "react";
+import { Table, Pagination } from "../../../components/shared";
+import { financialReportsData } from "../../../constants/data";
 
 const clientData = {
   phone: "00966254523658",
