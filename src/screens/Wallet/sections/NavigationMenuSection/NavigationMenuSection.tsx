@@ -1,4 +1,3 @@
-import React from "react";
 import { Navigation } from "../../../../components/shared/Navigation/Navigation";
 import { navigationMenuData, userInfo } from "../../../../constants/data";
 

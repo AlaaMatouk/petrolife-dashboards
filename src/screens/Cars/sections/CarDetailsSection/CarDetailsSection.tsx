@@ -1,5 +1,4 @@
-import Header from "../../../../components/Header";
-import SearchBar from "../../../../components/SearchBar";
+import { Header } from "../../../../components/shared";
 
 export const CarDetailsSection = (): JSX.Element => {
   const carsNavigationIcons = [
@@ -18,12 +17,25 @@ export const CarDetailsSection = (): JSX.Element => {
     { id: 4, text: "En" },
   ];
 
+  const handleWalletClick = () => {
+    console.log("Wallet clicked");
+  };
+
   return (
     <Header
       title="السيــــــــــــــارات"
       titleIconSrc="/img/side-icons.svg"
       navigationIcons={carsNavigationIcons}
-      extraContent={<SearchBar />}
+      showSearch={true}
+      searchProps={{
+        placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
+        onSearch: (query) => console.log("Search:", query),
+      }}
+      walletButton={{
+        label: "محفظــــــــــــــتي",
+        iconSrc: "/img/side-icons.svg",
+        onClick: handleWalletClick,
+      }}
     />
   );
 };

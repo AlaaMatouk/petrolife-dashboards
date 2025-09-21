@@ -13,6 +13,7 @@ export const navigationMenuData = {
       label: "محفظــــــــــــتي",
       icon: "/img/side-icons-6.svg",
       hasBackground: true,
+      href: "/wallet",
     },
   ],
   sections: [

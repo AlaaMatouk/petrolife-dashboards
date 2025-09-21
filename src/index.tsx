@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Cars } from "./screens/Cars";
 import { FinancialReports } from "./screens/FinancialReports";
 import { WalletReports } from "./screens/WalletReports";
+import { MoneyRefundRequests } from "./screens/MoneyRefundRequests/MoneyRefundRequests";
+import { WalletChargeRequests } from "./screens/ChargeRequests/WalletChargeRequests";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   // <StrictMode>
@@ -17,6 +19,8 @@ createRoot(document.getElementById("app") as HTMLElement).render(
       <Route path="/cars" element={<Cars />} />
       <Route path="/financialreports" element={<FinancialReports />} />
       <Route path="/walletreports" element={<WalletReports />} />
+      <Route path="/moneyrefundrequests" element={<MoneyRefundRequests />} />
+      <Route path="/walletchargerequests" element={<WalletChargeRequests />} />
     </Routes>
   </Router>
 );

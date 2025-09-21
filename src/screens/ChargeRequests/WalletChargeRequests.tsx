@@ -1,8 +1,11 @@
-import { TransactionListSection } from "./sections/TransactionListSection/TransactionListSection";
-import { Layout } from "../../components/shared";
+import React from "react";
+import { ContentSection } from "./sections/ContentSection/ContentSection";
+import { HeaderSection } from "./sections/HeaderSection/HeaderSection";
+import { PaginationSection } from "./sections/PaginationSection/PaginationSection";
 import { navigationMenuData, userInfo } from "../../constants/data";
+import { Layout } from "../../components/shared";
 
-export const Wallet = (): JSX.Element => {
+export const WalletChargeRequests = (): JSX.Element => {
   const handleLogout = () => {
     console.log("Logout clicked");
   };
@@ -10,7 +13,6 @@ export const Wallet = (): JSX.Element => {
   const handleWalletClick = () => {
     console.log("Wallet clicked");
   };
-
   const walletNavigationIcons = [
     { id: 1, src: "/img/component-1.svg", alt: "Component" },
     { id: 2, src: "/img/component-1-1.svg", alt: "Component" },
@@ -26,20 +28,19 @@ export const Wallet = (): JSX.Element => {
     },
     { id: 4, text: "En" },
   ];
-
   return (
     <Layout
       headerProps={{
-        title: "محفظــــــــــــتي",
+        title: "محفظــــــــــــــتي / طلبــــــــات اشترداد الأموال",
         titleIconSrc: "/img/side-icons-6.svg",
         navigationIcons: walletNavigationIcons,
-        showSearch: true,
+        showSearch: false,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
           onSearch: (query) => console.log("Search:", query),
         },
         walletButton: {
-          label: "محفظــــــــــــــتي",
+          label: "محفظــــــــــــــتي / طلبات شحن المحفظة",
           iconSrc: "/img/side-icons.svg",
           onClick: handleWalletClick,
         },
@@ -52,7 +53,9 @@ export const Wallet = (): JSX.Element => {
         onLogout: handleLogout,
       }}
     >
-      <TransactionListSection />
+      <HeaderSection />
+      <ContentSection />
+      <PaginationSection />
     </Layout>
   );
 };

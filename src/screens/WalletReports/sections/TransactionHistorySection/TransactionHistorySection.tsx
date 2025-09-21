@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // import { Table, Pagination } from "../../../../components/shared";
-import { Table } from "../../../../components/shared/Table/Table";
-import { Pagination } from "../../../../components/shared/Pagination/Pagination";
+// import { Table } from "../../../../components/shared/Table/Table";
+// import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import { walletReportsTransactionData } from "../../../../constants/data";
 
 interface FilterOption {
@@ -118,7 +118,7 @@ const transactionData: TransactionData[] = [
 const paginationNumbers = [20, "...", 7, 6, 5, 4, 3, 2, 1];
 
 export const TransactionHistorySection = (): JSX.Element => {
-  const [selectedFilters, setSelectedFilters] = useState({
+  const [selectedFilters] = useState({
     timePeriod: "all",
     operationName: "all",
     operationType: "all",
@@ -126,13 +126,6 @@ export const TransactionHistorySection = (): JSX.Element => {
   });
 
   const [currentPage, setCurrentPage] = useState(3);
-
-  const handleFilterChange = (filterType: string, value: string) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

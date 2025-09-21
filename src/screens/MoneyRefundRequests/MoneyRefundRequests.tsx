@@ -1,8 +1,10 @@
-import { TransactionListSection } from "./sections/TransactionListSection/TransactionListSection";
+import React from "react";
+import { RequestFormSection } from "./sections/RequestFormSection/RequestFormSection";
+import { RequestHistorySection } from "./sections/RequestHistorySection/RequestHistorySection";
 import { Layout } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 
-export const Wallet = (): JSX.Element => {
+export const MoneyRefundRequests = (): JSX.Element => {
   const handleLogout = () => {
     console.log("Logout clicked");
   };
@@ -10,7 +12,6 @@ export const Wallet = (): JSX.Element => {
   const handleWalletClick = () => {
     console.log("Wallet clicked");
   };
-
   const walletNavigationIcons = [
     { id: 1, src: "/img/component-1.svg", alt: "Component" },
     { id: 2, src: "/img/component-1-1.svg", alt: "Component" },
@@ -26,14 +27,13 @@ export const Wallet = (): JSX.Element => {
     },
     { id: 4, text: "En" },
   ];
-
   return (
     <Layout
       headerProps={{
-        title: "محفظــــــــــــتي",
+        title: "محفظــــــــــــــتي / طلبــــــــات اشترداد الأموال",
         titleIconSrc: "/img/side-icons-6.svg",
         navigationIcons: walletNavigationIcons,
-        showSearch: true,
+        showSearch: false,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
           onSearch: (query) => console.log("Search:", query),
@@ -52,7 +52,8 @@ export const Wallet = (): JSX.Element => {
         onLogout: handleLogout,
       }}
     >
-      <TransactionListSection />
+      <RequestFormSection />
+      <RequestHistorySection />
     </Layout>
   );
 };

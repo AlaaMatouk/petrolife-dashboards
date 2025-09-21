@@ -1,14 +1,4 @@
-import React from "react";
 import { userDataColumns } from "../../../../constants/data";
-
-interface UserDataField {
-  label: string;
-  value: string;
-}
-
-interface UserDataColumn {
-  fields: UserDataField[];
-}
 
 export const UserDataSection = (): JSX.Element => {
   return (

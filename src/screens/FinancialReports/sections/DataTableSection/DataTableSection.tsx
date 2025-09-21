@@ -1,6 +1,7 @@
-import React from "react";
-import { Table, Pagination } from "../../../components/shared";
-import { financialReportsData } from "../../../constants/data";
+import React, { useState } from "react";
+import { Table } from "../../../../components/shared/Table/Table";
+import { Pagination } from "../../../../components/shared/Pagination/Pagination";
+import { financialReportsData } from "../../../../constants/data";
 
 const clientData = {
   phone: "00966254523658",
@@ -155,7 +156,7 @@ const paginationNumbers = [1, 2, 3, 4, 5, 6, 7, "...", 20];
 export const DataTableSection = (): JSX.Element => {
   return (
     <section
-      className="flex flex-col w-[1077px] items-start gap-5 absolute top-28 left-[50px]"
+      className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4"
       role="main"
       aria-label="قسم جدول البيانات"
     >
@@ -327,7 +328,7 @@ export const DataTableSection = (): JSX.Element => {
             ))}
           </div>
 
-          <div className="flex items-start justify-between relative self-stretch w-full flex-[0_0_auto]">
+          <div className="overflow-x-auto flex items-start justify-between relative self-stretch w-full flex-[0_0_auto]">
             <table
               className="w-full"
               role="table"

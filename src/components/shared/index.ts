@@ -3,3 +3,7 @@ export * from "./Table";
 export * from "./Pagination";
 export * from "./Navigation";
 export * from "./Footer";
+export * from "./Header";
+export * from "./SearchBar";
+export * from "./Layout";
+export * from "./SidebarNav";

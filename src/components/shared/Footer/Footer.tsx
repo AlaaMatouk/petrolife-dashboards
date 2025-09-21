@@ -19,10 +19,10 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   return (
     <footer
-      className={`absolute w-[1440px] h-12 top-[1064px] left-0 ${className}`}
+      className={`w-full h-12 ${className}`}
       role="contentinfo"
     >
-      <div className="flex w-[1059px] items-center justify-between relative top-2 left-[60px]">
+      <div className="flex w-full max-w-[1059px] items-center justify-between relative top-2 left-[60px] px-4 lg:px-8 md:px-4 sm:px-2">
         <div className="inline-flex items-center gap-6 relative flex-[0_0_auto]">
           <img
             className="relative flex-[0_0_auto]"
