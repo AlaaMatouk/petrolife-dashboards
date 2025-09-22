@@ -47,8 +47,7 @@
       "label": "DriverDetails",
       "routes": [
         "/driverdetails"
-      ],
-      "dataModelId": "1:15249-frame"
+      ]
     }
   ],
   "edges": []
