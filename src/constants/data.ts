@@ -671,9 +671,5 @@ export const navigationIcons = [
       },
     ],
   },
+  { id: 4, text: "En" },
 ];
-
-
-
-
- 

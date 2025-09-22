@@ -8,6 +8,8 @@ import { WalletReports } from "./screens/WalletReports";
 import { MoneyRefundRequests } from "./screens/MoneyRefundRequests/MoneyRefundRequests";
 import { WalletChargeRequests } from "./screens/ChargeRequests/WalletChargeRequests";
 import { PerolifeStationLocations } from "./screens/PerolifeStationLocations/perolifestationlocations";
+import { AddDriver } from "./screens/AddDriver/AddDriver";
+import { DriverDetails } from "./screens/DriverDetails/DriverDetails";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   // <StrictMode>
@@ -26,6 +28,8 @@ createRoot(document.getElementById("app") as HTMLElement).render(
         path="/perolifestationlocations"
         element={<PerolifeStationLocations />}
       />
+      <Route path="/adddriver" element={<AddDriver />} />
+      <Route path="/driverdetails" element={<DriverDetails />} />
     </Routes>
   </Router>
 );
