@@ -5,14 +5,14 @@ export const navigationMenuData = {
       id: "dashboard",
       label: "لوحة التحكم",
       icon: "/img/side-icons-1.svg",
-      isActive: true,
-      hasBackground: true,
+      isActive: false,
+      hasBackground: false,
     },
     {
       id: "wallet",
       label: "محفظــــــــــــتي",
       icon: "/img/side-icons-6.svg",
-      hasBackground: true,
+      hasBackground: false,
       href: "/wallet",
     },
   ],
@@ -24,12 +24,13 @@ export const navigationMenuData = {
           id: "drivers",
           label: "الســـــــــــائقين",
           icon: "/img/side-icons-3.svg",
-          hasBackground: true,
+          hasBackground: false,
         },
         {
           id: "cars",
           label: "السيـــــــــــــارات",
           icon: "/img/side-icons-4.svg",
+          href: "/cars",
         },
       ],
     },
@@ -40,96 +41,13 @@ export const navigationMenuData = {
           id: "sales-report",
           label: "تقرير المبيعات",
           icon: "/img/side-icons-5.svg",
+          href: "/financialreports",
         },
         {
           id: "wallet-report",
           label: "تقرير المحفظة",
           icon: "/img/side-icons-6.svg",
-        },
-      ],
-    },
-  ],
-  bottomItems: [
-    {
-      id: "fuel-delivery",
-      label: "طلبات توصيل الوقود",
-      icon: "/img/side-icons-7.svg",
-    },
-    {
-      id: "subscriptions",
-      label: "اشتراكـــــاتي",
-      icon: "/img/side-icons-8.svg",
-    },
-    {
-      id: "store",
-      label: "المتجــــــــــــــر",
-      icon: "/img/side-icons-9.svg",
-    },
-    {
-      id: "invoices",
-      label: "الفواتيـــــــــــر",
-      icon: "/img/side-icons-10.svg",
-    },
-    {
-      id: "support",
-      label: "الدعم الفني",
-      icon: "/img/side-icons-11.svg",
-    },
-    {
-      id: "settings",
-      label: "الإعدادات العامـــــة",
-      icon: "/img/side-icons-12.svg",
-    },
-  ],
-};
-
-// Financial Reports Navigation Menu Data
-export const financialReportsNavigationData = {
-  topItems: [
-    {
-      id: "dashboard",
-      label: "لوحة التحكم",
-      icon: "/img/side-icons-1.svg",
-      hasBackground: true,
-    },
-    {
-      id: "wallet",
-      label: "محفظــــــــــــتي",
-      icon: "/img/side-icons-6.svg",
-      hasBackground: true,
-    },
-  ],
-  sections: [
-    {
-      title: "المــــــــــــــــــــــــــــــوارد",
-      items: [
-        {
-          id: "drivers",
-          label: "الســـــــــــائقين",
-          icon: "/img/side-icons-3.svg",
-          hasBackground: true,
-        },
-        {
-          id: "cars",
-          label: "السيـــــــــــــارات",
-          icon: "/img/side-icons-4.svg",
-        },
-      ],
-    },
-    {
-      title: "التقاريــــــــــــــــــــــــــــــر",
-      items: [
-        {
-          id: "financial-reports",
-          label: "التقارير المالية",
-          icon: "/img/side-icons-5.svg",
-          hasBackground: true,
-          isActive: true,
-        },
-        {
-          id: "wallet-report",
-          label: "تقرير المحفظة",
-          icon: "/img/side-icons-6.svg",
+          href: "/walletreports",
         },
       ],
     },
@@ -755,19 +673,7 @@ export const navigationIcons = [
   },
 ];
 
-// Cars Navigation Icons
-export const carsNavigationIcons = [
-  { id: 1, src: "/img/component-1.svg", alt: "Component" },
-  { id: 2, src: "/img/component-1-1.svg", alt: "Component" },
-  {
-    id: 3,
-    vectors: [
-      { src: "/img/vector.svg", className: "absolute w-5 h-5 top-1 left-1" },
-      {
-        src: "/img/vector-1.svg",
-        className: "absolute w-5 h-5 top-0 left-0",
-      },
-    ],
-  },
-  { id: 4, text: "En" },
-];
+
+
+
+ 

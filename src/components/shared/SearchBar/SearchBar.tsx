@@ -36,7 +36,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={placeholder || "بحث"}
+        placeholder={
+          placeholder || "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف"
+        }
         className="  flex-1 text-sm text-gray-600 bg-transparent border-none outline-none placeholder-gray-400"
       />
 

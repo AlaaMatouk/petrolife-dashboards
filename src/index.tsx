@@ -7,6 +7,7 @@ import { FinancialReports } from "./screens/FinancialReports";
 import { WalletReports } from "./screens/WalletReports";
 import { MoneyRefundRequests } from "./screens/MoneyRefundRequests/MoneyRefundRequests";
 import { WalletChargeRequests } from "./screens/ChargeRequests/WalletChargeRequests";
+import { PerolifeStationLocations } from "./screens/PerolifeStationLocations/perolifestationlocations";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   // <StrictMode>
@@ -21,6 +22,10 @@ createRoot(document.getElementById("app") as HTMLElement).render(
       <Route path="/walletreports" element={<WalletReports />} />
       <Route path="/moneyrefundrequests" element={<MoneyRefundRequests />} />
       <Route path="/walletchargerequests" element={<WalletChargeRequests />} />
+      <Route
+        path="/perolifestationlocations"
+        element={<PerolifeStationLocations />}
+      />
     </Routes>
   </Router>
 );

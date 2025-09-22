@@ -38,7 +38,7 @@ export interface HeaderProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = "بحث ",
+  placeholder = "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
   onSearch,
   className = "",
 }) => {
@@ -138,28 +138,12 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </nav>
 
-        {/* Search + Wallet */}
+        {/* Search */}
         <div className="inline-flex items-center justify-end gap-2.5 relative flex-[0_0_auto]">
           {/* Search Bar */}
           {showSearch && <SearchBar {...searchProps} />}
 
-          {/* Wallet Button */}
-          {/* {walletButton && (
-            <button
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-md hover:bg-color-mode-surface-bg-icon-gray focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-colors"
-              onClick={walletButton.onClick}
-              aria-label={walletButton.label}
-            >
-              <span className="font-semibold text-color-mode-text-icons-t-sec text-base">
-                {walletButton.label}
-              </span>
-              <img
-                className="w-5 h-5"
-                alt="Portfolio icon"
-                src={walletButton.iconSrc}
-              />
-            </button>
-          )} */}
+         
 
           {/* Title + Icon */}
           <div className="inline-flex items-center gap-2 flex-[0_0_auto]">

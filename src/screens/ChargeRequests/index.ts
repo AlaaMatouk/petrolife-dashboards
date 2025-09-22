@@ -1,1 +1,1 @@
-export { FrameScreen } from "./WalletChargeRequests";
+export { WalletChargeRequests } from "./WalletChargeRequests";
