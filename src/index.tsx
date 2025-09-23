@@ -10,6 +10,7 @@ import { WalletChargeRequests } from "./screens/ChargeRequests/WalletChargeReque
 import { PerolifeStationLocations } from "./screens/PerolifeStationLocations/perolifestationlocations";
 import { AddDriver } from "./screens/AddDriver/AddDriver";
 import { DriverDetails } from "./screens/DriverDetails/DriverDetails";
+import LoginAndRegister from "./screens/Login And Register/LoginAndRegister";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   // <StrictMode>
@@ -17,7 +18,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
   // </StrictMode>
   <Router>
     <Routes>
-      {/* <Route path="/" element={<Home />} /> */}
+      <Route path="/" element={<LoginAndRegister />} />
       <Route path="/wallet" element={<Wallet />} />
       <Route path="/cars" element={<Cars />} />
       <Route path="/financialreports" element={<FinancialReports />} />
@@ -30,6 +31,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
       />
       <Route path="/adddriver" element={<AddDriver />} />
       <Route path="/driverdetails" element={<DriverDetails />} />
+      {/* <Route path="/login" element={<LoginAndRegister />} /> */}
     </Routes>
   </Router>
 );
