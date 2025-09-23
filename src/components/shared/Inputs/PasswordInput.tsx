@@ -7,10 +7,34 @@ interface PasswordInputProps {
 
 export default function PasswordInput({ onChange, value }: PasswordInputProps) {
   return (
-    <div>
-      <label className="input validator">
+    <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
+      {/* Label */}
+      <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] text-right">
+        كلمة المرور
+      </label>
+
+      {/* Input Wrapper */}
+      <div className="flex h-[46px] items-center justify-between gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
+        {/* Input */}
+        <div className="flex items-center justify-end flex-1 grow">
+          <input
+            name="password"
+            type="password"
+            placeholder="********"
+            dir="rtl"
+            required
+            minLength={8}
+            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+            value={value}
+            onChange={onChange}
+            className="w-full font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder tracking-[var(--body-body-2-letter-spacing)] mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none text-right"
+          />
+        </div>
+
+        {/* Icon (على الشمال) */}
         <svg
-          className="h-[1em] opacity-50"
+          className="h-[1.2em] w-[1.2em] opacity-50 shrink-0 ml-2"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
         >
@@ -25,24 +49,14 @@ export default function PasswordInput({ onChange, value }: PasswordInputProps) {
             <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
           </g>
         </svg>
-        <input
-          name="password"
-          value={value}
-          onChange={onChange}
-          type="password"
-          required
-          placeholder="Password"
-          minLength={8}
-          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-          title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-        />
-      </label>
-      <p className="validator-hint hidden">
-        Must be more than 8 characters, including
-        <br />
-        At least one number <br />
-        At least one lowercase letter <br />
-        At least one uppercase letter
+      </div>
+
+      {/* Validation Hint */}
+      <p className="validator-hint hidden text-red-500 text-sm text-right leading-[1.4]">
+        يجب أن تكون كلمة المرور أكثر من 8 أحرف وتشمل:
+        <br /> رقم واحد على الأقل
+        <br /> حرف صغير واحد على الأقل
+        <br /> حرف كبير واحد على الأقل
       </p>
     </div>
   );

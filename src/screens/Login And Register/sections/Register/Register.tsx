@@ -45,7 +45,7 @@ export default function Register({ onSwitch }: RegisterProps) {
         action=""
       >
         <h1 style={{ color: "var(--gray)" }} className="font-bold ">
-          Register
+          إنشاء حساب
         </h1>
         <UsernameInput onChange={handleChange} value={form.username} />
         <EmailInput onChange={handleChange} value={form.email} />
@@ -55,7 +55,7 @@ export default function Register({ onSwitch }: RegisterProps) {
           type="submit"
           className="btn btn-wide rounded-full bg-color-mode-surface-primary-blue text-basewhite pl-4 pr-4 py-2"
         >
-          Register
+          إنشاء حساب
         </button>
       </form>
     </div>

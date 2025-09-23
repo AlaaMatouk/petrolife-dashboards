@@ -48,19 +48,19 @@ export default function Login({ onSwitch }: LoginProps) {
         action="submit"
       >
         <h1 className="font-bold text-color-mode-text-icons-t-primary-gray ">
-          Login
+          تسجيل الدخول
         </h1>
         <EmailInput onChange={handleChange} value={form.email} />
         <PasswordInput onChange={handleChange} value={form.password} />
         <button
           type="button"
-          //   onClick={handleGoogleLogin}
-          className="btn bg-white"
+          // onClick={handleGoogleLogin}
+          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition"
         >
           <svg
             aria-label="Google logo"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 512 512"
           >
@@ -84,14 +84,16 @@ export default function Login({ onSwitch }: LoginProps) {
               ></path>
             </g>
           </svg>
-          Login with Google
+          <span className="text-gray-700 font-medium">
+            تسجيل الدخول باستخدام جوجل
+          </span>
         </button>
 
         <button
           type="submit"
           className="btn btn-wide rounded-full bg-color-mode-surface-primary-blue text-basewhite pl-4 pr-4 py-2"
         >
-          Login
+          تسجيل الدخول
         </button>
       </form>
     </div>

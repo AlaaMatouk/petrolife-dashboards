@@ -14,16 +14,16 @@ export default function LoginAndRegister() {
           }`}
         >
           <h1 style={{}} className="text-3xl font-bold mb-2 text-basewhite">
-            {isRegister ? "Welcome!" : "Welcome Back! "}
+            {isRegister ? "! مرحبـــــــًا" : "! مرحبـــــــًا بعودتك   "}
           </h1>
           <p className="mb-4 text-center text-sm text-basewhite">
-            {isRegister ? "Already have an account?" : "Don't have an account?"}
+            {isRegister ? "هل لديك حساب بالفعل؟" : "ليس لديك حساب؟"}
           </p>
           <button
             className="btn  btn-wide rounded-full bg-white pl-4 pr-4 py-2"
             onClick={() => setIsRegister(!isRegister)}
           >
-            {isRegister ? "Login" : "Register"}
+            {isRegister ? "تسجيل الدخول" : "إنشاء حساب"}
           </button>
         </div>
 
