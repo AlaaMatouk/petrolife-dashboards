@@ -1,6 +1,7 @@
 import { TransactionListSection } from "./sections/TransactionListSection/TransactionListSection";
 import { Layout } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
+import { WalletMinimal } from "lucide-react";
 
 export const Wallet = (): JSX.Element => {
   const handleLogout = () => {
@@ -31,17 +32,11 @@ export const Wallet = (): JSX.Element => {
     <Layout
       headerProps={{
         title: "محفظــــــــــــتي",
-        titleIconSrc: "/img/side-icons-6.svg",
-        navigationIcons: walletNavigationIcons,
+        titleIconSrc: <WalletMinimal className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
           onSearch: (query) => console.log("Search:", query),
-        },
-        walletButton: {
-          label: "محفظــــــــــــــتي",
-          iconSrc: "/img/side-icons.svg",
-          onClick: handleWalletClick,
         },
       }}
       sidebarProps={{

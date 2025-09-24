@@ -29,7 +29,7 @@ export default function EmailInput({ onChange, value }: EmailInputProps) {
           />
         </div>
 
-        {/* Icon (على الشمال) */}
+        {/* Icon */}
         <svg
           className="h-[1.2em] w-[1.2em] opacity-50 shrink-0 ml-2"
           xmlns="http://www.w3.org/2000/svg"

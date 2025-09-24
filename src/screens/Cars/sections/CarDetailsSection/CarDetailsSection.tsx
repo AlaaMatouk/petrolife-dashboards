@@ -25,17 +25,12 @@ export const CarDetailsSection = (): JSX.Element => {
     <Header
       title="السيــــــــــــــارات"
       titleIconSrc="/img/side-icons.svg"
-      navigationIcons={carsNavigationIcons}
       showSearch={true}
       searchProps={{
         placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
         onSearch: (query) => console.log("Search:", query),
       }}
-      walletButton={{
-        label: "محفظــــــــــــــتي",
-        iconSrc: "/img/side-icons.svg",
-        onClick: handleWalletClick,
-      }}
+      
     />
   );
 };

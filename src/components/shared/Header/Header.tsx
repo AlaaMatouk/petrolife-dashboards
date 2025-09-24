@@ -1,19 +1,5 @@
 import React, { ReactNode, useState } from "react";
-
-interface Vector {
-  src: string;
-  alt?: string;
-  className?: string;
-}
-
-interface NavigationIcon {
-  id?: number;
-  src?: string | null;
-  alt?: string;
-  vectors?: Vector[];
-  text?: string;
-  onClick?: () => void;
-}
+import { Bell, Sun, Search, ShoppingCart } from "lucide-react";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -23,8 +9,7 @@ interface SearchBarProps {
 
 export interface HeaderProps {
   title: string;
-  titleIconSrc?: string;
-  navigationIcons: NavigationIcon[];
+  titleIconSrc?: React.ReactNode;
   showSearch?: boolean;
   searchProps?: SearchBarProps;
   extraContent?: ReactNode;
@@ -32,7 +17,7 @@ export interface HeaderProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = "بحث ",
+  placeholder = "بحث",
   onSearch,
   className = "",
 }) => {
@@ -51,36 +36,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <form
       onSubmit={handleSearchSubmit}
-      className={`flex flex-col w-full max-w-[390px] items-end justify-center gap-2.5 px-4 py-2 bg-color-mode-surface-bg-icon-gray rounded-full border border-color-mode-text-icons-t-placeholder ${className}`}
+      className={`flex items-center h-[46px] w-full sm:max-w-[390px] rounded-full border border-color-mode-text-icons-t-placeholder bg-white px-3 ${className}`}
       role="search"
     >
-      <div className="inline-flex items-center justify-end gap-2 w-full">
+      <div className="flex h-[46px]  w-full items-center justify-between gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-full border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
+        {/* Input */}
         <input
           type="search"
           value={searchQuery}
           onChange={handleSearchChange}
           placeholder={placeholder}
-          className="flex-1 text-sm text-color-mode-text-icons-t-primary-gray bg-transparent border-none outline-none placeholder-color-mode-text-icons-t-placeholder"
+          dir="rtl"
+          className="flex-1 text-sm text-color-mode-text-icons-t-primary-gray bg-transparent border-none outline-none placeholder-color-mode-text-icons-t-placeholder text-right"
         />
+        {/* Icon */}
         <button
           type="submit"
-          className="w-5 h-5 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue rounded-sm transition-opacity"
+          className="ml-2 flex items-center justify-center text-gray-500 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue rounded-full transition-opacity"
           aria-label="Submit search"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5 text-gray-500"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-            />
-          </svg>
+          <Search className="w-4 h-4" />
         </button>
       </div>
     </form>
@@ -90,7 +65,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
 export const Header: React.FC<HeaderProps> = ({
   title,
   titleIconSrc,
-  navigationIcons,
   showSearch = false,
   searchProps,
   extraContent,
@@ -98,70 +72,46 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header
-      className={` w-full h-[70px] bg-color-mode-surface-bg-screen shadow-[0px_4px_10px_#0000000a] ${className}`}
+      className={`w-full bg-color-mode-surface-bg-screen shadow-[0px_4px_10px_#0000000a] ${className}`}
       role="banner"
     >
-      <div className="flex w-full max-w-[1066px] mx-auto items-center justify-between px-4 lg:px-8 md:px-4 sm:px-2 h-full">
-        {/* Navigation Icons */}
+      <div className="flex flex-wrap w-full max-w-[1066px] mx-auto items-center justify-between px-4 lg:px-8 md:px-4 sm:px-2 py-3 gap-3">
+        {/* Navigation Icons ثابتة */}
         <nav
-          className="inline-flex items-center gap-6 flex-[0_0_auto]"
+          className="flex items-center gap-3"
           role="navigation"
           aria-label="Main navigation"
         >
-          <div className="inline-flex items-center gap-4 flex-[0_0_auto]">
-            {navigationIcons.map((icon, index) => (
-              <button
-                key={icon.id ?? index}
-                className="relative w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md overflow-hidden border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity"
-                aria-label={icon.text || `Navigation button ${icon.id}`}
-                onClick={icon.onClick}
-              >
-                {icon.src ? (
-                  <img
-                    className="absolute w-5 h-5 top-2.5 left-2.5"
-                    alt={icon.alt}
-                    src={icon.src}
-                  />
-                ) : icon.vectors ? (
-                  <div className="relative w-5 h-5 top-2.5 left-2.5">
-                    <div className="relative w-[18px] h-[18px] top-px left-px">
-                      {icon.vectors.map((vector, idx) => (
-                        <img
-                          key={idx}
-                          className={vector.className}
-                          alt={vector.alt}
-                          src={vector.src}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : icon.text ? (
-                  <span className="absolute top-[11px] left-2.5 font-medium text-color-mode-text-icons-t-primary-gray text-sm">
-                    {icon.text}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
+          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+            <Bell className="w-4 h-4 text-gray-600" />
+          </button>
+
+          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+            <ShoppingCart className="w-4 h-4 text-gray-600" />
+          </button>
+
+          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+            <Sun className="w-4 h-4 text-gray-600" />
+          </button>
+
+          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+            <span className="font-regular text-gray-600 text-sm">EN</span>
+          </button>
         </nav>
 
         {/* Right Section */}
-        <div className="inline-flex items-center justify-end gap-2.5 flex-[0_0_auto]">
+        <div className="flex flex-wrap items-center justify-end gap-2 w-auto sm:w-auto flex-1 sm:flex-none">
           {/* Search Bar */}
-          {showSearch && <SearchBar {...searchProps} />}
+          {showSearch && (
+            <div className="w-full sm:w-auto mr-2">
+              <SearchBar {...searchProps} />
+            </div>
+          )}
 
           {/* Title + Icon */}
-          <div className="inline-flex items-center gap-2 flex-[0_0_auto]">
-            <h1 className="text-lg font-semibold text-color-mode-text-icons-t-primary-gray">
-              {title}
-            </h1>
-            {titleIconSrc && (
-              <img
-                src={titleIconSrc}
-                alt={`${title} icon`}
-                className="w-6 h-6"
-              />
-            )}
+          <div className="flex items-center gap-2">
+            <h1 className="text-md font-normal text-gray-600">{title}</h1>
+            {titleIconSrc && <span>{titleIconSrc}</span>}
           </div>
 
           {/* Extra Content */}

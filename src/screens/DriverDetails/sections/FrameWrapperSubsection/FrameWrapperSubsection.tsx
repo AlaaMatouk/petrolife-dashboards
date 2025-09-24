@@ -1,3 +1,4 @@
+import { Fuel } from "lucide-react";
 import React, { useState } from "react";
 
 export const FrameWrapperSubsection = (): JSX.Element => {
@@ -87,11 +88,7 @@ export const FrameWrapperSubsection = (): JSX.Element => {
         <h2 className="w-fit mt-[-1.00px] font-bold text-[#5b738b] text-base tracking-[0] leading-6 whitespace-nowrap relative [font-family:'Tajawal',Helvetica] [direction:rtl]">
           الاستهلاك
         </h2>
-        <img
-          className="relative w-[18px] h-[18px] aspect-[1]"
-          alt="أيقونة الاستهلاك"
-          src="/img/side-icons.svg"
-        />
+        <Fuel className="w-5 h-5 text-gray-500" />
       </div>
     </section>
   );

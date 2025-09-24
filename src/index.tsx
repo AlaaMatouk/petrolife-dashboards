@@ -11,6 +11,8 @@ import { PerolifeStationLocations } from "./screens/PerolifeStationLocations/per
 import { AddDriver } from "./screens/AddDriver/AddDriver";
 import { DriverDetails } from "./screens/DriverDetails/DriverDetails";
 import LoginAndRegister from "./screens/Login And Register/LoginAndRegister";
+import { Drivers } from "./screens/Drivers";
+import { AddNewCar } from "./screens/AddNewCar/AddNewCar";
 
 createRoot(document.getElementById("app") as HTMLElement).render(
   // <StrictMode>
@@ -32,6 +34,8 @@ createRoot(document.getElementById("app") as HTMLElement).render(
       <Route path="/adddriver" element={<AddDriver />} />
       <Route path="/driverdetails" element={<DriverDetails />} />
       {/* <Route path="/login" element={<LoginAndRegister />} /> */}
+      <Route path="/drivers" element={<Drivers />} />
+      <Route path="/addcar" element={<AddNewCar />} />
     </Routes>
   </Router>
 );

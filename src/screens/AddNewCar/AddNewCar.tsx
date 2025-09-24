@@ -1,22 +1,19 @@
 import React from "react";
-import { UserDetailsSection } from "./sections/UserDetailsSection/UserDetailsSection";
-import { VehicleInformationSection } from "./sections/VehicleInformationSection/VehicleInformationSection";
+import { VehicleDetailsSection } from "./sections/VehicleDetailsSection";
+import { VehicleFormSection } from "./sections/VehicleFormSection/VehicleFormSection";
+import { Car } from "lucide-react";
+import { navigationMenuData, userInfo } from "../../constants/data";
 import { Layout } from "../../components/shared";
-import {
-  navigationIcons,
-  navigationMenuData,
-  userInfo,
-} from "../../constants/data";
 
-export const AddDriver = (): JSX.Element => {
+export const AddNewCar = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
-        title: "الســـــــــــــــائقين / إضافة سائق جديد",
-        titleIconSrc: "/img/side-icons-4.svg",
+        title: "السيــــــــــــــارات / إضافة سيارة جديدة",
+        titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
-          onSearch: (query) => console.log("Search:", query),
+          onSearch: (query: any) => console.log("Search:", query),
         },
       }}
       sidebarProps={{
@@ -28,11 +25,11 @@ export const AddDriver = (): JSX.Element => {
     >
       <div
         className="flex flex-col  items-start gap-5 relative"
-        data-model-id="1:14891"
+        data-model-id="1:14955"
       >
         <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-          <UserDetailsSection />
-          <VehicleInformationSection />
+          <VehicleDetailsSection />
+          <VehicleFormSection />
         </div>
       </div>
     </Layout>

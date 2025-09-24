@@ -5,14 +5,14 @@ import {
   navigationMenuData,
   userInfo,
 } from "../../constants/data";
+import { Car } from "lucide-react";
 
 export const Cars = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
         title: "السيــــــــــــارات",
-        titleIconSrc: "/img/side-icons-4.svg",
-        navigationIcons: navigationIcons,
+        titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
           onSearch: (query) => console.log("Search:", query),

@@ -11,6 +11,7 @@ import {
   userInfo,
 } from "../../constants/data";
 import { UsedStations } from "../UsedStations/UsedStations";
+import { UserRound } from "lucide-react";
 
 export const DriverDetails = (): JSX.Element => {
   // Y-axis scale data for the chart
@@ -73,9 +74,8 @@ export const DriverDetails = (): JSX.Element => {
 
     <Layout
       headerProps={{
-        title: "الســـــــــــــــائقين / إضافة سائق جديد",
-        titleIconSrc: "/img/side-icons-4.svg",
-        navigationIcons: navigationIcons,
+        title: "الســـــــــــــــائقين / تفاصيل السائق",
+        titleIconSrc: <UserRound className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
           onSearch: (query) => console.log("Search:", query),
