@@ -9,22 +9,18 @@ import {
 } from "../../constants/data";
 import { Layout } from "../../components/shared";
 import { Map } from "./sections/map/Map";
+import { Fuel, Grid2x2 } from "lucide-react";
 
 export const PerolifeStationLocations = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
-        title: "محفظــــــــــــــتي / طلبــــــــات اشترداد الأموال",
-        titleIconSrc: "/img/side-icons-6.svg",
-        navigationIcons: navigationIcons,
+        title: "لوحة التحكم / مواقع محطات بترولايف",
+        titleIconSrc: <Grid2x2 className="w-5 h-5 text-gray-500" />,
         showSearch: false,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
           onSearch: (query) => console.log("Search:", query),
-        },
-        walletButton: {
-          label: "محفظــــــــــــــتي / طلبات شحن المحفظة",
-          iconSrc: "/img/side-icons.svg",
         },
       }}
       sidebarProps={{

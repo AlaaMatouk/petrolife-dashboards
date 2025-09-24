@@ -1,3 +1,4 @@
+import { Fuel } from "lucide-react";
 import React, { useState } from "react";
 
 export const DataListSection = (): JSX.Element => {
@@ -94,11 +95,7 @@ export const DataListSection = (): JSX.Element => {
             المحطات المستخدمة
           </h1>
 
-          <img
-            className="relative w-[18px] h-[18px] aspect-[1]"
-            alt="أيقونة جانبية"
-            src="/img/side-iconsUS.svg"
-          />
+         <Fuel className="w-5 h-5 text-gray-500" />
         </div>
       </header>
     </section>

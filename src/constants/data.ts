@@ -25,6 +25,7 @@ export const navigationMenuData = {
           label: "الســـــــــــائقين",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
+          href: "/drivers",
         },
         {
           id: "cars",
