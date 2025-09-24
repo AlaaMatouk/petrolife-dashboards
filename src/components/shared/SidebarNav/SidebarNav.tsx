@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export interface NavigationItem {
   id: string;
@@ -45,6 +45,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     secondary: "/img/logo-2.png",
   },
 }) => {
+  const location = useLocation();
   const [activeItem, setActiveItem] = useState<string>("");
 
   const handleMenuItemClick = (item: NavigationItem) => {
@@ -54,8 +55,16 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     }
   };
 
+  // Check if item is active based on current pathname
+  const isItemActive = (item: NavigationItem) => {
+    if (item.href) {
+      return location.pathname === item.href;
+    }
+    return item.isActive || activeItem === item.id;
+  };
+
   const renderMenuItem = (item: NavigationItem, isSubItem = false) => {
-    const isActive = item.isActive || activeItem === item.id;
+    const isActive = isItemActive(item);
     const hasActiveBackground = item.hasBackground && isActive;
 
     if (item.href) {

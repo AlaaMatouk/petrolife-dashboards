@@ -1,3 +1,5 @@
+import { ROUTES } from './routes';
+
 // Navigation Menu Data
 export const navigationMenuData = {
   topItems: [
@@ -7,13 +9,14 @@ export const navigationMenuData = {
       icon: "/img/side-icons-1.svg",
       isActive: false,
       hasBackground: false,
+      href: ROUTES.DASHBOARD,
     },
     {
       id: "wallet",
       label: "محفظــــــــــــتي",
       icon: "/img/side-icons-6.svg",
       hasBackground: false,
-      href: "/wallet",
+      href: ROUTES.WALLET,
     },
   ],
   sections: [
@@ -25,13 +28,13 @@ export const navigationMenuData = {
           label: "الســـــــــــائقين",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
-          href: "/drivers",
+          href: ROUTES.DRIVERS,
         },
         {
           id: "cars",
           label: "السيـــــــــــــارات",
           icon: "/img/side-icons-4.svg",
-          href: "/cars",
+          href: ROUTES.CARS,
         },
       ],
     },
@@ -42,13 +45,13 @@ export const navigationMenuData = {
           id: "sales-report",
           label: "تقرير المبيعات",
           icon: "/img/side-icons-5.svg",
-          href: "/financialreports",
+          href: ROUTES.FINANCIAL_REPORTS,
         },
         {
           id: "wallet-report",
           label: "تقرير المحفظة",
           icon: "/img/side-icons-6.svg",
-          href: "/walletreports",
+          href: ROUTES.WALLET_REPORTS,
         },
       ],
     },
@@ -58,31 +61,37 @@ export const navigationMenuData = {
       id: "fuel-delivery",
       label: "طلبات توصيل الوقود",
       icon: "/img/side-icons-7.svg",
+      href: ROUTES.FUEL_DELIVERY,
     },
     {
-      id: "subscriptions",
-      label: "اشتراكـــــاتي",
+      id: "stations",
+      label: "محطات البترول",
       icon: "/img/side-icons-8.svg",
+      href: ROUTES.STATIONS,
     },
     {
-      id: "store",
-      label: "المتجــــــــــــــر",
+      id: "used-stations",
+      label: "المحطات المستخدمة",
       icon: "/img/side-icons-9.svg",
+      href: ROUTES.USED_STATIONS,
     },
     {
-      id: "invoices",
-      label: "الفواتيـــــــــــر",
+      id: "refund-requests",
+      label: "طلبات الاسترداد",
       icon: "/img/side-icons-10.svg",
+      href: ROUTES.REFUND_REQUESTS,
     },
     {
-      id: "support",
-      label: "الدعم الفني",
+      id: "charge-requests",
+      label: "طلبات الشحن",
       icon: "/img/side-icons-11.svg",
+      href: ROUTES.CHARGE_REQUESTS,
     },
     {
       id: "settings",
       label: "الإعدادات العامـــــة",
       icon: "/img/side-icons-12.svg",
+      href: ROUTES.SETTINGS,
     },
   ],
 };
