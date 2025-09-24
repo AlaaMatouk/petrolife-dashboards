@@ -72,30 +72,30 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header
-      className={`w-full bg-color-mode-surface-bg-screen shadow-[0px_4px_10px_#0000000a] ${className}`}
+      className={`w-full bg-white shadow-sm border-b border-gray-200 ${className}`}
       role="banner"
     >
-      <div className="flex flex-wrap w-full max-w-[1066px] mx-auto items-center justify-between px-4 lg:px-8 md:px-4 sm:px-2 py-3 gap-3">
+      <div className="flex flex-wrap w-full max-w-7xl mx-auto items-center justify-between px-4 lg:px-8 md:px-4 sm:px-2 py-4 gap-3">
         {/* Navigation Icons ثابتة */}
         <nav
           className="flex items-center gap-3"
           role="navigation"
           aria-label="Main navigation"
         >
-          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <Bell className="w-4 h-4 text-gray-600" />
           </button>
 
-          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <ShoppingCart className="w-4 h-4 text-gray-600" />
           </button>
 
-          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
+          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <Sun className="w-4 h-4 text-gray-600" />
           </button>
 
-          <button className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-bg-icon-gray rounded-md border border-color-mode-text-icons-t-placeholder hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue transition-opacity">
-            <span className="font-regular text-gray-600 text-sm">EN</span>
+          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+            <span className="font-medium text-gray-600 text-sm">EN</span>
           </button>
         </nav>
 
@@ -110,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Title + Icon */}
           <div className="flex items-center gap-2">
-            <h1 className="text-md font-normal text-gray-600">{title}</h1>
+            <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
             {titleIconSrc && <span>{titleIconSrc}</span>}
           </div>
 

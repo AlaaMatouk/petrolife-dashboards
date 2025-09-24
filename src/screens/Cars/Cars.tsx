@@ -1,5 +1,5 @@
 import { CarListSection } from "./sections/CarListSection/CarListSection";
-import { Layout } from "../../components/shared";
+import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import {
   navigationIcons,
   navigationMenuData,
@@ -9,7 +9,7 @@ import { Car } from "lucide-react";
 
 export const Cars = (): JSX.Element => {
   return (
-    <Layout
+    <LayoutSimple
       headerProps={{
         title: "السيــــــــــــارات",
         titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
@@ -28,6 +28,6 @@ export const Cars = (): JSX.Element => {
       <div className="flex flex-col w-full items-start gap-5 ">
         <CarListSection />
       </div>
-    </Layout>
+    </LayoutSimple>
   );
 };

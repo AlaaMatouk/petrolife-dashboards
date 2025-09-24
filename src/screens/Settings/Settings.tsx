@@ -1,4 +1,3 @@
-import React from "react";
 import { Layout } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { Settings as SettingsIcon } from "lucide-react";

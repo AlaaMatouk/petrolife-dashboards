@@ -2,7 +2,6 @@ import React, { ReactNode } from "react";
 import { Header, HeaderProps } from "../Header/Header";
 import { Footer } from "../Footer/Footer";
 import { SidebarNav, SidebarNavProps } from "../SidebarNav/SidebarNav";
-import { useUI } from "../../../hooks/useGlobalState";
 
 export interface LayoutProps {
   children: ReactNode;
@@ -11,20 +10,18 @@ export interface LayoutProps {
   className?: string;
 }
 
-export const Layout: React.FC<LayoutProps> = ({
+export const LayoutSimple: React.FC<LayoutProps> = ({
   children,
   headerProps,
   sidebarProps,
   className = "",
 }) => {
-  const { sidebarCollapsed, theme } = useUI();
-  
   return (
     <div
-      className={`${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen w-full flex flex-row-reverse transition-colors duration-300 ${className}`}
+      className={`bg-gray-50 min-h-screen w-full flex flex-row-reverse ${className}`}
     >
       {/* Sidebar - Full height on the right */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-72 md:w-60 sm:w-52'} ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-l flex-shrink-0 hidden md:block shadow-sm transition-all duration-300`}>
+      <aside className="w-72 md:w-60 sm:w-52 bg-white border-l border-gray-200 flex-shrink-0 hidden md:block shadow-sm">
         <SidebarNav {...sidebarProps} />
       </aside>
 
@@ -36,7 +33,7 @@ export const Layout: React.FC<LayoutProps> = ({
         </header>
 
         {/* Main content */}
-        <main className={`flex-1 overflow-auto ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+        <main className="flex-1 overflow-auto bg-gray-50">
           <div className="p-4 lg:p-6 md:p-4 sm:p-3 max-w-7xl mx-auto">
             {children}
           </div>

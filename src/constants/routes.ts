@@ -20,8 +20,9 @@ export const ROUTES = {
   FUEL_DELIVERY: '/fuel-delivery',
   STATIONS: '/stations',
   USED_STATIONS: '/used-stations',
-  REFUND_REQUESTS: '/refund-requests',
-  CHARGE_REQUESTS: '/charge-requests',
+  REFUND_REQUESTS: '/moneyrefundrequests',
+  CHARGE_REQUESTS: '/walletchargerequests',
+  PEROLIFE_STATION_LOCATIONS: '/perolifestationlocations',
   
   // Settings
   SETTINGS: '/settings',
