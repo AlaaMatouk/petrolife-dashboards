@@ -1,6 +1,8 @@
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import { carData } from "../../../../constants/data";
+import { useNavigate } from "react-router-dom";
+import { Car, CirclePlus, Settings } from "lucide-react";
 
 // Define table columns for cars
 const carColumns = [
@@ -68,12 +70,12 @@ const carColumns = [
   {
     key: "fuelType",
     label: "نوع الوقود",
-    width: "w-[97px]",
+    width: "flex-1 grow",
   },
   {
     key: "category",
     label: "تصنيف السيارة",
-    width: "w-[129px]",
+    width: "flex-1 grow min-w-[129px]",
     render: (value: any) => (
       <div className="flex items-center gap-1">
         {value ? (
@@ -82,7 +84,7 @@ const carColumns = [
               {value.name}
             </span>
             <img
-              className="relative w-3.5 h-3.5 aspect-[1]"
+              className="relative  aspect-[1]"
               alt={value.name}
               src={value.icon}
             />
@@ -98,31 +100,32 @@ const carColumns = [
   {
     key: "year",
     label: "سنة الاصدار",
-    width: "w-[106px]",
+    width: "flex-1 grow min-w-[85px]",
   },
   {
     key: "model",
     label: "الطراز",
-    width: "w-[79px]",
+    width: "flex-1 grow min-w-[79px]",
   },
   {
     key: "brand",
     label: "الماركة",
-    width: "w-[81px]",
+    width: "flex-1 grow min-w-[81px]",
   },
   {
     key: "carName",
     label: "اسم السيارة",
-    width: "w-[119px]",
+    width: "flex-1 grow min-w-[119px]",
   },
   {
     key: "carNumber",
     label: "رقم السيارة",
-    width: "w-[85px]",
+    width: "flex-1 grow min-w-[85px]",
   },
 ];
 
 export const CarListSection = (): JSX.Element => {
+  const navigate = useNavigate();
   return (
     <section className="flex flex-col  items-start gap-5 absolute top-28 left-[50px]">
       <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
@@ -156,7 +159,10 @@ export const CarListSection = (): JSX.Element => {
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
             <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
-              <button className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors">
+              <button
+                onClick={() => navigate("/addcar")}
+                className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
+              >
                 <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
                   <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
                     <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
@@ -164,11 +170,7 @@ export const CarListSection = (): JSX.Element => {
                     </span>
                   </div>
 
-                  <img
-                    className="relative w-[18px] h-[18px] aspect-[1]"
-                    alt="إضافة سيارة جديدة"
-                    src="/img/side-icons-13.svg"
-                  />
+                  <CirclePlus className="w-4 h-4 text-gray-500" />
                 </div>
               </button>
 
@@ -179,12 +181,7 @@ export const CarListSection = (): JSX.Element => {
                       اعدادات السيارات
                     </span>
                   </div>
-
-                  <img
-                    className="relative w-[18px] h-[18px] aspect-[1]"
-                    alt="اعدادات السيارات"
-                    src="/img/side-icons-14.svg"
-                  />
+                  <Settings className="w-4 h-4 text-gray-500" />
                 </div>
               </button>
 
@@ -209,12 +206,7 @@ export const CarListSection = (): JSX.Element => {
               <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
                 السيــــــــــــــارت (23)
               </h1>
-
-              <img
-                className="relative w-[18px] h-[18px] aspect-[1]"
-                alt="السيارات"
-                src="/img/side-icons-15.svg"
-              />
+              <Car className="w-5 h-5 text-gray-500" />
             </div>
           </div>
         </header>

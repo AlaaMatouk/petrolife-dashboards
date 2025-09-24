@@ -1,3 +1,4 @@
+import { UserRound } from "lucide-react";
 import React, { useState } from "react";
 
 export const DriverInfo = (): JSX.Element => {
@@ -19,13 +20,13 @@ export const DriverInfo = (): JSX.Element => {
 
   // Days of the week data
   const daysOfWeek = [
-    { name: "السبت", selected: true },
     { name: "الأحد", selected: false },
     { name: "الإثنين", selected: false },
     { name: "الثلاثاء", selected: false },
     { name: "الأربعاء", selected: false },
     { name: "الخميس", selected: false },
     { name: "الجمعة", selected: false },
+    { name: "السبت", selected: true },
   ];
 
   const [selectedDays, setSelectedDays] = useState(daysOfWeek);
@@ -61,11 +62,7 @@ export const DriverInfo = (): JSX.Element => {
               معلومات السائق
             </h1>
 
-            <img
-              className="relative w-[18px] h-[18px] aspect-[1]"
-              alt="Side icons"
-              src="/img/side-iconsDI.svg"
-            />
+            <UserRound className="w-5 h-5 text-gray-500" />
           </div>
         </nav>
       </header>
@@ -168,7 +165,7 @@ export const DriverInfo = (): JSX.Element => {
             </div>
 
             <fieldset className="flex flex-col items-end gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-              <legend className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+              <legend className="text-right pb-2 self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 [direction:rtl] [font-style:var(--body-body-2-font-style)]">
                 أيام العطل "الغير مسموح بشحن الوقود"
               </legend>
 

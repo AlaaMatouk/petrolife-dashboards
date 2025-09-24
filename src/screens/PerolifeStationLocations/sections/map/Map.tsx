@@ -1,3 +1,4 @@
+import { Fuel, MapPin } from "lucide-react";
 import React, { useState } from "react";
 
 interface MapMarker {
@@ -155,16 +156,11 @@ export const Map = (): JSX.Element => {
       role="region"
       aria-label="Petrolife stations map"
     >
-      <header className="inline-flex ml-[700px]  h-5 relative mt-[27px] items-center gap-1.5">
-        <h1 className="relative w-[173px] h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
+      <header className="text-right inline-flex ml-[700px]  h-5 relative mt-[27px] items-center gap-1.5">
+        <h1 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
           مواقع محطات بترولايف
         </h1>
-
-        <img
-          className="relative w-[18px] h-[18px] aspect-[1]"
-          alt="Side icons"
-          src="/img/side-icons.svg"
-        />
+        <MapPin className="w-5 h-5 text-gray-500" />
       </header>
 
       <div
