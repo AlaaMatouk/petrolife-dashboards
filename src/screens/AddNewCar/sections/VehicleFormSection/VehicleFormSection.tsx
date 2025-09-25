@@ -1,23 +1,33 @@
-import { Car, CarFront, ChevronLeft, Truck } from "lucide-react";
-import React, { useState } from "react";
+import { Car, CarFront, Truck, Loader2 } from "lucide-react";
+import React from "react";
+import { useForm } from "../../../../hooks/useForm";
+import { useToast } from "../../../../context/ToastContext";
+import { useCars } from "../../../../hooks/useGlobalState";
+import { Input, Select, RadioGroup } from "../../../../components/shared/Form";
 
-export const VehicleFormSection = (): JSX.Element => {
-  const [formData, setFormData] = useState({
-    carName: "",
+const initialValues = {
+  carName: "سيارة تجريبية",
     fuelType: "بنزين 91",
     carType: "صغيرة",
     city: "الرياض",
     year: "2020",
     model: "كرولا",
     brand: "تيوتا",
-    plateLetters: "",
+  plateLetters: "أ ب ج",
+  plateNumbers: "1234",
     carCondition: "دبلوماسية",
-  });
+};
+
+export const VehicleFormSection = (): JSX.Element => {
+  const form = useForm(initialValues);
+  const { addToast } = useToast();
+  const { addCar } = useCars();
+
 
   const fuelTypes = [
-    { id: "diesel", label: "ديزل", selected: false },
-    { id: "petrol95", label: "بنزين 95", selected: false },
-    { id: "petrol91", label: "بنزين 91", selected: true },
+    { id: "diesel", label: "ديزل" },
+    { id: "petrol95", label: "بنزين 95" },
+    { id: "petrol91", label: "بنزين 91" },
   ];
 
   const carTypes = [
@@ -25,339 +35,250 @@ export const VehicleFormSection = (): JSX.Element => {
       id: "vip",
       label: "Vip",
       icon: <CarFront className="w-4 h-4 text-gray-500" />,
-      selected: false,
     },
     {
       id: "large",
       label: "كبيرة",
       icon: <Truck className="w-4 h-4 text-purple-500" />,
-      selected: false,
     },
     {
       id: "medium",
       label: "متوسطة",
       icon: <Car className="w-4 h-4 text-orange-500" />,
-      selected: false,
     },
     {
       id: "small",
       label: "صغيرة",
       icon: <CarFront className="w-4 h-4 text-green-500" />,
-      selected: true,
     },
   ];
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const cityOptions = [
+    { value: "الرياض", label: "الرياض" },
+    { value: "جدة", label: "جدة" },
+    { value: "الدمام", label: "الدمام" },
+    { value: "مكة المكرمة", label: "مكة المكرمة" },
+    { value: "المدينة المنورة", label: "المدينة المنورة" },
+  ];
 
-  const handleSubmit = () => {
-    console.log("Form submitted:", formData);
+  const yearOptions = Array.from({ length: 25 }, (_, i) => {
+    const year = new Date().getFullYear() - 10 + i;
+    return { value: year.toString(), label: year.toString() };
+  });
+
+  const modelOptions = [
+    { value: "كرولا", label: "كرولا" },
+    { value: "كامري", label: "كامري" },
+    { value: "أكورد", label: "أكورد" },
+    { value: "سيفيك", label: "سيفيك" },
+    { value: "سوناتا", label: "سوناتا" },
+  ];
+
+  const brandOptions = [
+    { value: "تيوتا", label: "تيوتا" },
+    { value: "هوندا", label: "هوندا" },
+    { value: "نيسان", label: "نيسان" },
+    { value: "هيونداي", label: "هيونداي" },
+    { value: "كيا", label: "كيا" },
+  ];
+
+  const carConditionOptions = [
+    { value: "دبلوماسية", label: "دبلوماسية" },
+    { value: "خاصة", label: "خاصة" },
+    { value: "تجارية", label: "تجارية" },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!form.validateForm()) {
+      addToast({
+        title: "خطأ في التحقق",
+        message: "يرجى تصحيح الأخطاء في النموذج",
+        type: "error",
+      });
+      return;
+    }
+
+    form.setIsSubmitting(true);
+
+    try {
+      // Create new car object
+      const newCar = {
+        id: Date.now(),
+        carNumber: form.values.plateLetters + form.values.plateNumbers,
+        carName: form.values.carName,
+        brand: form.values.brand,
+        model: form.values.model,
+        year: form.values.year,
+        fuelType: form.values.fuelType,
+        category: {
+          name: form.values.carType,
+          icon: getCategoryIcon(form.values.carType),
+        },
+        drivers: [],
+      };
+
+      // Add car to global state
+      addCar(newCar);
+
+      // Show success message
+      addToast({
+        title: "تم إضافة السيارة بنجاح",
+        message: `تم إضافة السيارة ${newCar.carName} برقم ${newCar.carNumber} بنجاح`,
+        type: "success",
+      });
+
+      // Reset form
+      form.resetForm();
+
+    } catch (error) {
+      console.error('Error adding car:', error);
+      addToast({
+        title: "خطأ في إضافة السيارة",
+        message: "حدث خطأ أثناء إضافة السيارة. يرجى المحاولة مرة أخرى.",
+        type: "error",
+      });
+    } finally {
+      form.setIsSubmitting(false);
+    }
   };
 
   return (
     <form
       className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
+      onSubmit={handleSubmit}
     >
       <div className="flex flex-col items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
         <div className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+          {/* Car Name Field */}
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch font-normal text-color-mode-text-icons-t-sec [direction:rtl] relative mt-[-1.00px] [font-family:'Tajawal',Helvetica] text-sm leading-[22.4px]">
-                <span className="tracking-[var(--body-body-2-letter-spacing)] font-body-body-2 [font-style:var(--body-body-2-font-style)] font-[number:var(--body-body-2-font-weight)] leading-[var(--body-body-2-line-height)] text-[length:var(--body-body-2-font-size)]">
-                  اسم السيارة{" "}
-                </span>
-                <span className="text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] font-caption-caption-1 [font-style:var(--caption-caption-1-font-style)] font-[number:var(--caption-caption-1-font-weight)]">
-                  "اختياري"
-                </span>
-              </label>
-
-              <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                  <input
-                    type="text"
-                    value={formData.carName}
-                    onChange={(e) =>
-                      handleInputChange("carName", e.target.value)
-                    }
+            <Input
+              label="اسم السيارة"
+              value={form.values.carName}
+              onChange={(value) => form.setFieldValue('carName', value)}
+              error={form.errors.carName}
+              required={true}
                     placeholder="اسم السيارة هنا"
-                    className="text-right relative w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
                   />
-                </div>
-              </div>
-            </div>
           </div>
 
+          {/* Fuel Type, Car Type, and City Row */}
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                نوع البنزين
-              </label>
+            <RadioGroup
+              label="نوع البنزين"
+              value={form.values.fuelType}
+              onChange={(value) => form.setFieldValue('fuelType', value)}
+              error={form.errors.fuelType}
+              required={true}
+              options={fuelTypes}
+            />
 
-              <div
-                className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]"
-                role="radiogroup"
-                aria-labelledby="fuel-type-label"
-              >
-                {fuelTypes.map((fuel) => (
-                  <button
-                    key={fuel.id}
-                    type="button"
-                    onClick={() => handleInputChange("fuelType", fuel.label)}
-                    className={`flex h-[46px] items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid ${
-                      formData.fuelType === fuel.label
-                        ? "border-[0.7px] border-color-mode-text-icons-t-blue"
-                        : "border-color-mode-text-icons-t-placeholder"
-                    }`}
-                    role="radio"
-                    aria-checked={formData.fuelType === fuel.label}
-                  >
-                    <div
-                      className={`w-fit font-[number:var(--body-body-2-font-weight)] text-left tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] ${
-                        formData.fuelType === fuel.label
-                          ? "text-color-mode-text-icons-t-blue"
-                          : "text-color-mode-text-icons-t-sec"
-                      }`}
-                    >
-                      {fuel.label}
-                    </div>
-                    {formData.fuelType === fuel.label && (
-                      <img
-                        className="absolute top-0 left-px w-3.5 h-3.5"
-                        alt="Selected"
-                        src="/img/rectangle-22addD.svg"
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <RadioGroup
+              label="نوع السيارة"
+              value={form.values.carType}
+              onChange={(value) => form.setFieldValue('carType', value)}
+              error={form.errors.carType}
+              required={true}
+              options={carTypes}
+            />
 
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                نوع السيارة
-              </label>
-
-              <div
-                className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]"
-                role="radiogroup"
-                aria-labelledby="car-type-label"
-              >
-                {carTypes.map((carType) => (
-                  <button
-                    key={carType.id}
-                    type="button"
-                    onClick={() => handleInputChange("carType", carType.label)}
-                    className={`flex h-[46px] items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid ${
-                      formData.carType === carType.label
-                        ? "border-[0.7px] border-color-mode-text-icons-t-blue"
-                        : "border-color-mode-text-icons-t-placeholder"
-                    }`}
-                    role="radio"
-                    aria-checked={formData.carType === carType.label}
-                  >
-                    <div
-                      className={`inline-flex items-center justify-center gap-0.5 relative flex-[0_0_auto] ${
-                        carType.id === "medium"
-                          ? "ml-[-11.62px] mr-[-11.62px]"
-                          : carType.id === "small"
-                          ? "ml-[-5.12px] mr-[-5.12px]"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`relative w-fit mt-[-1.00px] text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] ${
-                          formData.carType === carType.label
-                            ? carType.id === "small"
-                              ? "font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-blue font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] leading-[var(--subtitle-subtitle-3-line-height)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] [font-style:var(--subtitle-subtitle-3-font-style)]"
-                              : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-blue [font-style:var(--body-body-2-font-style)]"
-                            : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec [font-style:var(--body-body-2-font-style)]"
-                        }`}
-                      >
-                        {carType.label}
-                      </div>
-                      {/* <img
-                        className="relative w-3 h-3 aspect-[1]"
-                        alt="Car type icon"
-                        src={carType.icon}
-                      /> */}
-                      {carType.icon}
-                    </div>
-                    {formData.carType === carType.label && (
-                      <img
-                        className="absolute top-0 left-px w-3.5 h-3.5"
-                        alt="Selected"
-                        src={
-                          carType.id === "small"
-                            ? "/img/rectangle-22-1addD.svg"
-                            : "/img/rectangle-22addD.svg"
-                        }
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                مدينة السيارة
-              </label>
-
-              <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
-
-                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                  <select
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    className="text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
-                  >
-                    <option value="الرياض">الرياض</option>
-                    <option value="جدة">جدة</option>
-                    <option value="الدمام">الدمام</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <Select
+              label="مدينة السيارة"
+              value={form.values.city}
+              onChange={(value) => form.setFieldValue('city', value)}
+              error={form.errors.city}
+              required={true}
+              options={cityOptions}
+            />
           </div>
 
+          {/* Year, Model, and Brand Row */}
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                سنة الاصدار
-              </label>
+            <Select
+              label="سنة الإصدار"
+              value={form.values.year}
+              onChange={(value) => form.setFieldValue('year', value)}
+              error={form.errors.year}
+              required={true}
+              options={yearOptions}
+            />
 
-              <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                {/* <img
-                  className="relative w-[17px] h-[17px] aspect-[1]"
-                  alt="Dropdown icon"
-                  src="/img/side-icons-6.svg"
-                /> */}
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
-                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                  <select
-                    value={formData.year}
-                    onChange={(e) => handleInputChange("year", e.target.value)}
-                    className="text-right pr-2 w-full font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
-                  >
-                    <option value="2020">2020</option>
-                    <option value="2021">2021</option>
-                    <option value="2022">2022</option>
-                    <option value="2023">2023</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <Select
+              label="الطراز"
+              value={form.values.model}
+              onChange={(value) => form.setFieldValue('model', value)}
+              error={form.errors.model}
+              required={true}
+              options={modelOptions}
+            />
 
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                الطراز
-              </label>
-
-              <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
-
-                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                  <select
-                    value={formData.model}
-                    onChange={(e) => handleInputChange("model", e.target.value)}
-                    className="text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
-                  >
-                    <option value="كرولا">كرولا</option>
-                    <option value="كامري">كامري</option>
-                    <option value="أكورد">أكورد</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-              <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                الماركة
-              </label>
-
-              <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
-
-                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                  <select
-                    value={formData.brand}
-                    onChange={(e) => handleInputChange("brand", e.target.value)}
-                    className="text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
-                  >
-                    <option value="تيوتا">تيوتا</option>
-                    <option value="هوندا">هوندا</option>
-                    <option value="نيسان">نيسان</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <Select
+              label="الماركة"
+              value={form.values.brand}
+              onChange={(value) => form.setFieldValue('brand', value)}
+              error={form.errors.brand}
+              required={true}
+              options={brandOptions}
+            />
           </div>
 
+          {/* Plate Number and Car Condition Row */}
           <div className="flex items-end justify-around gap-5 relative self-stretch w-full flex-[0_0_auto]">
             <div className="flex items-start gap-5 relative flex-1 grow">
               <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow" />
 
-              <div className="relative w-[335px] h-[116px]">
-                <div className="flex flex-col w-[335px] items-end gap-[var(--corner-radius-extra-small)] relative">
-                  <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                    رقم السيارة
-                  </label>
-
-                  <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                    <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                      <input
-                        type="text"
-                        value={formData.plateLetters}
-                        onChange={(e) =>
-                          handleInputChange("plateLetters", e.target.value)
-                        }
+              {/* Plate Letters */}
+              <div className="relative w-[335px]">
+                <Input
+                  label="حروف لوحة السيارة"
+                  value={form.values.plateLetters}
+                  onChange={(value) => form.setFieldValue('plateLetters', value)}
+                  error={form.errors.plateLetters}
+                  required={true}
                         placeholder="الحروف"
-                        className="text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
                       />
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  حالة السيارة
-                </label>
-
-                <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                  <ChevronLeft className="w-4 h-4 text-gray-500" />
-
-                  <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                    <select
-                      value={formData.carCondition}
-                      onChange={(e) =>
-                        handleInputChange("carCondition", e.target.value)
-                      }
-                      className="text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none"
-                    >
-                      <option value="دبلوماسية">دبلوماسية</option>
-                      <option value="خاصة">خاصة</option>
-                      <option value="تجارية">تجارية</option>
-                    </select>
-                  </div>
-                </div>
+              {/* Plate Numbers */}
+              <div className="relative w-[335px]">
+                <Input
+                  label="أرقام لوحة السيارة"
+                  value={form.values.plateNumbers}
+                  onChange={(value) => form.setFieldValue('plateNumbers', value)}
+                  error={form.errors.plateNumbers}
+                  required={true}
+                  placeholder="الأرقام"
+                  type="text"
+                />
               </div>
+
+              <Select
+                label="حالة السيارة"
+                value={form.values.carCondition}
+                onChange={(value) => form.setFieldValue('carCondition', value)}
+                error={form.errors.carCondition}
+                required={true}
+                options={carConditionOptions}
+              />
             </div>
           </div>
 
           <button
             type="submit"
-            className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] bg-color-mode-surface-primary-blue rounded-[var(--corner-radius-small)] hover:opacity-90 transition-opacity"
+            disabled={form.isSubmitting || !form.isValid}
+            className={`inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] transition-opacity ${
+              form.isSubmitting || !form.isValid
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-color-mode-surface-primary-blue hover:opacity-90'
+            }`}
           >
             <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+              {form.isSubmitting && (
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              )}
               <div className="w-fit font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-btn-negative text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] whitespace-nowrap [direction:rtl] relative mt-[-1.00px] font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)]">
-                إضافة السيارة
+                {form.isSubmitting ? 'جاري الإضافة...' : 'إضافة السيارة'}
               </div>
             </div>
           </button>
@@ -365,4 +286,15 @@ export const VehicleFormSection = (): JSX.Element => {
       </div>
     </form>
   );
+};
+
+// Helper function to get category icon
+const getCategoryIcon = (carType: string): string => {
+  const iconMap: Record<string, string> = {
+    'صغيرة': '/img/small-car.svg',
+    'متوسطة': '/img/medium-car.svg',
+    'كبيرة': '/img/large-car.svg',
+    'Vip': '/img/vip-car.svg',
+  };
+  return iconMap[carType] || '/img/default-car.svg';
 };
