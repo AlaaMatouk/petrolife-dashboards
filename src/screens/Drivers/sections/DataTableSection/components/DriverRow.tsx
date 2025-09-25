@@ -43,7 +43,7 @@ export const DriverRow: React.FC<DriverRowProps> = ({ driver }) => {
               }`}
             >
               <div
-                className={`absolute top-[calc(50.00%_-_11px)] h-[21px] w-[21px] bg-color-mode-surface-bg-screen rounded-[77.42px] shadow-[0px_2.32px_0.77px_#0000000f,0px_2.32px_6.19px_#00000026,0px_0px_0px_0.77px_#0000000a] ${
+                className={`absolute top-[calc(50.00%_-_11px)] h-[21px] w-[21px] bg-color-mode-surface-bg-screen rounded-[77.42px] shadow-[var(--shadow-sm)] ${
                   driver.accountStatus.active ? "right-0.5" : "left-0.5"
                 }`}
               />

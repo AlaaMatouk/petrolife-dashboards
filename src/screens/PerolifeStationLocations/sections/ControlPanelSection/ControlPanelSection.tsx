@@ -113,7 +113,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
       onClick={onToggle}
       className="relative w-[39.48px] h-6 bg-color-mode-surface-primary-green rounded-[77.42px] overflow-hidden rotate-[-180.00deg] focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-green focus:ring-offset-2"
     >
-      <div className="absolute top-[calc(50.00%_-_11px)] right-0.5 w-[21px] h-[21px] bg-color-mode-surface-bg-screen rounded-[77.42px] shadow-[0px_2.32px_0.77px_#0000000f,0px_2.32px_6.19px_#00000026,0px_0px_0px_0.77px_#0000000a] transition-transform duration-200 ease-in-out" />
+      <div className="absolute top-[calc(50.00%_-_11px)] right-0.5 w-[21px] h-[21px] bg-color-mode-surface-bg-screen rounded-[77.42px] shadow-[var(--shadow-sm)] transition-transform duration-200 ease-in-out" />
     </button>
   );
 };
@@ -197,7 +197,7 @@ export const ControlPanelSection = (): JSX.Element => {
               className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
             >
               {station.consumptionDetails ? (
-                <p className="relative w-fit mt-[-0.20px] [font-family:'Tajawal',Helvetica] font-normal text-black text-sm text-left leading-[22.4px] whitespace-nowrap [direction:rtl]">
+                <p className="relative w-fit mt-[-0.20px] font-tajawal font-normal text-black text-sm text-left leading-[22.4px] whitespace-nowrap [direction:rtl]">
                   <span className="tracking-[var(--body-body-2-letter-spacing)] font-body-body-2 [font-style:var(--body-body-2-font-style)] font-[number:var(--body-body-2-font-weight)] leading-[var(--body-body-2-line-height)] text-[length:var(--body-body-2-font-size)]">
                     {station.consumption}{" "}
                   </span>

@@ -11,6 +11,7 @@ import { Wallet } from '../screens/Wallet/Wallet';
 import { AddDriver } from '../screens/AddDriver/AddDriver';
 import { DriverDetails } from '../screens/DriverDetails/DriverDetails';
 import { AddNewCar } from '../screens/AddNewCar/AddNewCar';
+import { CarDetails } from '../screens/CarDetails/CarDetails';
 import { MoneyRefundRequests } from '../screens/MoneyRefundRequests/MoneyRefundRequests';
 import { WalletChargeRequests } from '../screens/ChargeRequests/WalletChargeRequests';
 import { PerolifeStationLocations } from '../screens/PerolifeStationLocations/perolifestationlocations';
@@ -42,6 +43,7 @@ export const AppRouter = () => {
       <Route path={ROUTES.DRIVER_DETAILS} element={<DriverDetails />} />
       <Route path={ROUTES.CARS} element={<Cars />} />
       <Route path={ROUTES.ADD_CAR} element={<AddNewCar />} />
+      <Route path={ROUTES.CAR_DETAILS} element={<CarDetails />} />
       
       {/* Wallet and Financial */}
       <Route path={ROUTES.WALLET} element={<Wallet />} />

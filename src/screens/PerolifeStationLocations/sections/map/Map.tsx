@@ -108,7 +108,7 @@ export const Map = (): JSX.Element => {
         {marker.hasTooltip &&
           marker.tooltipData &&
           (isActive || isFirstMarker) && (
-            <div className="inline-flex flex-col items-center absolute left-[calc(50.00%_-_375px)] bottom-[51px] rounded-[7.78px] shadow-[0px_3.89px_5.84px_-1.95px_#10182808,0px_11.68px_15.57px_-3.89px_#10182814]">
+            <div className="inline-flex flex-col items-center absolute left-[calc(50.00%_-_375px)] bottom-[51px] rounded-[7.78px] shadow-[var(--shadow-lg)]">
               <div className="inline-flex flex-col items-center gap-[7.78px] px-[15.57px] py-[11.68px] relative flex-[0_0_auto] bg-white rounded-[7.78px]">
                 <img
                   className="relative w-[19.46px] h-[19.46px]"
@@ -117,11 +117,11 @@ export const Map = (): JSX.Element => {
                 />
 
                 <div className="inline-flex flex-col items-center gap-[3.89px] relative flex-[0_0_auto] rounded-[7.78px]">
-                  <div className="relative w-fit mt-[-0.97px] [font-family:'Inter',Helvetica] font-medium text-gray-700 text-[11.7px] text-center tracking-[0] leading-[17.5px] whitespace-nowrap">
+                  <div className="relative w-fit mt-[-0.97px] font-inter font-medium text-gray-700 text-[11.7px] text-center tracking-[0] leading-[17.5px] whitespace-nowrap">
                     {marker.tooltipData.title}
                   </div>
 
-                  <p className="relative w-fit [font-family:'Inter',Helvetica] font-normal text-gray-500 text-[11.7px] text-center tracking-[0] leading-[17.5px]">
+                  <p className="relative w-fit font-inter font-normal text-gray-500 text-[11.7px] text-center tracking-[0] leading-[17.5px]">
                     {marker.tooltipData.address
                       .split("\n")
                       .map((line, index) => (

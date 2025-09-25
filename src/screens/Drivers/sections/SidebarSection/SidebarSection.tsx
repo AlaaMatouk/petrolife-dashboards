@@ -183,7 +183,7 @@ export const SidebarSection = (): JSX.Element => {
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="absolute top-[973px] left-0 w-[280px] h-[59px] bg-color-mode-surface-bg-screen shadow-[0px_-4px_6px_#0000000f]" />
+      <div className="absolute top-[973px] left-0 w-[280px] h-[59px] bg-color-mode-surface-bg-screen shadow-[var(--shadow-sm)]" />
 
       <div className="flex flex-col items-end gap-10 relative self-stretch w-full flex-[0_0_auto]">
         <header className="inline-flex flex-col items-start gap-2.5 px-2.5 py-0 relative flex-[0_0_auto]">

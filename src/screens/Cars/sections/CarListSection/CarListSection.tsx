@@ -3,7 +3,8 @@ import { Pagination } from "../../../../components/shared/Pagination/Pagination"
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
 import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 // Define table columns for cars - original order with responsive design
 const carColumns = [
@@ -143,15 +144,62 @@ const carColumns = [
 // Action Menu Component
 const ActionMenu = ({ car }: { car: any }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const navigate = useNavigate();
 
   const handleAction = (action: string) => {
     console.log(`${action} clicked for car:`, car.carNumber);
+    if (action === 'view') {
+      navigate(`/car/${car.id}`);
+    }
     setIsOpen(false);
   };
+
+  const updateMenuPosition = () => {
+    if (!buttonRef) return;
+    
+    const rect = buttonRef.getBoundingClientRect();
+    const menuWidth = 192; // 48 * 4 (w-48 = 12rem = 192px)
+    const viewportWidth = window.innerWidth;
+    
+    // Calculate position to the right of the icon
+    let left = rect.right + window.scrollX + 4;
+    
+    // If menu would go off-screen to the right, position it to the left of the icon
+    if (left + menuWidth > viewportWidth) {
+      left = rect.left + window.scrollX - menuWidth - 4;
+    }
+    
+    const newPosition = {
+      top: rect.top + window.scrollY,
+      left: Math.max(4, left) // Ensure it doesn't go off-screen to the left
+    };
+    
+    setMenuPosition(newPosition);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateMenuPosition();
+      
+      const handleScroll = () => updateMenuPosition();
+      const handleResize = () => updateMenuPosition();
+      
+      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isOpen, buttonRef]);
 
   return (
     <div className="relative">
       <button
+        ref={setButtonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label="إجراءات"
@@ -163,36 +211,45 @@ const ActionMenu = ({ car }: { car: any }) => {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Menu */}
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-            <div className="py-1">
-              <button
-                onClick={() => handleAction('view')}
-                className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                عرض التفاصيل
-              </button>
-              <button
-                onClick={() => handleAction('edit')}
-                className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                تعديل
-              </button>
-              <button
-                onClick={() => handleAction('delete')}
-                className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                حذف
-              </button>
-            </div>
-          </div>
+          {/* Menu - Using portal to render outside table container */}
+          {createPortal(
+            <div 
+              className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
+              style={{
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`
+              }}
+            >
+              <div className="py-1">
+                <button
+                  onClick={() => handleAction('view')}
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  عرض التفاصيل
+                </button>
+                <button
+                  onClick={() => handleAction('edit')}
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  تعديل
+                </button>
+                <button
+                  onClick={() => handleAction('delete')}
+                  className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  حذف
+                </button>
+              </div>
+            </div>,
+            document.body
+          )}
         </>
       )}
     </div>
@@ -201,11 +258,15 @@ const ActionMenu = ({ car }: { car: any }) => {
 
 // Mobile Card Component
 const CarCard = ({ car, onToggleDetails, isExpanded }: { car: any, onToggleDetails: () => void, isExpanded: boolean }) => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 shadow-sm">
       {/* Main Info - Always Visible */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => navigate(`/car/${car.id}`)}
+        >
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <Car className="w-6 h-6 text-blue-600" />
           </div>

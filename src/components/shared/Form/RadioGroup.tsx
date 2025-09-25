@@ -14,6 +14,7 @@ interface RadioGroupProps {
   error?: string;
   required?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -24,6 +25,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   error,
   required = false,
   className = '',
+  disabled = false,
 }) => {
   return (
     <div className={`flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow ${className}`}>
@@ -43,12 +45,15 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             <button
               key={option.id}
               type="button"
-              onClick={() => onChange(option.label)}
+              onClick={disabled ? undefined : () => onChange(option.label)}
+              disabled={disabled}
               className={`flex h-[46px] items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
-                value === option.label
-                  ? 'border-[0.7px] border-color-mode-text-icons-t-blue bg-blue-50'
-                  : 'border-color-mode-text-icons-t-placeholder hover:border-color-mode-text-icons-t-sec'
-              } cursor-pointer`}
+                disabled
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                  : value === option.label
+                  ? 'border-[0.7px] border-color-mode-text-icons-t-blue'
+                  : 'border-color-mode-text-icons-t-placeholder hover:border-color-mode-text-icons-t-sec cursor-pointer'
+              }`}
               role="radio"
               aria-checked={value === option.label}
             >
@@ -75,15 +80,14 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                 {option.icon}
               </div>
               {value === option.label && (
-                <img
-                  className="absolute top-0 left-px w-3.5 h-3.5"
-                  alt="Selected"
-                  src={
-                    option.id === "small"
-                      ? "/img/rectangle-22-1addD.svg"
-                      : "/img/rectangle-22addD.svg"
-                  }
-                />
+                <div 
+                  className="absolute top-0 left-0 w-0 h-0"
+                  style={{
+                    borderLeft: '16px solid var(--color-mode-text-icons-t-blue)',
+                    borderBottom: '16px solid transparent',
+                    borderTopLeftRadius: 'var(--corner-radius-small)'
+                  }}
+                ></div>
               )}
             </button>
           ))}

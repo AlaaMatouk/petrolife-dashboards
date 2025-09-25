@@ -4,29 +4,29 @@ export const FrameSubsection = (): JSX.Element => {
   const legendItems = [
     {
       text: "بطاريات",
-      color: "#00c850",
+      color: "var(--core-colors-green-green-6)",
       width: "w-[46px]",
     },
     {
       text: "إطارات",
-      color: "#e76500",
+      color: "var(--core-colors-mango-mango-6)",
       width: "w-10",
     },
     {
       text: "زيوت",
-      color: "#5b738b",
+      color: "var(--text-secondary)",
       width: "w-7",
     },
     {
       text: "وقـــــــــود",
-      color: "#ee3939",
+      color: "var(--core-colors-red-red-6)",
       width: "w-[51px]",
       containerWidth: "w-[50px]",
       marginLeft: "ml-[-8.00px]",
     },
     {
       text: "غســـــيل",
-      color: "#5965c1",
+      color: "var(--color-mode-text-icons-t-blue)",
       width: "w-12",
       containerWidth: "w-[51px]",
       marginLeft: "ml-[-4.00px]",

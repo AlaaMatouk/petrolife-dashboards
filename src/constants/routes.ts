@@ -10,6 +10,7 @@ export const ROUTES = {
   DRIVER_DETAILS: '/driver/:id',
   CARS: '/cars',
   ADD_CAR: '/addcar',
+  CAR_DETAILS: '/car/:id',
   
   // Wallet and financial
   WALLET: '/wallet',

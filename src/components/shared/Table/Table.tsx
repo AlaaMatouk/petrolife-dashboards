@@ -1,4 +1,5 @@
 import React from "react";
+import { SlidersHorizontal } from "lucide-react";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -62,7 +63,7 @@ export const Table = <T extends Record<string, any>>({
   return (
     <div className={`w-full ${className}`}>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead>
             <tr>
               {columns.map((column) => (
@@ -72,6 +73,9 @@ export const Table = <T extends Record<string, any>>({
                 >
                   <div className="flex items-center justify-center gap-2">
                     <span>{column.label}</span>
+                    {column.key !== "actions" && column.key !== "carNumber" && column.key !== "carName" && column.key !== "drivers" && (
+                      <SlidersHorizontal className="w-4 h-4 text-gray-400" />
+                    )}
                     {column.sortable && onSort && (
                       <button
                         onClick={() => handleSort(column.key)}
@@ -95,11 +99,18 @@ export const Table = <T extends Record<string, any>>({
               <tr
                 key={rowIndex}
                 className={`hover:bg-gray-50 transition-colors ${rowClassName}`}
+                style={{ 
+                  borderBottom: '1px solid var(--border-light, #e5e7eb)',
+                  borderBottomWidth: '1px',
+                  borderBottomStyle: 'solid',
+                  borderBottomColor: 'var(--border-light, #e5e7eb)'
+                }}
               >
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-4 py-3 border-b border-gray-100 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
+                    className={`px-4 py-3 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
+                    style={{ borderBottom: '1px solid var(--border-light, #e5e7eb)' }}
                   >
                     <div className="flex items-center justify-center">
                       {column.render

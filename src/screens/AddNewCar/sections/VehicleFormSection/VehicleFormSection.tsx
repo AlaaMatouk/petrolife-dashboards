@@ -3,18 +3,18 @@ import React from "react";
 import { useForm } from "../../../../hooks/useForm";
 import { useToast } from "../../../../context/ToastContext";
 import { useCars } from "../../../../hooks/useGlobalState";
-import { Input, Select, RadioGroup } from "../../../../components/shared/Form";
+import { Input, Select, RadioGroup, CarNumberInput } from "../../../../components/shared/Form";
 
 const initialValues = {
-  carName: "سيارة تجريبية",
+  carName: "",
     fuelType: "بنزين 91",
     carType: "صغيرة",
     city: "الرياض",
     year: "2020",
     model: "كرولا",
     brand: "تيوتا",
-  plateLetters: "أ ب ج",
-  plateNumbers: "1234",
+  plateLetters: "",
+  plateNumbers: "",
     carCondition: "دبلوماسية",
 };
 
@@ -191,7 +191,7 @@ export const VehicleFormSection = (): JSX.Element => {
               required={true}
               options={cityOptions}
             />
-          </div>
+            </div>
 
           {/* Year, Model, and Brand Row */}
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
@@ -221,54 +221,40 @@ export const VehicleFormSection = (): JSX.Element => {
               required={true}
               options={brandOptions}
             />
-          </div>
-
-          {/* Plate Number and Car Condition Row */}
-          <div className="flex items-end justify-around gap-5 relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex items-start gap-5 relative flex-1 grow">
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow" />
-
-              {/* Plate Letters */}
-              <div className="relative w-[335px]">
-                <Input
-                  label="حروف لوحة السيارة"
-                  value={form.values.plateLetters}
-                  onChange={(value) => form.setFieldValue('plateLetters', value)}
-                  error={form.errors.plateLetters}
-                  required={true}
-                        placeholder="الحروف"
-                      />
-              </div>
-
-              {/* Plate Numbers */}
-              <div className="relative w-[335px]">
-                <Input
-                  label="أرقام لوحة السيارة"
-                  value={form.values.plateNumbers}
-                  onChange={(value) => form.setFieldValue('plateNumbers', value)}
-                  error={form.errors.plateNumbers}
-                  required={true}
-                  placeholder="الأرقام"
-                  type="text"
-                />
-              </div>
-
-              <Select
-                label="حالة السيارة"
-                value={form.values.carCondition}
-                onChange={(value) => form.setFieldValue('carCondition', value)}
-                error={form.errors.carCondition}
-                required={true}
-                options={carConditionOptions}
-              />
             </div>
+
+          {/* Car Number and Car Condition Row */}
+          <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+          <div className="w-[33%]"></div>
+
+            <CarNumberInput
+              label="رقم السيارة"
+              lettersValue={form.values.plateLetters}
+              numbersValue={form.values.plateNumbers}
+              onLettersChange={(value) => form.setFieldValue('plateLetters', value)}
+              onNumbersChange={(value) => form.setFieldValue('plateNumbers', value)}
+              lettersError={form.errors.plateLetters}
+              numbersError={form.errors.plateNumbers}
+              required={true}
+              lettersPlaceholder="الحروف"
+              numbersPlaceholder="الأرقام"
+            />
+
+            <Select
+              label="حالة السيارة"
+              value={form.values.carCondition}
+              onChange={(value) => form.setFieldValue('carCondition', value)}
+              error={form.errors.carCondition}
+              required={true}
+              options={carConditionOptions}
+            />
           </div>
 
           <button
             type="submit"
-            disabled={form.isSubmitting || !form.isValid}
+            disabled={form.isSubmitting}
             className={`inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] transition-opacity ${
-              form.isSubmitting || !form.isValid
+              form.isSubmitting
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-color-mode-surface-primary-blue hover:opacity-90'
             }`}
