@@ -73,7 +73,7 @@ export const Table = <T extends Record<string, any>>({
                 >
                   <div className="flex items-center justify-center gap-2">
                     <span>{column.label}</span>
-                    {column.key !== "actions" && column.key !== "carNumber" && column.key !== "carName" && column.key !== "drivers" && (
+                    {column.key === "accountStatus" && (
                       <SlidersHorizontal className="w-4 h-4 text-gray-400" />
                     )}
                     {column.sortable && onSort && (
