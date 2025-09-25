@@ -2,17 +2,26 @@ import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
-import { Car, CirclePlus, Settings } from "lucide-react";
+import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
+import { useState } from "react";
 
-// Define table columns for cars
+// Define table columns for cars - original order with responsive design
 const carColumns = [
+  {
+    key: "actions",
+    label: "الإجراءات",
+    width: "w-16 min-w-[60px]",
+    priority: "high",
+    render: (_: any, row: any) => <ActionMenu car={row} />,
+  },
   {
     key: "drivers",
     label: "السائقون",
-    width: "flex-1 grow",
+    width: "flex-1 grow min-w-[150px]",
+    priority: "high",
     render: (value: any) => (
-      <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
-        <span className="relative w-fit font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+      <div className="flex items-center justify-center gap-1.5">
+        <span className="font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
           {value[0].name}
         </span>
         <div
@@ -70,27 +79,29 @@ const carColumns = [
   {
     key: "fuelType",
     label: "نوع الوقود",
-    width: "flex-1 grow",
+    width: "flex-1 grow min-w-[120px]",
+    priority: "medium",
   },
   {
     key: "category",
     label: "تصنيف السيارة",
-    width: "flex-1 grow min-w-[129px]",
+    width: "flex-1 grow min-w-[140px]",
+    priority: "medium",
     render: (value: any) => (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-center gap-1">
         {value ? (
           <>
-            <span className="relative w-fit mt-[-0.20px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+            <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
               {value.name}
             </span>
             <img
-              className="relative  aspect-[1]"
+              className="w-4 h-4 aspect-[1]"
               alt={value.name}
               src={value.icon}
             />
           </>
         ) : (
-          <span className="relative w-fit mt-[-0.20px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+          <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
             --
           </span>
         )}
@@ -100,62 +111,209 @@ const carColumns = [
   {
     key: "year",
     label: "سنة الاصدار",
-    width: "flex-1 grow min-w-[85px]",
+    width: "flex-1 grow min-w-[100px]",
+    priority: "low",
   },
   {
     key: "model",
     label: "الطراز",
-    width: "flex-1 grow min-w-[79px]",
+    width: "flex-1 grow min-w-[100px]",
+    priority: "low",
   },
   {
     key: "brand",
     label: "الماركة",
-    width: "flex-1 grow min-w-[81px]",
+    width: "flex-1 grow min-w-[100px]",
+    priority: "low",
   },
   {
     key: "carName",
     label: "اسم السيارة",
-    width: "flex-1 grow min-w-[119px]",
+    width: "flex-1 grow min-w-[130px]",
+    priority: "high",
   },
   {
     key: "carNumber",
     label: "رقم السيارة",
-    width: "flex-1 grow min-w-[85px]",
+    width: "flex-1 grow min-w-[100px]",
+    priority: "high",
   },
 ];
 
+// Action Menu Component
+const ActionMenu = ({ car }: { car: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleAction = (action: string) => {
+    console.log(`${action} clicked for car:`, car.carNumber);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="إجراءات"
+      >
+        <MoreVertical className="w-4 h-4 text-gray-600" />
+      </button>
+
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Menu */}
+          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+            <div className="py-1">
+              <button
+                onClick={() => handleAction('view')}
+                className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                عرض التفاصيل
+              </button>
+              <button
+                onClick={() => handleAction('edit')}
+                className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <Edit className="w-4 h-4" />
+                تعديل
+              </button>
+              <button
+                onClick={() => handleAction('delete')}
+                className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                حذف
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// Mobile Card Component
+const CarCard = ({ car, onToggleDetails, isExpanded }: { car: any, onToggleDetails: () => void, isExpanded: boolean }) => {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 shadow-sm">
+      {/* Main Info - Always Visible */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Car className="w-6 h-6 text-blue-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 text-sm">{car.carName}</h3>
+            <p className="text-gray-500 text-xs">{car.carNumber}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <ActionMenu car={car} />
+          <button
+            onClick={onToggleDetails}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Drivers */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xs text-gray-500">السائقون:</span>
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">{car.drivers[0].name}</span>
+          <div className="flex -space-x-1">
+            {car.drivers[0].avatar1 && (
+              <img
+                className="w-6 h-6 rounded-full border-2 border-white"
+                alt="سائق"
+                src={car.drivers[0].avatar1}
+              />
+            )}
+            {car.drivers[0].avatar2 && (
+              <img
+                className="w-6 h-6 rounded-full border-2 border-white"
+                alt="سائق"
+                src={car.drivers[0].avatar2}
+              />
+            )}
+            {car.drivers[0].avatar3 && (
+              <img
+                className="w-6 h-6 rounded-full border-2 border-white"
+                alt="سائق"
+                src={car.drivers[0].avatar3}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="border-t pt-3 space-y-2">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-gray-500 text-xs">الماركة:</span>
+              <p className="font-medium">{car.brand}</p>
+            </div>
+            <div>
+              <span className="text-gray-500 text-xs">الطراز:</span>
+              <p className="font-medium">{car.model}</p>
+            </div>
+            <div>
+              <span className="text-gray-500 text-xs">سنة الاصدار:</span>
+              <p className="font-medium">{car.year}</p>
+            </div>
+            <div>
+              <span className="text-gray-500 text-xs">نوع الوقود:</span>
+              <p className="font-medium">{car.fuelType}</p>
+            </div>
+          </div>
+          {car.category && (
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-gray-500 text-xs">التصنيف:</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium">{car.category.name}</span>
+                <img
+                  className="w-4 h-4"
+                  alt={car.category.name}
+                  src={car.category.icon}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CarListSection = (): JSX.Element => {
   const navigate = useNavigate();
-  return (
-    <section className="flex flex-col  items-start gap-5 absolute top-28 left-[50px]">
-      <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-        {/* <header className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-          <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
-            <div className="flex w-[18px] h-[18px] items-center justify-center gap-2.5 p-2.5 relative bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-medium)]">
-              <img
-                className="relative w-3.5 h-3.5"
-                alt="Icon"
-                src="/img/side-icons-4.svg"
-              />
-            </div>
-            <div className="relative w-fit font-headings-h1-h6-heading-6 font-[number:var(--headings-h1-h6-heading-6-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--headings-h1-h6-heading-6-font-size)] text-left tracking-[var(--headings-h1-h6-heading-6-letter-spacing)] leading-[var(--headings-h1-h6-heading-6-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--headings-h1-h6-heading-6-font-style)]">
-              قائمة السيارات
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
-            <div className="flex w-[18px] h-[18px] items-center justify-center gap-2.5 p-2.5 relative bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-medium)]">
-              <img
-                className="relative w-3.5 h-3.5"
-                alt="Icon"
-                src="/img/side-icons-25.svg"
-              />
-            </div>
-            <div className="relative w-fit font-headings-h1-h6-heading-6 font-[number:var(--headings-h1-h6-heading-6-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--headings-h1-h6-heading-6-font-size)] text-left tracking-[var(--headings-h1-h6-heading-6-letter-spacing)] leading-[var(--headings-h1-h6-heading-6-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--headings-h1-h6-heading-6-font-style)]">
-              إضافة سيارة جديدة
-            </div>
-          </div>
-        </header> */}
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
 
+  const toggleCardExpansion = (carId: number) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(carId)) {
+      newExpanded.delete(carId);
+    } else {
+      newExpanded.add(carId);
+    }
+    setExpandedCards(newExpanded);
+  };
+
+
+  return (
+    <section className="flex flex-col items-start gap-5 w-full">
+      <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
             <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
@@ -169,7 +327,6 @@ export const CarListSection = (): JSX.Element => {
                       إضافة سيارة جديدة
                     </span>
                   </div>
-
                   <CirclePlus className="w-4 h-4 text-gray-500" />
                 </div>
               </button>
@@ -189,7 +346,6 @@ export const CarListSection = (): JSX.Element => {
                 <span className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
                   تصدير
                 </span>
-
                 <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
                   <div className="flex-1 w-[21.26px] relative">
                     <img
@@ -213,11 +369,35 @@ export const CarListSection = (): JSX.Element => {
 
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-            <Table
-              columns={carColumns}
-              data={carData}
-              className="relative self-stretch w-full flex-[0_0_auto]"
-            />
+            {/* Desktop Table View */}
+            <div className="hidden lg:block w-full">
+              <Table
+                columns={carColumns}
+                data={carData}
+                className="relative self-stretch w-full flex-[0_0_auto]"
+              />
+            </div>
+
+            {/* Tablet Responsive Table View */}
+            <div className="hidden md:block lg:hidden w-full">
+              <Table
+                columns={carColumns.filter(col => col.priority === 'high' || col.priority === 'medium')}
+                data={carData}
+                className="relative self-stretch w-full flex-[0_0_auto]"
+              />
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4 w-full">
+              {carData.map((car) => (
+                <CarCard
+                  key={car.id}
+                  car={car}
+                  onToggleDetails={() => toggleCardExpansion(car.id)}
+                  isExpanded={expandedCards.has(car.id)}
+                />
+              ))}
+            </div>
           </div>
 
           <Pagination

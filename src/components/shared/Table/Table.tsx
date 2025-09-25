@@ -61,52 +61,57 @@ export const Table = <T extends Record<string, any>>({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="flex items-start justify-between relative self-stretch w-full flex-[0_0_auto]">
-        {columns.map((column, columnIndex) => (
-          <div
-            key={column.key}
-            className={`flex flex-col ${
-              column.width || "flex-1 grow"
-            } items-end relative`}
-            role="columnheader"
-          >
-            <div
-              className={`flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray ${headerClassName}`}
-            >
-              <div className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                {column.label}
-              </div>
-              {column.sortable && onSort && (
-                <button
-                  onClick={() => handleSort(column.key)}
-                  className="w-3.5 h-3.5 relative aspect-[1]"
-                  aria-label={`ترتيب حسب ${column.label}`}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  className={`px-4 py-3 text-center bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
                 >
-                  <img
-                    className="w-3.5 h-3.5 relative aspect-[1]"
-                    alt="ترتيب"
-                    src="/img/side-icons-29.svg"
-                  />
-                </button>
-              )}
-            </div>
-
+                  <div className="flex items-center justify-center gap-2">
+                    <span>{column.label}</span>
+                    {column.sortable && onSort && (
+                      <button
+                        onClick={() => handleSort(column.key)}
+                        className="w-3.5 h-3.5 hover:bg-gray-200 rounded p-0.5"
+                        aria-label={`ترتيب حسب ${column.label}`}
+                      >
+                        <img
+                          className="w-3.5 h-3.5"
+                          alt="ترتيب"
+                          src="/img/side-icons-29.svg"
+                        />
+                      </button>
+                    )}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
             {data.map((row, rowIndex) => (
-              <div
+              <tr
                 key={rowIndex}
-                className={`flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative self-stretch w-full flex-[0_0_auto] border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder ${rowClassName}`}
+                className={`hover:bg-gray-50 transition-colors ${rowClassName}`}
               >
-                <div
-                  className={`mt-[-0.20px] font-[number:var(--body-body-2-font-weight)] text-black tracking-[var(--body-body-2-letter-spacing)] relative w-fit font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)] ${cellClassName}`}
-                >
-                  {column.render
-                    ? column.render(row[column.key], row, rowIndex)
-                    : row[column.key]}
-                </div>
-              </div>
+                {columns.map((column) => (
+                  <td
+                    key={column.key}
+                    className={`px-4 py-3 border-b border-gray-100 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
+                  >
+                    <div className="flex items-center justify-center">
+                      {column.render
+                        ? column.render(row[column.key], row, rowIndex)
+                        : row[column.key]}
+                    </div>
+                  </td>
+                ))}
+              </tr>
             ))}
-          </div>
-        ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
