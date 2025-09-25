@@ -11,7 +11,7 @@ export const AddNewCar = (): JSX.Element => {
       headerProps={{
         title: "السيــــــــــــــارات / إضافة سيارة جديدة",
         titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
+        showSearch: false,
         searchProps: {
           onSearch: (query: any) => console.log("Search:", query),
         },

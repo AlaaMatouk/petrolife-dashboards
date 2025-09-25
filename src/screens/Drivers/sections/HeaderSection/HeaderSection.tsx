@@ -46,7 +46,7 @@ export const HeaderSection = (): JSX.Element => {
 
   return (
     <header
-      className="absolute top-0 left-[calc(50.00%_-_720px)] w-[1440px] h-[72px] flex bg-color-mode-surface-bg-screen shadow-[0px_4px_10px_#0000000a]"
+      className="absolute top-0 left-[calc(50.00%_-_720px)] w-[1440px] h-[72px] flex bg-color-mode-surface-bg-screen shadow-[var(--shadow-md)]"
       data-color-mode-mode="dark"
       role="banner"
     >

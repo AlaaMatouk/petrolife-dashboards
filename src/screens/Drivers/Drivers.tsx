@@ -1,12 +1,12 @@
 import React from "react";
 import { DataTableSection } from "./sections/DataTableSection/DataTableSection";
 import { navigationMenuData, userInfo } from "../../constants/data";
-import { Layout } from "../../components/shared";
+import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { UserRound } from "lucide-react";
 
 export const Drivers = (): JSX.Element => {
   return (
-    <Layout
+    <LayoutSimple
       headerProps={{
         title: "الســـــــــــــــائقين",
         titleIconSrc: <UserRound className="w-5 h-5 text-gray-500" />,
@@ -23,6 +23,6 @@ export const Drivers = (): JSX.Element => {
       }}
     >
       <DataTableSection />
-    </Layout>
+    </LayoutSimple>
   );
 };

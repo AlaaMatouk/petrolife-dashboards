@@ -37,7 +37,7 @@ export const GraphSubsection = (): JSX.Element => {
           {months.map((month, index) => (
             <div
               key={index}
-              className="text-[#5b738b] text-[0.8rem] md:text-[0.9rem] font-medium text-center"
+              className="text-[var(--text-secondary)] text-[0.8rem] md:text-[0.9rem] font-medium text-center"
             >
               {month}
             </div>

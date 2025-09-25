@@ -27,7 +27,7 @@ export const FrameWrapperSubsection = (): JSX.Element => {
         aria-label="خيارات الفترة الزمنية"
       >
         <button
-          className="w-[35px] bg-[#f5f6f766] border-[0.2px] border-solid border-white flex flex-col h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] hover:bg-[#f5f6f799] focus:outline-none focus:ring-2 focus:ring-[#5a66c1] focus:ring-opacity-50 transition-colors"
+          className="w-[35px] bg-[var(--color-mode-surface-bg-icon-gray)] border-[0.2px] border-solid border-white flex flex-col h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] hover:bg-[var(--color-mode-surface-bg-icon-gray)] focus:outline-none focus:ring-2 focus:ring-[var(--color-mode-text-icons-t-blue)] focus:ring-opacity-50 transition-colors"
           aria-label="عرض الرسم البياني"
           type="button"
         >
@@ -61,10 +61,10 @@ export const FrameWrapperSubsection = (): JSX.Element => {
           <button
             key={option.id}
             onClick={() => handlePeriodSelect(option.value)}
-            className={`flex flex-col w-[100.98px] h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] border-[0.2px] border-solid transition-all hover:border-[#5a66c1] focus:outline-none focus:ring-2 focus:ring-[#5a66c1] focus:ring-opacity-50 ${
+            className={`flex flex-col w-[100.98px] h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] border-[0.2px] border-solid transition-all hover:border-[var(--color-mode-text-icons-t-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-mode-text-icons-t-blue)] focus:ring-opacity-50 ${
               selectedPeriod === option.value
-                ? "border-[#5a66c1] bg-[#5a66c1]/5"
-                : "border-[#a9b4be]"
+                ? "border-[var(--color-mode-text-icons-t-blue)] bg-[var(--color-mode-text-icons-t-blue)]/5"
+                : "border-[var(--border-medium)]"
             }`}
             aria-pressed={selectedPeriod === option.value}
             type="button"
@@ -73,8 +73,8 @@ export const FrameWrapperSubsection = (): JSX.Element => {
               <span
                 className={`flex items-center justify-center h-4 mt-[-1.00px] text-xs tracking-[0.40px] leading-[19.2px] whitespace-nowrap [font-family:'Tajawal',Helvetica] [direction:rtl] transition-colors ${
                   selectedPeriod === option.value
-                    ? "font-bold text-[#5a66c1]"
-                    : "font-normal text-[#5b738b] opacity-70"
+                    ? "font-bold text-[var(--color-mode-text-icons-t-blue)]"
+                    : "font-normal text-[var(--text-secondary)] opacity-70"
                 }`}
               >
                 {option.label}
@@ -85,7 +85,7 @@ export const FrameWrapperSubsection = (): JSX.Element => {
       </div>
 
       <div className="inline-flex items-center justify-end gap-1.5 relative flex-[0_0_auto]">
-        <h2 className="w-fit mt-[-1.00px] font-bold text-[#5b738b] text-base tracking-[0] leading-6 whitespace-nowrap relative [font-family:'Tajawal',Helvetica] [direction:rtl]">
+        <h2 className="w-fit mt-[-1.00px] font-bold text-[var(--text-secondary)] text-base tracking-[0] leading-6 whitespace-nowrap relative [font-family:'Tajawal',Helvetica] [direction:rtl]">
           الاستهلاك
         </h2>
         <Fuel className="w-5 h-5 text-gray-500" />
