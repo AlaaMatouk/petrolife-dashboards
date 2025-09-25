@@ -208,7 +208,7 @@ export const CarDriversSection = (): JSX.Element => {
             onClick={handleCloseContextMenu}
           />
           <div
-            className="fixed z-20 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px]"
+            className="fixed z-20 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[155px]"
             style={{
               left: contextMenuPosition.x,
               top: contextMenuPosition.y,
@@ -216,17 +216,21 @@ export const CarDriversSection = (): JSX.Element => {
           >
             <button
               onClick={handleDriverInfo}
-              className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center justify-between w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <Info className="w-4 h-4" />
-              معلومات السائق
+              <span>معلومات السائق</span>
+              <div className="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                <Info className="w-3 h-3 text-blue-500" />
+              </div>
             </button>
             <button
               onClick={handleRemoveDriver}
-              className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="flex items-center justify-between w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <X className="w-4 h-4" />
-              إزالة السائق
+              <span>إزالة السائق</span>
+              <div className="w-6 h-6 rounded-full border-2 border-red-500 flex items-center justify-center">
+                <X className="w-3 h-3 text-red-500" />
+              </div>
             </button>
           </div>
         </>
