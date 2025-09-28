@@ -95,7 +95,7 @@ export const Table = <T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {data.map((row, rowIndex) => (
+            {(Array.isArray(data) ? data : []).map((row, rowIndex) => (
               <tr
                 key={rowIndex}
                 className={`hover:bg-gray-50 transition-colors ${rowClassName}`}

@@ -104,18 +104,20 @@ const ActionMenu = ({ driver }: { driver: Driver }) => {
     if (!buttonRef) return;
     
     const rect = buttonRef.getBoundingClientRect();
-    const menuWidth = 200;
+    const menuWidth = 192; // 48 * 4 (w-48 = 12rem = 192px)
     const viewportWidth = window.innerWidth;
     
-    let left = rect.right + window.scrollX + 4;
+    // Calculate position to the right of the icon
+    let left = rect.right + 4;
     
+    // If menu would go off-screen to the right, position it to the left of the icon
     if (left + menuWidth > viewportWidth) {
-      left = rect.left + window.scrollX - menuWidth - 4;
+      left = rect.left - menuWidth - 4;
     }
     
     const newPosition = {
-      top: rect.top + window.scrollY,
-      left: Math.max(4, left)
+      top: rect.bottom + 4, // Position below the button
+      left: Math.max(4, left) // Ensure it doesn't go off-screen to the left
     };
     
     setMenuPosition(newPosition);
@@ -165,26 +167,26 @@ const ActionMenu = ({ driver }: { driver: Driver }) => {
               }}
             >
               <div className="py-1">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">معلومات السائق</span>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">اسم العميل: هشام موسى</div>
-                </div>
+                <button
+                  onClick={() => handleAction('view')}
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
+                >
+                  <span>معلومات السائق</span>
+                  <User className="w-4 h-4 text-gray-500" />
+                </button>
                 <button
                   onClick={() => handleAction('export')}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
                 >
+                  <span>تصدير البيانات</span>
                   <DownloadIcon className="w-4 h-4" />
-                  تصدير البيانات
                 </button>
                 <button
                   onClick={() => handleAction('delete')}
-                  className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center justify-end gap-2 transition-colors"
                 >
+                  <span>حذف السائق</span>
                   <Trash2 className="w-4 h-4" />
-                  حذف السائق
                 </button>
               </div>
             </div>,
@@ -214,15 +216,17 @@ const ExportMenu = () => {
     const menuWidth = 150;
     const viewportWidth = window.innerWidth;
     
-    let left = rect.right + window.scrollX + 4;
+    // Calculate position to the right of the button
+    let left = rect.right + 4;
     
+    // If menu would go off-screen to the right, position it to the left of the button
     if (left + menuWidth > viewportWidth) {
-      left = rect.left + window.scrollX - menuWidth - 4;
+      left = rect.left - menuWidth - 4;
     }
     
     const newPosition = {
-      top: rect.top + window.scrollY,
-      left: Math.max(4, left)
+      top: rect.bottom + 4, // Position below the button
+      left: Math.max(4, left) // Ensure it doesn't go off-screen to the left
     };
     
     setMenuPosition(newPosition);
@@ -280,17 +284,17 @@ const ExportMenu = () => {
               <div className="py-1">
                 <button
                   onClick={() => handleExport('excel')}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
                 >
+                  <span>ملف Excel</span>
                   <FileSpreadsheet className="w-4 h-4" />
-                  ملف Excel
                 </button>
                 <button
                   onClick={() => handleExport('pdf')}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
                 >
+                  <span>ملف PDF</span>
                   <FileText className="w-4 h-4" />
-                  ملف PDF
                 </button>
               </div>
             </div>,
@@ -302,133 +306,14 @@ const ExportMenu = () => {
   );
 };
 
-// Define table columns for drivers
-const driverColumns = [
-  {
-    key: "actions",
-    label: "الإجراءات",
-    width: "w-16 min-w-[60px]",
-    priority: "high",
-    render: (_: any, row: Driver) => <ActionMenu driver={row} />,
-  },
-  {
-    key: "accountStatus",
-    label: "حالة الحساب",
-    width: "flex-1 grow min-w-[120px]",
-    priority: "high",
-    render: (value: any) => (
-      <div className="flex items-center justify-center gap-2">
-        <button
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-            value.active ? 'bg-green-600' : 'bg-gray-200'
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-              value.active ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          />
-        </button>
-        <span className={`text-sm font-medium ${
-          value.active ? 'text-green-700' : 'text-gray-500'
-        }`}>
-          {value.text}
-        </span>
-      </div>
-    ),
-  },
-  {
-    key: "carCategory",
-    label: (
-      <div className="flex items-center justify-center gap-2">
-        <span>تصنيف السيارة</span>
-        <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-      </div>
-    ),
-    width: "flex-1 grow min-w-[130px]",
-    priority: "high",
-    render: (value: any) => {
-      // Map car category text to appropriate icons
-      const getCarIcon = (categoryText: string) => {
-        switch (categoryText) {
-          case 'VIP':
-            return <Car className="w-4 h-4 text-purple-600" />;
-          case 'كبيرة':
-            return <Truck className="w-4 h-4 text-blue-600" />;
-          case 'متوسطة':
-            return <CarFront className="w-4 h-4 text-orange-600" />;
-          case 'صغيرة':
-            return <Car className="w-4 h-4 text-green-600" />;
-          default:
-            return <Car className="w-4 h-4 text-gray-500" />;
-        }
-      };
-
-      return (
-        <div className="flex items-center justify-center gap-1">
-          <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-            {value.text}
-          </span>
-          {getCarIcon(value.text)}
-        </div>
-      );
-    },
-  },
-  {
-    key: "carNumber",
-    label: "رقم السيارة",
-    width: "flex-1 grow min-w-[100px]",
-    priority: "medium",
-  },
-  {
-    key: "financialValue",
-    label: (
-      <div className="text-center [direction:rtl]">
-        <div className="text-sm font-medium">القيمة المالية (ر.س)</div>
-        <div className="text-xs text-gray-500 mt-1">المستخدمة / المحددة يوميا</div>
-      </div>
-    ),
-    width: "flex-1 grow min-w-[200px]",
-    priority: "medium",
-  },
-  {
-    key: "fuelType",
-    label: "نوع الوقود",
-    width: "flex-1 grow min-w-[100px]",
-    priority: "low",
-  },
-  {
-    key: "address",
-    label: "العنوان",
-    width: "flex-1 grow min-w-[150px]",
-    priority: "low",
-  },
-  {
-    key: "phone",
-    label: "رقم الهاتف",
-    width: "flex-1 grow min-w-[120px]",
-    priority: "medium",
-  },
-  {
-    key: "driverName",
-    label: "اسم السائق",
-    width: "flex-1 grow min-w-[120px]",
-    priority: "high",
-  },
-  {
-    key: "driverCode",
-    label: "كود السائق",
-    width: "flex-1 grow min-w-[100px]",
-    priority: "high",
-  },
-];
 
 export const DataTableSection = (): JSX.Element => {
   const { 
     drivers, 
     pagination, 
     setDrivers, 
-    setCurrentPage 
+    setCurrentPage,
+    updateDriver
   } = useDrivers();
   const navigate = useNavigate();
 
@@ -443,6 +328,142 @@ export const DataTableSection = (): JSX.Element => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  const handleToggleStatus = (driverId: number) => {
+    const driver = drivers.find(d => d.id === driverId);
+    if (driver) {
+      updateDriver(driverId, {
+        accountStatus: {
+          active: !driver.accountStatus.active,
+          text: !driver.accountStatus.active ? 'مفعل' : 'معطل'
+        }
+      });
+    }
+  };
+
+  // Define table columns for drivers
+  const driverColumns = [
+    {
+      key: "actions",
+      label: "الإجراءات",
+      width: "w-16 min-w-[60px]",
+      priority: "high",
+      render: (_: any, row: Driver) => <ActionMenu driver={row} />,
+    },
+    {
+      key: "accountStatus",
+      label: "حالة الحساب",
+      width: "flex-1 grow min-w-[120px]",
+      priority: "high",
+      render: (value: any, row: Driver) => (
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleToggleStatus(row.id)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                value.active ? 'bg-green-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  value.active ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium ${
+              value.active ? 'text-green-700' : 'text-gray-500'
+            }`}>
+              {value.text}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "carCategory",
+      label: (
+        <div className="flex items-center justify-center gap-2">
+          <span>تصنيف السيارة</span>
+          <SlidersHorizontal className="w-4 h-4 text-gray-400" />
+        </div>
+      ),
+      width: "flex-1 grow min-w-[130px]",
+      priority: "high",
+      render: (value: any) => {
+        // Map car category text to appropriate icons
+        const getCarIcon = (categoryText: string) => {
+          switch (categoryText) {
+            case 'VIP':
+              return <Car className="w-4 h-4 text-purple-600" />;
+            case 'كبيرة':
+              return <Truck className="w-4 h-4 text-blue-600" />;
+            case 'متوسطة':
+              return <CarFront className="w-4 h-4 text-orange-600" />;
+            case 'صغيرة':
+              return <Car className="w-4 h-4 text-green-600" />;
+            default:
+              return <Car className="w-4 h-4 text-gray-500" />;
+          }
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-1">
+            <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+              {value.text}
+            </span>
+            {getCarIcon(value.text)}
+          </div>
+        );
+      },
+    },
+    {
+      key: "carNumber",
+      label: "رقم السيارة",
+      width: "flex-1 grow min-w-[100px]",
+      priority: "medium",
+    },
+    {
+      key: "financialValue",
+      label: (
+        <div className="text-center [direction:rtl]">
+          <div className="text-sm font-medium">القيمة المالية (ر.س)</div>
+          <div className="text-xs text-gray-500 mt-1">المستخدمة / المحددة يوميا</div>
+        </div>
+      ),
+      width: "flex-1 grow min-w-[200px]",
+      priority: "medium",
+    },
+    {
+      key: "fuelType",
+      label: "نوع الوقود",
+      width: "flex-1 grow min-w-[100px]",
+      priority: "low",
+    },
+    {
+      key: "address",
+      label: "العنوان",
+      width: "flex-1 grow min-w-[150px]",
+      priority: "low",
+    },
+    {
+      key: "phone",
+      label: "رقم الهاتف",
+      width: "flex-1 grow min-w-[120px]",
+      priority: "medium",
+    },
+    {
+      key: "driverName",
+      label: "اسم السائق",
+      width: "flex-1 grow min-w-[120px]",
+      priority: "high",
+    },
+    {
+      key: "driverCode",
+      label: "كود السائق",
+      width: "flex-1 grow min-w-[100px]",
+      priority: "high",
+    },
+  ];
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
@@ -514,7 +535,7 @@ export const DataTableSection = (): JSX.Element => {
             <div className="hidden lg:block w-full">
               <Table
                 columns={driverColumns}
-                data={drivers}
+                data={Array.isArray(drivers) ? drivers : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -523,7 +544,7 @@ export const DataTableSection = (): JSX.Element => {
             <div className="hidden md:block lg:hidden w-full">
               <Table
                 columns={driverColumns.filter(col => col.priority === 'high' || col.priority === 'medium')}
-                data={drivers}
+                data={Array.isArray(drivers) ? drivers : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
