@@ -5,16 +5,19 @@ import { PaginationSection } from "./sections/PaginationSection/PaginationSectio
 
 export const UsedStations = (): JSX.Element => {
   return (
-    <div
-      className="flex flex-col w-[1035px] items-start gap-11 relative"
-      data-model-id="1:15341"
-    >
-      <div className="flex flex-col items-end gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
-        <DataListSection />
+    <div className="w-full">
+      {/* Header Section */}
+      <DataListSection />
+      
+      {/* Content Section */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <ListWrapperSection />
       </div>
 
-      <PaginationSection />
+      {/* Pagination Section */}
+      <div className="mt-4">
+        <PaginationSection />
+      </div>
     </div>
   );
 };
