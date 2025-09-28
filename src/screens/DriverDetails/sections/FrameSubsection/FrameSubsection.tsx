@@ -34,27 +34,27 @@ export const FrameSubsection = (): JSX.Element => {
   ];
 
   return (
-    <div className="flex w-[273px] items-center gap-4 relative top-[18px] left-[35px]">
-      <div className="inline-flex items-center gap-2 relative flex-[0_0_auto]">
+    <div className="flex items-center gap-4">
+      <div className="inline-flex items-center gap-2">
         {legendItems.map((item, index) => (
           <div
             key={index}
             className={`${
               item.containerWidth
-                ? `flex ${item.containerWidth} items-center justify-end gap-0.5 relative`
-                : "inline-flex items-center gap-0.5 relative flex-[0_0_auto]"
+                ? `flex ${item.containerWidth} items-center justify-end gap-0.5`
+                : "inline-flex items-center gap-0.5"
             }`}
           >
             <div
-              className={`${item.width} h-3.5 mt-[-1.00px] ${
+              className={`${item.width} h-3.5 ${
                 item.marginLeft || ""
-              } font-bold text-xs tracking-[0.40px] leading-[19.2px] whitespace-nowrap relative [font-family:'Tajawal',Helvetica] [direction:rtl]`}
+              } font-bold text-xs tracking-[0.40px] leading-[19.2px] whitespace-nowrap [font-family:'Tajawal',Helvetica] [direction:rtl]`}
               style={{ color: item.color }}
             >
               {item.text}
             </div>
             <div
-              className="relative w-[5px] h-[5px] rounded-[1px]"
+              className="w-[5px] h-[5px] rounded-[1px]"
               style={{ backgroundColor: item.color }}
             />
           </div>
