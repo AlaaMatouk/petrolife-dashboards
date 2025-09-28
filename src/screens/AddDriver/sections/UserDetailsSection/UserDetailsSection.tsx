@@ -1,18 +1,57 @@
-import React from "react";
-import { ArrowLeft, Upload, UserPlus } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { ArrowLeft, Upload, UserPlus, Download, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 
 export const UserDetailsSection = (): JSX.Element => {
   const navigate = useNavigate();
+  const [isExcelMenuOpen, setIsExcelMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleBack = () => {
     navigate('/drivers');
   };
 
-  const handleExcelUpload = () => {
-    console.log('Excel upload clicked');
-    // TODO: Implement Excel upload functionality
+  const handleExcelMenuToggle = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        left: rect.left
+      });
+    }
+    setIsExcelMenuOpen(!isExcelMenuOpen);
   };
+
+  const handleDownloadTemplate = () => {
+    console.log('Download template clicked');
+    setIsExcelMenuOpen(false);
+    // TODO: Implement template download
+  };
+
+  const handleUploadExcel = () => {
+    console.log('Upload Excel clicked');
+    setIsExcelMenuOpen(false);
+    // TODO: Implement Excel upload
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+        setIsExcelMenuOpen(false);
+      }
+    };
+
+    if (isExcelMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExcelMenuOpen]);
 
   return (
     <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
@@ -33,22 +72,61 @@ export const UserDetailsSection = (): JSX.Element => {
             </div>
           </button>
 
-          <button
-            onClick={handleExcelUpload}
-            className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            type="button"
-            aria-label="إضافة سائقين من ملف Excel"
-          >
-            <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-              <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
-                <p className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  إضافة سائقين من ملف Excel
-                </p>
-              </div>
+          <div className="relative">
+            <button
+              ref={buttonRef}
+              onClick={handleExcelMenuToggle}
+              className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              type="button"
+              aria-label="إضافة سائقين من ملف Excel"
+            >
+              <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
+                  <p className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-input-text-color)] text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                    إضافة سائقين من ملف Excel
+                  </p>
+                </div>
 
-              <Upload className="w-4 h-4 text-gray-600" />
-            </div>
-          </button>
+                <Upload className="w-4 h-4 text-gray-600" />
+              </div>
+            </button>
+
+            {isExcelMenuOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsExcelMenuOpen(false)}
+                />
+                {createPortal(
+                  <div
+                    className="fixed w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
+                    style={{
+                      top: `${menuPosition.top}px`,
+                      left: `${menuPosition.left}px`
+                    }}
+                  >
+                    <div className="py-1">
+                      <button
+                        onClick={handleDownloadTemplate}
+                        className="w-full px-4 py-3 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-3 transition-colors"
+                      >
+                        <span className="[direction:rtl]">تنزيل نموذج للتعبئة</span>
+                        <Download className="w-4 h-4 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={handleUploadExcel}
+                        className="w-full px-4 py-3 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-3 transition-colors"
+                      >
+                        <span className="[direction:rtl]">رفع ملف Excel للسائقين</span>
+                        <FileSpreadsheet className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>,
+                  document.body
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <button
@@ -56,7 +134,7 @@ export const UserDetailsSection = (): JSX.Element => {
           type="button"
           aria-label="إضافة سائق جديد"
         >
-          <span className="relative w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
+          <span className="relative w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
             إضافة سائق جديد
           </span>
 

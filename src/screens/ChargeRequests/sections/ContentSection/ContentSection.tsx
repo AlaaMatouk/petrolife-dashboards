@@ -1,4 +1,5 @@
 import React from "react";
+import { Download } from "lucide-react";
 
 interface TableRow {
   id: string;
@@ -119,18 +120,11 @@ export const ContentSection = (): JSX.Element => {
               key={row.id}
               className="flex h-[42px] items-center justify-end gap-1 pl-[var(--corner-radius-none)] pr-[11px] py-2.5 relative self-stretch w-full border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
             >
-              <div className="w-9 h-[18px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                تصدير
-              </div>
-
-              <div className="relative w-[21.26px] h-[14.55px]">
-                <div className="relative h-full">
-                  <img
-                    className="absolute w-[58.33%] h-[75.00%] top-[9.06%] left-[18.48%]"
-                    alt="أيقونة التصدير"
-                    src="/img/icon-10.svg"
-                  />
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+                  تصدير
+                </span>
+                <Download className="w-4 h-4 text-gray-500" />
               </div>
             </div>
           ))}

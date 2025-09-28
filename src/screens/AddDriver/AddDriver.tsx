@@ -15,10 +15,7 @@ export const AddDriver = (): JSX.Element => {
       headerProps={{
         title: "الســـــــــــــــائقين / إضافة سائق جديد",
         titleIconSrc: <UserRound className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
+        showSearch: false,
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

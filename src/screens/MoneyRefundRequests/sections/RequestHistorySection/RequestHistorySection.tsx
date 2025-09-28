@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Download } from "lucide-react";
 
 export const RequestHistorySection = (): JSX.Element => {
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
@@ -127,20 +128,11 @@ export const RequestHistorySection = (): JSX.Element => {
       <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
         <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
           <button className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
-            <div className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-              <div className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
+            <div className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder flex items-center justify-center gap-1">
+              <span className="font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
                 تصدير
-              </div>
-
-              <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-                <div className="flex-1 w-[21.26px] relative">
-                  <img
-                    className="absolute w-[58.33%] h-[75.00%] top-[10.04%] left-[18.48%]"
-                    alt="Export icon"
-                    src="/img/icon.svg"
-                  />
-                </div>
-              </div>
+              </span>
+              <Download className="w-4 h-4 text-gray-500" />
             </div>
           </button>
 
@@ -235,18 +227,11 @@ export const RequestHistorySection = (): JSX.Element => {
                 key={index}
                 className="flex h-[42px] items-center justify-end gap-1 pl-[var(--corner-radius-none)] pr-[11px] py-2.5 relative self-stretch w-full border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
               >
-                <div className="relative w-9 h-[18px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                  تصدير
-                </div>
-
-                <div className="relative w-[21.26px] h-[14.55px]">
-                  <div className="relative h-full">
-                    <img
-                      className="absolute w-[58.33%] h-[75.00%] top-[9.06%] left-[18.48%]"
-                      alt="Export icon"
-                      src="/img/icon-10.svg"
-                    />
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
+                    تصدير
+                  </span>
+                  <Download className="w-4 h-4 text-gray-500" />
                 </div>
               </div>
             ))}

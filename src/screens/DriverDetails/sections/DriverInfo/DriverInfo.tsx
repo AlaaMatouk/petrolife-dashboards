@@ -1,5 +1,6 @@
-import { UserRound } from "lucide-react";
-import React, { useState } from "react";
+import { UserRound, ArrowLeft, Upload, User, MapPin, Car, Calendar, ChevronDown } from "lucide-react";
+import React from "react";
+import { RadioGroup } from "../../../../components/shared/Form";
 
 export const DriverInfo = (): JSX.Element => {
   // Driver information data
@@ -18,24 +19,52 @@ export const DriverInfo = (): JSX.Element => {
     carCategory: "صغيرة",
   };
 
-  // Days of the week data
-  const daysOfWeek = [
-    { name: "الأحد", selected: false },
-    { name: "الإثنين", selected: false },
-    { name: "الثلاثاء", selected: false },
-    { name: "الأربعاء", selected: false },
-    { name: "الخميس", selected: false },
-    { name: "الجمعة", selected: false },
-    { name: "السبت", selected: true },
+  // Days of the week data - read-only display
+  const selectedDays = ["السبت"]; // Only Saturday is selected
+
+  // Options for radio groups
+  const fuelTypes = [
+    { id: "diesel", label: "ديزل" },
+    { id: "petrol95", label: "بنزين 95" },
+    { id: "petrol91", label: "بنزين 91" },
   ];
 
-  const [selectedDays, setSelectedDays] = useState(daysOfWeek);
+  const carTypes = [
+    { id: "vip", label: "VIP" },
+    { id: "large", label: "كبيرة" },
+    { id: "medium", label: "متوسطة" },
+    { id: "small", label: "صغيرة" },
+  ];
 
-  const handleDayToggle = (index: number) => {
-    const updatedDays = [...selectedDays];
-    updatedDays[index].selected = !updatedDays[index].selected;
-    setSelectedDays(updatedDays);
-  };
+  const cityOptions = [
+    { value: "الرياض", label: "الرياض" },
+    { value: "جدة", label: "جدة" },
+    { value: "مكة المكرمة", label: "مكة المكرمة" },
+    { value: "المدينة المنورة", label: "المدينة المنورة" },
+  ];
+
+  const plateLettersOptions = [
+    { value: "ح ن ط", label: "ح ن ط" },
+    { value: "أ ب ج", label: "أ ب ج" },
+    { value: "د ه و", label: "د ه و" },
+  ];
+
+  const carStatusOptions = [
+    { value: "دبلوماسية", label: "دبلوماسية" },
+    { value: "عادية", label: "عادية" },
+    { value: "تجارية", label: "تجارية" },
+    { value: "حكومية", label: "حكومية" },
+  ];
+
+  const weekDays = [
+    "الجمعة",
+    "الخميس", 
+    "الأربعاء",
+    "الثلاثاء",
+    "الإثنين",
+    "الأحد",
+    "السبت",
+  ];
 
   return (
     <main
@@ -49,19 +78,14 @@ export const DriverInfo = (): JSX.Element => {
             aria-label="العودة"
           >
             <div className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-              <img
-                className="relative w-[19.28px] h-[9.42px]"
-                alt="Arrow"
-                src="/img/arrow-1DI.svg"
-              />
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
             </div>
           </button>
 
           <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
-            <h1 className="w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap relative font-subtitle-subtitle-2 [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-              معلومات السائق
-            </h1>
-
+                    <h1 className="w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-bold text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap relative [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
+                      معلومات السائق
+                    </h1>
             <UserRound className="w-5 h-5 text-gray-500" />
           </div>
         </nav>
@@ -70,264 +94,171 @@ export const DriverInfo = (): JSX.Element => {
       <section className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
         <div className="flex flex-col items-end gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
           <form className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+            {/* Driver Personal and Contact Information (Top Row) - Order: Phone, Email, Name (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  رقم الهاتف
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.phone}
-                    </span>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">رقم الهاتف</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.phone}
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  البريد الالكتروني
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.email}
-                    </span>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">البريد الالكتروني</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.email}
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  اسم السائق
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.name}
-                    </span>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">اسم السائق</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.name}
                 </div>
               </div>
             </div>
 
+            {/* Driver Image and Address Information (Second Row) - Order: Driver Image, Address, City (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-              <div className="flex items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">المدينة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.city}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">العنوان</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.address}
+                </div>
+              </div>
+
+              <div className="flex items-end gap-2 flex-1">
                 <div className="relative w-[38px] h-[38px]">
-                  <div className="h-[38px] rounded-[var(--corner-radius-small)] bg-[url(/img/frame-581.svg)] bg-cover bg-[50%_50%]" />
-                </div>
-
-                <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                  <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                    صورة السائق
-                  </label>
-
-                  <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                    <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                      <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                        {driverInfo.driverImage}
-                      </span>
-                    </div>
+                  <div className="absolute top-1 left-[5px] w-[38px] h-[38px] rounded-[var(--corner-radius-small)] bg-gray-100 flex items-center justify-center">
+                    <User className="w-6 h-6 text-gray-500" />
+                  </div>
+                  <div className="absolute top-0 left-0 w-3 h-3">
+                    <div className="absolute -top-px -left-px w-3.5 h-3.5 bg-white rounded-[7px] border border-solid border-gray-200" />
+                    <Upload className="absolute top-0.5 left-0.5 w-2 h-2 text-gray-400" />
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  العنوان
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <address className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)] not-italic">
-                      {driverInfo.address}
-                    </address>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  المدينة
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.city}
-                    </span>
+                <div className="flex flex-col gap-2 flex-1">
+                  <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">صورة السائق</label>
+                  <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                    {driverInfo.driverImage}
                   </div>
                 </div>
               </div>
             </div>
 
-            <fieldset className="flex flex-col items-end gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-              <legend className="text-right pb-2 self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+            {/* Days Off Selection */}
+            <div className="flex flex-col items-end gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+              <p className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
                 أيام العطل "الغير مسموح بشحن الوقود"
-              </legend>
-
-              <div
-                className="flex h-[46px] items-center gap-[var(--corner-radius-medium)] relative self-stretch w-full"
-                role="group"
-                aria-labelledby="days-legend"
-              >
-                {selectedDays.map((day, index) => (
-                  <button
-                    key={day.name}
-                    type="button"
-                    onClick={() => handleDayToggle(index)}
-                    className={`flex items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 self-stretch grow rounded-[var(--corner-radius-small)] ${
-                      day.selected
-                        ? "bg-color-mode-surface-bg-icon-gray"
-                        : "border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder opacity-25"
-                    }`}
-                    aria-pressed={day.selected}
+              </p>
+              <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                {weekDays.map((day) => (
+                  <div
+                    key={day}
+                     className={`flex items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 self-stretch grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
+                       selectedDays.includes(day)
+                         ? "border-[0.7px] border-color-mode-text-icons-t-blue"
+                         : "border-gray-300 bg-gray-50"
+                     }`}
                   >
-                    <span
-                      className={`relative w-fit font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)] ${
-                        day.selected
-                          ? "text-color-mode-text-icons-t-blue"
-                          : "text-color-mode-text-icons-t-primary-gray"
-                      }`}
-                    >
-                      {day.name}
+                     <span
+                       className={`relative w-fit text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] ${
+                         selectedDays.includes(day)
+                           ? "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-blue [font-style:var(--body-body-2-font-style)]"
+                           : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-gray-400 [font-style:var(--body-body-2-font-style)]"
+                       }`}
+                     >
+                      {day}
                     </span>
 
-                    {day.selected && (
+                    {selectedDays.includes(day) && (
                       <img
                         className="absolute top-0 left-0 w-3.5 h-3.5"
                         alt="Selected"
                         src="/img/rectangle-22DI.svg"
                       />
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
-            </fieldset>
+            </div>
 
+            {/* Third Row - Order: License Photo, Financial Value, Car Status (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  حالة السيارة
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.carStatus}
-                    </span>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">حالة السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.carStatus}
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                  القيمة المالية المحددة للسائق (ر.س)
-                </label>
-
-                <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                  <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {driverInfo.monetaryValue}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <div className="relative w-[38px] h-[38px]">
-                  <div className="h-[38px] rounded-[var(--corner-radius-small)] bg-[url(/img/frame-581-1.svg)] bg-cover bg-[50%_50%]" />
-                </div>
-
-                <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                  <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                    صورة ترخيص السائق "اختياري"
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-blue-500 text-sm font-medium">غير محددة</span>
+                  <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                    القيمة المالية المحددة للسائق (ر.س)
                   </label>
+                </div>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.monetaryValue}
+                </div>
+              </div>
 
-                  <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                    <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                      <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                        {driverInfo.licenseImage}
-                      </span>
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">صورة ترخيص السائق "اختياري"</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.licenseImage}
                 </div>
               </div>
             </div>
 
+            {/* Fourth Row - Order: Plate Letters, Plate Number, Car Category (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
-              <div className="flex items-start justify-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <div className="flex items-center gap-5 relative flex-1 grow">
-                  <div className="flex items-end gap-1 relative flex-1 grow">
-                    <img
-                      className="relative w-[77px] h-10 aspect-[1.93]"
-                      alt="License plate"
-                      src="/img/image-20DI.png"
-                    />
-
-                    <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                      <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                        حروف لوحة السيارة
-                      </label>
-
-                      <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                        <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                          <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                            {driverInfo.plateLetters}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                    <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                      رقم لوحة السيارة
-                    </label>
-
-                    <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-                      <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                        <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                          {driverInfo.plateNumber}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                    <label className="relative self-stretch mt-[-1.00px] font-caption-caption-1 font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-placeholder text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] [font-style:var(--caption-caption-1-font-style)]">
-                      تصنيف السيارة
-                    </label>
-
-                    <div
-                      className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pr-[var(--corner
--radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]"
-                    >
-                      <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                        <span className="font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                          {driverInfo.carCategory}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">حروف لوحة السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.plateLetters}
                 </div>
               </div>
+
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">رقم لوحة السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.plateNumber}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 flex-1">
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">تصنيف السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
+                  {driverInfo.carCategory}
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Button */}
+            <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+              <button
+                className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#FFFCEC' }}
+                aria-label="تعديل البيانات"
+              >
+                <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                  <div className="w-fit font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-orange text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] whitespace-nowrap [direction:rtl] relative mt-[-1.00px] font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)]">
+                    تعديل البيانات
+                  </div>
+                </div>
+              </button>
             </div>
           </form>
-
-          <div className="absolute top-[276px] left-0 w-[43px] h-[43px]" />
         </div>
-
-        <button className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] bg-color-mode-surface-bg-orange-light rounded-[var(--corner-radius-small)]">
-          <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-            <span className="font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-orange text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] [direction:rtl] relative w-fit mt-[-1.00px] font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
-              تعديل البيانات
-            </span>
-          </div>
-        </button>
       </section>
     </main>
   );

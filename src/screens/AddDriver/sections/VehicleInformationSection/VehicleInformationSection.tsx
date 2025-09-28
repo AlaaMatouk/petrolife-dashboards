@@ -5,20 +5,21 @@ import { useForm } from "../../../../hooks/useForm";
 import { useDrivers } from "../../../../hooks/useGlobalState";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../../context/ToastContext";
+import { validateDriverForm } from "../../../../utils/validation";
 
 const initialValues = {
-  phone: "",
+    phone: "",
   email: "",
-  driverName: "",
+    driverName: "",
   driverImage: "",
-  address: "",
-  city: "الرياض",
-  vehicleStatus: "دبلوماسية",
+    address: "",
+    city: "الرياض",
+    vehicleStatus: "دبلوماسية",
   driverAmount: "",
-  driverLicense: "",
+    driverLicense: "",
   plateLetters: "",
   plateNumber: "",
-  vehicleCategory: "صغيرة",
+    vehicleCategory: "صغيرة",
 };
 
 export const VehicleInformationSection = (): JSX.Element => {
@@ -31,7 +32,7 @@ export const VehicleInformationSection = (): JSX.Element => {
 
   const weekDays = [
     "الجمعة",
-    "الخميس", 
+    "الخميس",
     "الأربعاء",
     "الثلاثاء",
     "الإثنين",
@@ -83,6 +84,16 @@ export const VehicleInformationSection = (): JSX.Element => {
     form.setFieldValue(field, value);
     // Clear field error when user starts typing
     if (form.errors[field]) {
+      form.clearFieldError(field);
+    }
+  };
+
+  const handleFieldBlur = (field: string) => {
+    // Only validate the specific field that was blurred
+    const fieldErrors = validateDriverForm({ [field]: form.values[field] });
+    if (fieldErrors[field]) {
+      form.setFieldError(field, fieldErrors[field]);
+    } else {
       form.clearFieldError(field);
     }
   };
@@ -142,6 +153,7 @@ export const VehicleInformationSection = (): JSX.Element => {
       };
 
       // Add driver to global state
+      console.log('Adding new driver:', newDriver);
       addDriver(newDriver);
 
       // Show success message
@@ -182,24 +194,24 @@ export const VehicleInformationSection = (): JSX.Element => {
             <div className="flex-1 grow">
               <Input
                 label="رقم الهاتف"
-                type="tel"
+                    type="tel"
                 name="phone"
                 value={form.values.phone}
                 onChange={(value) => handleChange("phone", value)}
-                onBlur={() => form.validateForm()}
-                placeholder="رقم الهاتف هنا"
+                onBlur={() => handleFieldBlur("phone")}
+                    placeholder="رقم الهاتف هنا"
                 error={form.errors.phone}
                 required
-              />
+                  />
             </div>
             <div className="flex-1 grow">
               <Input
                 label="البريد الالكتروني"
-                type="email"
+                    type="email"
                 name="email"
                 value={form.values.email}
                 onChange={(value) => handleChange("email", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("email")}
                 error={form.errors.email}
                 required
               />
@@ -207,15 +219,15 @@ export const VehicleInformationSection = (): JSX.Element => {
             <div className="flex-1 grow">
               <Input
                 label="اسم السائق"
-                type="text"
+                    type="text"
                 name="driverName"
                 value={form.values.driverName}
                 onChange={(value) => handleChange("driverName", value)}
-                onBlur={() => form.validateForm()}
-                placeholder="اسم السائق هنا"
+                onBlur={() => handleFieldBlur("driverName")}
+                    placeholder="اسم السائق هنا"
                 error={form.errors.driverName}
                 required
-              />
+                  />
             </div>
           </div>
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
@@ -230,7 +242,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
-                <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-label-color)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
                   صورة السائق
                 </label>
                 <button
@@ -241,7 +253,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                 >
                   <Upload className="w-4 h-4 text-gray-500" />
                   <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
-                    <div className="w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)]">
+                                  <div className="w-fit font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-input-text-color)] tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)]">
                       {form.values.driverImage || "ارفع صورة السائق هنا"}
                     </div>
                   </div>
@@ -251,15 +263,15 @@ export const VehicleInformationSection = (): JSX.Element => {
             <div className="flex-1 grow">
               <Input
                 label="العنوان"
-                type="text"
+                    type="text"
                 name="address"
                 value={form.values.address}
                 onChange={(value) => handleChange("address", value)}
-                onBlur={() => form.validateForm()}
-                placeholder="العنوان بالتفصيل هنا"
+                onBlur={() => handleFieldBlur("address")}
+                    placeholder="العنوان بالتفصيل هنا"
                 error={form.errors.address}
                 required
-              />
+                  />
             </div>
             <div className="flex-1 grow">
               <Select
@@ -267,7 +279,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                 name="city"
                 value={form.values.city}
                 onChange={(value) => handleChange("city", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("city")}
                 options={cityOptions}
                 error={form.errors.city}
                 icon={<MapPin className="w-4 h-4 text-gray-500" />}
@@ -276,16 +288,42 @@ export const VehicleInformationSection = (): JSX.Element => {
             </div>
           </div>
           <div className="flex flex-col items-end gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-            <p className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                        <p className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-label-color)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
               أيام الأجازات "الغير مسموح بشحن الوقود"
             </p>
-            <RadioGroup
-              options={weekDays.map(day => ({ value: day, label: day }))}
-              value={selectedDays}
-              onChange={setSelectedDays}
-              multiple
-              className="flex h-[46px] items-center gap-[var(--corner-radius-medium)] relative self-stretch w-full"
-            />
+            <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+              {weekDays.map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => handleDayToggle(day)}
+                  className={`flex items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 self-stretch grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
+                    selectedDays.includes(day)
+                      ? "border-[0.7px] border-color-mode-text-icons-t-blue"
+                      : "border-color-mode-text-icons-t-placeholder hover:border-color-mode-text-icons-t-sec cursor-pointer"
+                  }`}
+                  aria-pressed={selectedDays.includes(day)}
+                >
+                  <span
+                    className={`relative w-fit text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] ${
+                      selectedDays.includes(day)
+                        ? "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-blue [font-style:var(--body-body-2-font-style)]"
+                        : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec [font-style:var(--body-body-2-font-style)]"
+                    }`}
+                  >
+                    {day}
+                  </span>
+
+                  {selectedDays.includes(day) && (
+                    <img
+                      className="absolute top-0 left-0 w-3.5 h-3.5"
+                      alt="Selected"
+                      src="/img/rectangle-22DI.svg"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
             <div className="flex-1 grow">
@@ -294,7 +332,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                 name="vehicleStatus"
                 value={form.values.vehicleStatus}
                 onChange={(value) => handleChange("vehicleStatus", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("vehicleStatus")}
                 options={vehicleStatusOptions}
                 error={form.errors.vehicleStatus}
                 required
@@ -302,20 +340,51 @@ export const VehicleInformationSection = (): JSX.Element => {
               />
             </div>
             <div className="flex-1 grow">
-              <Input
-                label="القيمة المالية المحددة للسائق (ر.س)"
-                type="number"
-                name="driverAmount"
-                value={form.values.driverAmount}
-                onChange={(value) => handleChange("driverAmount", value)}
-                onBlur={() => form.validateForm()}
-                error={form.errors.driverAmount}
-                required
-              />
+              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative self-stretch w-full flex-[0_0_auto]">
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-blue-500 text-sm font-medium">غير محددة</span>
+                              <label className="self-stretch font-normal text-[var(--form-active-label-color)] [direction:rtl] relative mt-[-1.00px] [font-family:'Tajawal',Helvetica] text-sm leading-[22.4px]">
+                    <span className="tracking-[var(--body-body-2-letter-spacing)] font-body-body-2 [font-style:var(--body-body-2-font-style)] font-[number:var(--body-body-2-font-weight)] leading-[var(--body-body-2-line-height)] text-[length:var(--body-body-2-font-size)]">
+                      القيمة المالية المحددة للسائق (ر.س)
+                </span>
+              </label>
+                </div>
+                <div className="relative w-full">
+                  <div className={`flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
+                    form.errors.driverAmount 
+                      ? 'border-red-500 bg-red-50' 
+                      : 'border-color-mode-text-icons-t-placeholder hover:border-color-mode-text-icons-t-sec focus-within:border-color-mode-text-icons-t-blue'
+                  }`}>
+                <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
+                  <input
+                    type="number"
+                        value={form.values.driverAmount}
+                        onChange={(e) => handleChange("driverAmount", e.target.value)}
+                        onBlur={() => handleFieldBlur("driverAmount")}
+                                    className={`text-right relative w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none ${
+                                      form.errors.driverAmount
+                                        ? 'text-red-500 placeholder-red-300'
+                                        : 'text-[var(--form-active-input-text-color)] placeholder-[var(--form-active-placeholder-color)]'
+                                    }`}
+                      />
+                    </div>
+                  </div>
+                  {form.errors.driverAmount && (
+                    <div className="absolute top-full left-0 right-0 mt-1 px-2">
+                      <p className="text-red-500 text-xs font-medium [direction:rtl] text-right">
+                        {form.errors.driverAmount}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="flex-1 grow">
-              <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                صورة ترخيص السائق "اختياري"
+              <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative self-stretch w-full flex-[0_0_auto]">
+                              <label className="self-stretch font-normal text-[var(--form-active-label-color)] [direction:rtl] relative mt-[-1.00px] [font-family:'Tajawal',Helvetica] text-sm leading-[22.4px]">
+                  <span className="tracking-[var(--body-body-2-letter-spacing)] font-body-body-2 [font-style:var(--body-body-2-font-style)] font-[number:var(--body-body-2-font-weight)] leading-[var(--body-body-2-line-height)] text-[length:var(--body-body-2-font-size)]">
+                    صورة ترخيص السائق "اختياري"
+                  </span>
               </label>
               <button
                 type="button"
@@ -323,13 +392,14 @@ export const VehicleInformationSection = (): JSX.Element => {
                 className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder bg-transparent cursor-pointer hover:bg-color-mode-surface-bg-icon-gray transition-colors"
                 aria-label="رفع صورة ترخيص السائق"
               >
-                <FileText className="w-4 h-4 text-gray-500" />
+                  <FileText className="w-4 h-4 text-gray-500" />
                 <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
                   <p className="w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder text-left tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap [direction:rtl] relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)]">
-                    {form.values.driverLicense || "ارفع صورة ترخيص السائق هنا"}
+                      {form.values.driverLicense || "ارفع صورة ترخيص السائق هنا"}
                   </p>
                 </div>
               </button>
+            </div>
             </div>
           </div>
           <div className="flex items-center gap-5 relative self-stretch w-full flex-[0_0_auto]">
@@ -339,13 +409,13 @@ export const VehicleInformationSection = (): JSX.Element => {
                 name="plateLetters"
                 value={form.values.plateLetters}
                 onChange={(value) => handleChange("plateLetters", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("plateLetters")}
                 options={plateLettersOptions}
                 error={form.errors.plateLetters}
                 icon={<ChevronDown className="w-4 h-4 text-gray-500" />}
                 required
               />
-            </div>
+                        </div>
             <div className="flex-1 grow">
               <Input
                 label="رقم لوحة السيارة"
@@ -353,20 +423,20 @@ export const VehicleInformationSection = (): JSX.Element => {
                 name="plateNumber"
                 value={form.values.plateNumber}
                 onChange={(value) => handleChange("plateNumber", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("plateNumber")}
                 error={form.errors.plateNumber}
                 icon={<Calendar className="w-4 h-4 text-gray-500" />}
                 required
                 placeholder="1234"
               />
-            </div>
+                      </div>
             <div className="flex-1 grow">
               <Select
                 label="تصنيف السيارة"
                 name="vehicleCategory"
                 value={form.values.vehicleCategory}
                 onChange={(value) => handleChange("vehicleCategory", value)}
-                onBlur={() => form.validateForm()}
+                onBlur={() => handleFieldBlur("vehicleCategory")}
                 options={vehicleCategoryOptions}
                 error={form.errors.vehicleCategory}
                 icon={<Car className="w-4 h-4 text-gray-500" />}

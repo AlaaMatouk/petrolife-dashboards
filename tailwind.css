@@ -28,6 +28,14 @@
   --text-primary: #213547;
   --text-secondary: #5b738b;
   --text-tertiary: #a9b4be;
+  /* Form color variables */
+  --form-active-label-color: #5b738b;
+  --form-active-input-text-color: #5b738b;
+  --form-active-placeholder-color: #a9b4be;
+  --form-readonly-label-color: #a9b4be;
+  --form-readonly-input-text-color: #5b738b;
+  --form-section-title-color: #5b738b;
+  --form-header-title-color: #5b738b;
   --shadow-sm: 0px 2.32px 0.77px #0000000f, 0px 2.32px 6.19px #00000026, 0px 0px 0px 0.77px #0000000a;
   --shadow-md: 0px 4px 10px #0000000a;
   --shadow-lg: 0px 3.89px 5.84px -1.95px #10182808, 0px 11.68px 15.57px -3.89px #10182814;

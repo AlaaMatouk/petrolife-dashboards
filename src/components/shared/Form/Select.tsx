@@ -29,7 +29,7 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   return (
     <div className={`flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow ${className}`}>
-      <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+      <label className="self-stretch mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-label-color)] tracking-[var(--body-body-2-letter-spacing)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)]">
         {label}
         {required && <span className="text-red-500 mr-1">*</span>}
       </label>
@@ -50,7 +50,7 @@ export const Select: React.FC<SelectProps> = ({
               className={`text-right relative pr-2 w-full mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none ${
                 error 
                   ? 'text-red-500' 
-                  : 'text-color-mode-text-icons-t-sec'
+                  : 'text-[var(--form-active-input-text-color)]'
               }`}
             >
               {options.map((option) => (

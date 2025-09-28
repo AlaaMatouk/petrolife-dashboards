@@ -55,25 +55,21 @@ export const useDataInitialization = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Only run once when component mounts
-    if (!isInitialized) {
+    // Only initialize if not already initialized and all arrays are empty
+    if (!isInitialized && drivers.length === 0 && cars.length === 0 && transactions.length === 0) {
+      console.log('Initializing data...');
+      
       // Initialize drivers data
-      if (drivers.length === 0) {
-        const convertedDrivers = convertDriversData(driversData);
-        setDrivers(convertedDrivers);
-      }
+      const convertedDrivers = convertDriversData(driversData);
+      setDrivers(convertedDrivers);
 
       // Initialize cars data
-      if (cars.length === 0) {
-        const convertedCars = convertCarsData(carData);
-        setCars(convertedCars);
-      }
+      const convertedCars = convertCarsData(carData);
+      setCars(convertedCars);
 
       // Initialize transactions data
-      if (transactions.length === 0) {
-        const convertedTransactions = convertTransactionsData(transactionData);
-        setTransactions(convertedTransactions);
-      }
+      const convertedTransactions = convertTransactionsData(transactionData);
+      setTransactions(convertedTransactions);
 
       // Initialize user data
       const user = {
@@ -87,7 +83,7 @@ export const useDataInitialization = () => {
 
       setIsInitialized(true);
     }
-  }, []); // Empty dependency array - only run once
+  }, []); // Empty dependency array - only run once on mount
 
   return {
     isInitialized: drivers.length > 0 && cars.length > 0 && transactions.length > 0,

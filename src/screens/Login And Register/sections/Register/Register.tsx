@@ -44,7 +44,7 @@ export default function Register({ onSwitch }: RegisterProps) {
         className="flex gap-3 flex-col justify-center text-center "
         action=""
       >
-        <h1 style={{ color: "var(--gray)" }} className="font-bold ">
+        <h1 className="font-bold text-[var(--form-header-title-color)] ">
           إنشاء حساب
         </h1>
         <UsernameInput onChange={handleChange} value={form.username} />

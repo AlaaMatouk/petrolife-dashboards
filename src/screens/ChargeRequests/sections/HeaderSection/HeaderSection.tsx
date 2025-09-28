@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Download } from "lucide-react";
 
 export const HeaderSection = (): JSX.Element => {
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
@@ -10,22 +11,13 @@ export const HeaderSection = (): JSX.Element => {
       <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
         <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
           <button
-            className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors duration-200"
+            className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors duration-200 flex items-center justify-center gap-1"
             aria-label="تصدير البيانات"
           >
-            <span className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-3-font-style)]">
+            <span className="font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-3-font-style)]">
               تصدير
             </span>
-
-            <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-              <div className="flex-1 w-[21.26px] relative">
-                <img
-                  className="absolute w-[58.33%] h-[75.00%] top-[10.04%] left-[18.48%]"
-                  alt="أيقونة التصدير"
-                  src="/img/icon.svg"
-                />
-              </div>
-            </div>
+            <Download className="w-4 h-4 text-gray-500" />
           </button>
         </div>
 

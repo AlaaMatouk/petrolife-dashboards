@@ -9,7 +9,7 @@ export default function UsernameInput({ onChange, value }: UsernameInputProps) {
   return (
     <div className="flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow">
       {/* Label */}
-      <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] text-right">
+      <label className="relative self-stretch mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-label-color)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] [font-style:var(--body-body-2-font-style)] text-right">
         اسم المستخدم
       </label>
 
@@ -29,7 +29,7 @@ export default function UsernameInput({ onChange, value }: UsernameInputProps) {
             title="Only letters, numbers or dash"
             value={value}
             onChange={onChange}
-            className="w-full font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder tracking-[var(--body-body-2-letter-spacing)] mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none text-right"
+            className="w-full font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-input-text-color)] placeholder-[var(--form-active-placeholder-color)] tracking-[var(--body-body-2-letter-spacing)] mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)] bg-transparent border-none outline-none text-right"
           />
         </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import { financialReportsData } from "../../../../constants/data";
+import { Download } from "lucide-react";
 
 const clientData = {
   phone: "00966254523658",
@@ -265,21 +266,13 @@ export const DataTableSection = (): JSX.Element => {
         <div className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <header className="items-center justify-between self-stretch w-full flex-[0_0_auto] flex relative">
             <button
-              className="relative w-[79px] h-[30px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder bg-transparent hover:bg-color-mode-surface-bg-icon-gray transition-colors"
+              className="relative w-[79px] h-[30px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder bg-transparent hover:bg-color-mode-surface-bg-icon-gray transition-colors flex items-center justify-center gap-1"
               aria-label="تصدير البيانات"
             >
-              <span className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-3-font-style)]">
+              <span className="font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-3-font-style)]">
                 تصدير
               </span>
-              <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-                <div className="flex-1 w-[21.26px] relative">
-                  <img
-                    className="absolute w-[58.33%] h-[75.00%] top-[9.06%] left-[18.48%]"
-                    alt="أيقونة التصدير"
-                    src="/img/icon.svg"
-                  />
-                </div>
-              </div>
+              <Download className="w-4 h-4 text-gray-500" />
             </button>
 
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">

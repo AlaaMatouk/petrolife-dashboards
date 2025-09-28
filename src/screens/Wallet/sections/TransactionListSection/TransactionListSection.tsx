@@ -6,6 +6,7 @@ import {
   fuelData,
   timeFilters,
 } from "../../../../constants/data";
+import { Download } from "lucide-react";
 
 export const TransactionListSection = (): JSX.Element => {
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
@@ -102,8 +103,9 @@ export const TransactionListSection = (): JSX.Element => {
             <button className="border rounded px-3 py-1 hover:bg-gray-50">
               إضافة طلب استرداد الأموال
             </button>
-            <button className="border rounded px-3 py-1 hover:bg-gray-50">
-              تصدير
+            <button className="border rounded px-3 py-1 hover:bg-gray-50 flex items-center gap-2">
+              <span>تصدير</span>
+              <Download className="w-4 h-4 text-gray-500" />
             </button>
           </div>
           <div className="flex items-center gap-2">

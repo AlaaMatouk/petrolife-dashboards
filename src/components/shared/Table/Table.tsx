@@ -1,5 +1,5 @@
 import React from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -82,11 +82,7 @@ export const Table = <T extends Record<string, any>>({
                         className="w-3.5 h-3.5 hover:bg-gray-200 rounded p-0.5"
                         aria-label={`ترتيب حسب ${column.label}`}
                       >
-                        <img
-                          className="w-3.5 h-3.5"
-                          alt="ترتيب"
-                          src="/img/side-icons-29.svg"
-                        />
+                        <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
                       </button>
                     )}
                   </div>
