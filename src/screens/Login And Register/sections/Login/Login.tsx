@@ -47,7 +47,7 @@ export default function Login({ onSwitch }: LoginProps) {
         className="flex gap-3 flex-col justify-center text-center "
         action="submit"
       >
-        <h1 className="font-bold text-color-mode-text-icons-t-primary-gray ">
+        <h1 className="font-bold text-[var(--form-header-title-color)] ">
           تسجيل الدخول
         </h1>
         <EmailInput onChange={handleChange} value={form.email} />

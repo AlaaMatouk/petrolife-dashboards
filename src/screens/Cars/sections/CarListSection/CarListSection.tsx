@@ -2,7 +2,7 @@ import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
-import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
+import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -403,19 +403,11 @@ export const CarListSection = (): JSX.Element => {
                 </div>
               </button>
 
-              <button className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors">
-                <span className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
+              <button className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors flex items-center justify-center gap-1">
+                <span className="font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
                   تصدير
                 </span>
-                <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-                  <div className="flex-1 w-[21.26px] relative">
-                    <img
-                      className="absolute w-[58.33%] h-[75.00%] top-[10.04%] left-[18.48%]"
-                      alt="تصدير"
-                      src="/img/icon.svg"
-                    />
-                  </div>
-                </div>
+                <Download className="w-4 h-4 text-gray-500" />
               </button>
             </div>
 

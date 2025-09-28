@@ -86,7 +86,7 @@ export const CarInformationSection = (): JSX.Element => {
       {/* Title with Car Icon - Same style as cars list */}
       <div className="flex items-center justify-end w-full">
         <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
-          <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
+          <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
             سيارة 21A254
           </h1>
           <Car className="w-5 h-5 text-gray-500" />
@@ -100,8 +100,8 @@ export const CarInformationSection = (): JSX.Element => {
             {/* Car Name Field */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">اسم السيارة</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">اسم السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.carName}
                 </div>
               </div>
@@ -126,8 +126,8 @@ export const CarInformationSection = (): JSX.Element => {
               />
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">مدينة السيارة</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">مدينة السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.city}
                 </div>
               </div>
@@ -136,22 +136,22 @@ export const CarInformationSection = (): JSX.Element => {
             {/* Year, Model, and Brand Row */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">سنة الإصدار</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">سنة الإصدار</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.year}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">الطراز</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">الطراز</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.model}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">الماركة</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">الماركة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.brand}
                 </div>
               </div>
@@ -162,7 +162,7 @@ export const CarInformationSection = (): JSX.Element => {
               <div className="w-[33%]"></div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">رقم السيارة</label>
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">رقم السيارة</label>
                 <div className="flex gap-2">
                   <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
                     {carData.plateLetters}
@@ -174,8 +174,8 @@ export const CarInformationSection = (): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-medium text-gray-700 [direction:rtl] text-right">حالة السيارة</label>
-                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 [direction:rtl] text-right">
+                <label className="text-sm font-medium text-[var(--form-readonly-label-color)] [direction:rtl] text-right">حالة السيارة</label>
+                <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {carData.carCondition}
                 </div>
               </div>

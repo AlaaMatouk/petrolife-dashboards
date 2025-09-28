@@ -115,6 +115,22 @@ export const colors = {
     placeholder: '#9ca3af',
     disabled: '#d1d5db',
   },
+
+  // Form colors
+  form: {
+    // Active forms
+    activeLabel: '#5b738b',        // Medium blue-gray for active form labels
+    activeInputText: '#5b738b',    // Medium blue-gray for text while typing
+    activePlaceholder: '#a9b4be',  // Light gray-blue for placeholder text
+    
+    // Read-only forms
+    readonlyLabel: '#a9b4be',      // Light gray-blue for read-only form labels
+    readonlyInputText: '#5b738b',  // Medium blue-gray for read-only input text (smaller font weight)
+    
+    // Section and header titles
+    sectionTitle: '#5b738b',       // Medium blue-gray for section titles
+    headerTitle: '#5b738b',        // Medium blue-gray for header titles
+  },
 } as const;
 
 // CSS variable mappings for existing design system
@@ -129,6 +145,15 @@ export const cssVariables = {
   'color-mode-text-icons-t-orange': 'var(--core-colors-mango-mango-6)',
   'color-mode-surface-bg-screen': 'var(--color-mode-surface-bg-screen)',
   'color-mode-surface-bg-icon-gray': 'var(--color-mode-surface-bg-icon-gray)',
+  
+  // Form color variables
+  'form-active-label-color': '#5b738b',
+  'form-active-input-text-color': '#5b738b',
+  'form-active-placeholder-color': '#a9b4be',
+  'form-readonly-label-color': '#a9b4be',
+  'form-readonly-input-text-color': '#5b738b',
+  'form-section-title-color': '#5b738b',
+  'form-header-title-color': '#5b738b',
 } as const;
 
 // Helper function to get color with fallback

@@ -7,17 +7,15 @@ import {
   navigationMenuData,
   userInfo,
 } from "../../constants/data";
+import { UserRound } from "lucide-react";
 
 export const AddDriver = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
         title: "الســـــــــــــــائقين / إضافة سائق جديد",
-        titleIconSrc: "/img/side-icons-4.svg",
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
+        titleIconSrc: <UserRound className="w-5 h-5 text-gray-500" />,
+        showSearch: false,
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,
