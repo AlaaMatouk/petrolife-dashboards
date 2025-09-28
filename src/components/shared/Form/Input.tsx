@@ -1,4 +1,5 @@
 import React from 'react';
+import { LucideIcon } from 'lucide-react';
 
 interface InputProps {
   label: string;
@@ -8,8 +9,9 @@ interface InputProps {
   placeholder?: string;
   error?: string;
   required?: boolean;
-  type?: 'text' | 'number';
+  type?: 'text' | 'number' | 'tel' | 'email';
   className?: string;
+  icon?: React.ReactNode;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -22,6 +24,7 @@ export const Input: React.FC<InputProps> = ({
   required = false,
   type = 'text',
   className = '',
+  icon,
 }) => {
   return (
     <div className={`flex flex-col items-end gap-[var(--corner-radius-extra-small)] relative flex-1 grow ${className}`}>
@@ -38,6 +41,7 @@ export const Input: React.FC<InputProps> = ({
             ? 'border-red-500 bg-red-50' 
             : 'border-color-mode-text-icons-t-placeholder hover:border-color-mode-text-icons-t-sec focus-within:border-color-mode-text-icons-t-blue'
         }`}>
+          {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
             <input
               type={type}

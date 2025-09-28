@@ -1,6 +1,19 @@
 import React from "react";
+import { ArrowLeft, Upload, UserPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const UserDetailsSection = (): JSX.Element => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate('/drivers');
+  };
+
+  const handleExcelUpload = () => {
+    console.log('Excel upload clicked');
+    // TODO: Implement Excel upload functionality
+  };
+
   return (
     <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
       <nav
@@ -10,20 +23,18 @@ export const UserDetailsSection = (): JSX.Element => {
       >
         <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
           <button
-            className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]"
+            onClick={handleBack}
+            className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto] hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="العودة للخلف"
             type="button"
           >
             <div className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
-              <img
-                className="relative w-[19.28px] h-[9.42px]"
-                alt="سهم العودة"
-                src="/img/arrow-1addD.svg"
-              />
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
             </div>
           </button>
 
           <button
+            onClick={handleExcelUpload}
             className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             type="button"
             aria-label="إضافة سائقين من ملف Excel"
@@ -35,11 +46,7 @@ export const UserDetailsSection = (): JSX.Element => {
                 </p>
               </div>
 
-              <img
-                className="relative w-[18px] h-[18px] aspect-[1]"
-                alt="أيقونة Excel"
-                src="/img/side-iconsaddD.svg"
-              />
+              <Upload className="w-4 h-4 text-gray-600" />
             </div>
           </button>
         </div>
@@ -53,11 +60,7 @@ export const UserDetailsSection = (): JSX.Element => {
             إضافة سائق جديد
           </span>
 
-          <img
-            className="relative w-[18px] h-[18px] aspect-[1]"
-            alt="أيقونة إضافة"
-            src="/img/side-icons-1addD.svg"
-          />
+          <UserPlus className="w-4 h-4 text-gray-600" />
         </button>
       </nav>
     </header>

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { validateCarForm } from '../utils/validation';
+import { validateCarForm, validateDriverForm } from '../utils/validation';
 
 export const useForm = (initialValues: any) => {
   const [values, setValues] = useState(initialValues);
@@ -29,7 +29,10 @@ export const useForm = (initialValues: any) => {
   }, []);
 
   const validateForm = useCallback(() => {
-    const validationErrors = validateCarForm(values);
+    // Determine which validation function to use based on form type
+    // Check if this is a driver form by looking for driver-specific fields
+    const isDriverForm = values.driverName !== undefined || values.phone !== undefined || values.email !== undefined;
+    const validationErrors = isDriverForm ? validateDriverForm(values) : validateCarForm(values);
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
   }, [values]);
