@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Download, Calendar, FileSpreadsheet, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Download, FileSpreadsheet, FileText, ArrowLeft } from "lucide-react";
+import { TimeFilter } from "../../../../components/shared";
 
 const ExportMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -108,6 +110,7 @@ const ExportMenu = () => {
 };
 
 export const HeaderSection = (): JSX.Element => {
+  const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
 
   const timeFilters = ["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"];
@@ -116,46 +119,23 @@ export const HeaderSection = (): JSX.Element => {
     <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
       <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
         <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
+          <button
+            onClick={() => navigate('/wallet')}
+            className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)] hover:opacity-80 transition-opacity"
+            aria-label="العودة"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+
           <ExportMenu />
+          
+          <TimeFilter
+            selectedFilter={selectedTimeFilter}
+            onFilterChange={setSelectedTimeFilter}
+          />
         </div>
 
         <div className="inline-flex items-center justify-end gap-[var(--corner-radius-extra-large)] relative flex-[0_0_auto]">
-          {/* Time Filters with Calendar Icon */}
-          <div className="inline-flex items-center gap-[11px] relative flex-[0_0_auto]">
-            <button
-              className="w-[35px] bg-color-mode-surface-bg-icon-gray border-[0.2px] border-solid border-color-mode-surface-bg-screen flex items-center justify-center h-[30px] relative rounded-[5px] hover:bg-opacity-60 transition-all duration-200"
-              aria-label="عرض الخيارات"
-            >
-              <Calendar className="w-4 h-4 text-gray-600" />
-            </button>
-
-            {timeFilters.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setSelectedTimeFilter(filter)}
-                className={`flex flex-col w-[100.98px] h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] border-[0.2px] border-solid transition-all hover:border-[var(--color-mode-text-icons-t-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-mode-text-icons-t-blue)] focus:ring-opacity-50 ${
-                  selectedTimeFilter === filter
-                    ? "border-[var(--color-mode-text-icons-t-blue)] bg-[var(--color-mode-text-icons-t-blue)]/5 font-bold text-[var(--color-mode-text-icons-t-blue)]"
-                    : "border-[var(--border-medium)] font-normal text-[var(--text-secondary)] opacity-70"
-                }`}
-                role="tab"
-                aria-selected={selectedTimeFilter === filter}
-                aria-label={`فلترة حسب ${filter}`}
-              >
-                <div className="flex w-[126px] items-center justify-center gap-[15px] relative flex-[0_0_auto] mt-[-12.00px] mb-[-12.00px] ml-[-28.51px] mr-[-28.51px]">
-                  <span
-                    className={`relative flex items-center justify-center w-fit mt-[-1.00px] text-sm tracking-[0.40px] leading-[19.2px] [font-family:'Tajawal',Helvetica] whitespace-nowrap [direction:rtl] ${
-                      selectedTimeFilter === filter
-                        ? "text-[var(--color-mode-text-icons-t-blue)] font-bold"
-                        : "text-[var(--text-secondary)] font-normal opacity-70"
-                    }`}
-                  >
-                    {filter}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
 
           <div className="inline-flex flex-col items-end justify-center gap-2.5 relative flex-[0_0_auto]">
             <div className="flex w-[188px] items-center justify-end gap-1.5 relative flex-[0_0_auto]">

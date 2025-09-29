@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Download, FileChartColumnIncreasing, Calendar, FileSpreadsheet, FileText } from "lucide-react";
-import { Table } from "../../../../components/shared/Table/Table";
+import { useNavigate } from "react-router-dom";
+import { Download, FileChartColumnIncreasing, FileSpreadsheet, FileText, ArrowLeft } from "lucide-react";
+import { Table, TimeFilter } from "../../../../components/shared";
 
 const ExportMenu = ({ isTableRow = false }: { isTableRow?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -161,6 +162,7 @@ const ExportMenu = ({ isTableRow = false }: { isTableRow?: boolean }) => {
 };
 
 export const RequestHistorySection = (): JSX.Element => {
+  const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(3);
 
@@ -338,49 +340,26 @@ export const RequestHistorySection = (): JSX.Element => {
       <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
         <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
           <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
+            <button
+              onClick={() => navigate('/wallet')}
+              className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)] hover:opacity-80 transition-opacity"
+              aria-label="العودة"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+
             <ExportMenu />
 
-            {/* Time Filters with Calendar Icon */}
-            <div className="inline-flex items-center gap-[11px] relative flex-[0_0_auto]">
-              <button
-                className="w-[35px] bg-color-mode-surface-bg-icon-gray border-[0.2px] border-solid border-color-mode-surface-bg-screen flex items-center justify-center h-[30px] relative rounded-[5px] hover:bg-opacity-60 transition-all duration-200"
-                aria-label="عرض الخيارات"
-              >
-                <Calendar className="w-4 h-4 text-gray-600" />
-              </button>
-
-              {timeFilters.map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setSelectedTimeFilter(filter)}
-                  className={`flex flex-col w-[100.98px] h-[30px] items-center justify-center gap-2.5 p-4 relative rounded-[5px] border-[0.2px] border-solid transition-all hover:border-[var(--color-mode-text-icons-t-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-mode-text-icons-t-blue)] focus:ring-opacity-50 ${
-                    selectedTimeFilter === filter
-                      ? "border-[var(--color-mode-text-icons-t-blue)] bg-[var(--color-mode-text-icons-t-blue)]/5"
-                      : "border-[var(--border-medium)]"
-                  }`}
-                  aria-pressed={selectedTimeFilter === filter}
-                  type="button"
-                >
-                  <div className="flex w-[126px] items-center justify-center gap-[15px] relative flex-[0_0_auto] mt-[-9.00px] mb-[-9.00px] ml-[-28.51px] mr-[-28.51px]">
-                    <span
-                      className={`flex items-center justify-center h-4 mt-[-1.00px] text-sm tracking-[0.40px] leading-[19.2px] whitespace-nowrap [font-family:'Tajawal',Helvetica] [direction:rtl] transition-colors ${
-                        selectedTimeFilter === filter
-                          ? "font-bold text-[var(--color-mode-text-icons-t-blue)]"
-                          : "font-normal text-[var(--text-secondary)] opacity-70"
-                      }`}
-                    >
-                      {filter}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <TimeFilter
+              selectedFilter={selectedTimeFilter}
+              onFilterChange={setSelectedTimeFilter}
+            />
           </div>
 
-          <div className="inline-flex gap-1.5 items-center relative flex-[0_0_auto]">
-            <h1 className="relative w-[162px] h-5 mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-              سجل طلبات الاسترداد
-            </h1>
+            <div className="inline-flex gap-1.5 items-center relative flex-[0_0_auto]">
+              <h1 className="relative w-[162px] h-5 mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
+                سجل طلبات الاسترداد
+              </h1>
 
             <FileChartColumnIncreasing className="w-[18px] h-[18px] text-gray-500" />
           </div>
