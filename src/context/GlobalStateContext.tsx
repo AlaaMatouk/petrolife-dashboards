@@ -91,6 +91,7 @@ export interface GlobalState {
   sidebarCollapsed: boolean;
   theme: 'light' | 'dark';
   language: 'ar' | 'en';
+  openDropdowns: Set<string>;
   
   // Pagination
   pagination: {
@@ -140,6 +141,8 @@ export type GlobalAction =
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' }
   | { type: 'SET_LANGUAGE'; payload: 'ar' | 'en' }
+  | { type: 'TOGGLE_DROPDOWN'; payload: string }
+  | { type: 'SET_DROPDOWN'; payload: { section: string; isOpen: boolean } }
   
   // Pagination
   | { type: 'SET_PAGINATION'; payload: { type: 'drivers' | 'cars' | 'transactions'; pagination: PaginationState } }
@@ -170,6 +173,7 @@ const initialState: GlobalState = {
   sidebarCollapsed: false,
   theme: 'light',
   language: 'ar',
+  openDropdowns: new Set<string>(),
   
   // Pagination
   pagination: {
@@ -352,6 +356,22 @@ const globalReducer = (state: GlobalState, action: GlobalAction): GlobalState =>
       return { ...state, theme: action.payload };
     case 'SET_LANGUAGE':
       return { ...state, language: action.payload };
+    case 'TOGGLE_DROPDOWN':
+      const newDropdowns = new Set(state.openDropdowns);
+      if (newDropdowns.has(action.payload)) {
+        newDropdowns.delete(action.payload);
+      } else {
+        newDropdowns.add(action.payload);
+      }
+      return { ...state, openDropdowns: newDropdowns };
+    case 'SET_DROPDOWN':
+      const updatedDropdowns = new Set(state.openDropdowns);
+      if (action.payload.isOpen) {
+        updatedDropdowns.add(action.payload.section);
+      } else {
+        updatedDropdowns.delete(action.payload.section);
+      }
+      return { ...state, openDropdowns: updatedDropdowns };
     
     // Pagination
     case 'SET_PAGINATION':
