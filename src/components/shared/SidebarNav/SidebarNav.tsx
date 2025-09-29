@@ -3,9 +3,10 @@ import { useLocation } from "react-router-dom";
 import { Logo } from "./components/Logo";
 import { MenuItem, NavigationItem } from "./components/MenuItem";
 import { SectionHeader } from "./components/SectionHeader";
+import { DropdownSection } from "./components/DropdownSection";
 import { UserProfile } from "./components/UserProfile";
 import { LogoutButton } from "./components/LogoutButton";
-import { useUI, useAuth } from "../../../hooks/useGlobalState";
+import { useUI, useAuth, useDropdowns } from "../../../hooks/useGlobalState";
 import { isRouteMatch } from "../../../constants/routes";
 
 export interface NavigationSection {
@@ -46,6 +47,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const [activeItem, setActiveItem] = useState<string>("");
   const { sidebarCollapsed } = useUI();
   const { user } = useAuth();
+  const { toggleDropdown, isDropdownOpen } = useDropdowns();
 
 
   const handleMenuItemClick = (item: NavigationItem) => {
@@ -54,6 +56,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       item.onClick();
     }
   };
+
 
   // Check if item is active based on current pathname
   const isItemActive = (item: NavigationItem) => {
@@ -91,22 +94,42 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
 
         {/* Sections */}
-        {sections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="mb-4">
-            <SectionHeader title={section.title} />
-            <div className="space-y-1 mt-2">
-              {section.items.map((item) => (
-                <MenuItem
-                  key={item.id}
-                  item={item}
-                  isSubItem={true}
-                  isActive={isItemActive(item)}
-                  onClick={handleMenuItemClick}
-                />
-              ))}
+        {sections.map((section, sectionIndex) => {
+          // Check if this section should be a dropdown
+          const isDropdownSection = section.title === "المــــــــــــــــــــــــــــــوارد" || 
+                                   section.title === "التقاريــــــــــــــــــــــــــــــر";
+          
+          if (isDropdownSection) {
+            return (
+              <DropdownSection
+                key={sectionIndex}
+                title={section.title}
+                items={section.items}
+                isOpen={isDropdownOpen(section.title)}
+                onToggle={() => toggleDropdown(section.title)}
+                onItemClick={handleMenuItemClick}
+              />
+            );
+          }
+          
+          // Regular section with header
+          return (
+            <div key={sectionIndex} className="mb-4">
+              <SectionHeader title={section.title} />
+              <div className="space-y-1 mt-2">
+                {section.items.map((item) => (
+                  <MenuItem
+                    key={item.id}
+                    item={item}
+                    isSubItem={true}
+                    isActive={isItemActive(item)}
+                    onClick={handleMenuItemClick}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Bottom Items */}
         <div className="space-y-1 mb-4">

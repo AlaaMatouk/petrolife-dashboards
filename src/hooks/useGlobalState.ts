@@ -174,6 +174,26 @@ export const useUI = () => {
   };
 };
 
+export const useDropdowns = () => {
+  const { state, dispatch } = useGlobalState();
+  
+  const toggleDropdown = useCallback((section: string) => 
+    dispatch({ type: 'TOGGLE_DROPDOWN', payload: section }), [dispatch]);
+  
+  const setDropdown = useCallback((section: string, isOpen: boolean) => 
+    dispatch({ type: 'SET_DROPDOWN', payload: { section, isOpen } }), [dispatch]);
+  
+  const isDropdownOpen = useCallback((section: string) => 
+    state.openDropdowns.has(section), [state.openDropdowns]);
+  
+  return {
+    openDropdowns: state.openDropdowns,
+    toggleDropdown,
+    setDropdown,
+    isDropdownOpen,
+  };
+};
+
 export const useError = () => {
   const { state, dispatch } = useGlobalState();
   
