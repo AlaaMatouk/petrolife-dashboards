@@ -1,8 +1,11 @@
 import React from 'react';
-import { Car, CarFront, Truck } from 'lucide-react';
+import { Car, CarFront, Truck, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Input, Select, RadioGroup, CarNumberInput } from '../../../../components/shared/Form';
 
 export const CarInformationSection = (): JSX.Element => {
+  const navigate = useNavigate();
+  
   const carData = {
     carName: 'سيارة 21A254',
     carType: 'صغيرة',
@@ -83,8 +86,18 @@ export const CarInformationSection = (): JSX.Element => {
 
   return (
     <div className="flex flex-col items-start gap-6 w-full bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-      {/* Title with Car Icon - Same style as cars list */}
-      <div className="flex items-center justify-end w-full">
+      {/* Header with Back Button and Title */}
+      <div className="flex items-center justify-between w-full">
+        <button
+          onClick={() => navigate('/cars')}
+          className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]"
+          aria-label="العودة"
+        >
+          <div className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)] hover:opacity-80 transition-opacity">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </div>
+        </button>
+
         <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
           <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
             سيارة 21A254

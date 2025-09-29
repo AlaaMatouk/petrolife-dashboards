@@ -4,11 +4,14 @@ import {
   navigationMenuData,
   userInfo,
 } from "../../constants/data";
-import { Car } from "lucide-react";
+import { Car, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { CarInformationSection } from "./sections/CarInformationSection/CarInformationSection";
 import { CarDriversSection } from "./sections/CarDriversSection/CarDriversSection";
 
 export const CarDetails = (): JSX.Element => {
+  const navigate = useNavigate();
+
   return (
     <LayoutSimple
       headerProps={{
