@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { CirclePlus, ArrowLeft, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const RequestFormSection = (): JSX.Element => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     accountNumber: "",
     companyIban: "",
@@ -31,20 +34,17 @@ export const RequestFormSection = (): JSX.Element => {
   };
 
   return (
-    <div className="flex flex-col h-[522px] items-start gap-5 relative self-stretch w-full">
+    <div className="flex flex-col h-[522px] items-start gap-5 relative self-stretch w-full mb-6">
       <div className="flex flex-col h-[522px] items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <div className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <header className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
             <div className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
               <button
+                onClick={() => navigate('/wallet')}
                 className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)] hover:opacity-80 transition-opacity"
                 aria-label="العودة"
               >
-                <img
-                  className="relative w-[19.28px] h-[9.42px]"
-                  alt="Arrow"
-                  src="/img/arrow-1.svg"
-                />
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
@@ -53,11 +53,7 @@ export const RequestFormSection = (): JSX.Element => {
                 إضافة طلب استرداد أموال
               </h1>
 
-              <img
-                className="relative w-[18px] h-[18px] aspect-[1]"
-                alt="Side icons"
-                src="/img/side-icons.svg"
-              />
+              <CirclePlus className="w-[18px] h-[18px] text-gray-500" />
             </div>
           </header>
         </div>
@@ -117,11 +113,7 @@ export const RequestFormSection = (): JSX.Element => {
                 </label>
 
                 <div className="flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-[var(--corner-radius-small)] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-                  <img
-                    className="w-[17px] h-[17px] relative aspect-[1]"
-                    alt="Side icons"
-                    src="/img/side-icons-1.svg"
-                  />
+                  <ChevronDown className="w-[17px] h-[17px] text-gray-500" />
 
                   <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
                     <select
@@ -192,12 +184,19 @@ export const RequestFormSection = (): JSX.Element => {
                         كل الأموال(7250 ر.س)
                       </div>
                     </div>
+                    {formData.withdrawalType === "all" && (
+                      <img
+                        className="absolute top-0 left-0 w-3.5 h-3.5"
+                        alt="Selected"
+                        src="/img/rectangle-22DI.svg"
+                      />
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleWithdrawalTypeChange("custom")}
-                    className={`flex h-[46px] items-center justify-end gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] flex-1 grow border-[0.7px] border-solid relative rounded-[var(--corner-radius-small)] transition-colors ${
+                    className={`flex h-[46px] items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] flex-1 grow border-[0.5px] border-solid relative rounded-[var(--corner-radius-small)] transition-colors ${
                       formData.withdrawalType === "custom"
                         ? "border-color-mode-text-icons-t-blue"
                         : "border-color-mode-text-icons-t-placeholder"
@@ -214,12 +213,11 @@ export const RequestFormSection = (): JSX.Element => {
                         تحديد قيمة السحب
                       </div>
                     </div>
-
                     {formData.withdrawalType === "custom" && (
                       <img
-                        className="absolute top-0 left-px w-3.5 h-3.5"
-                        alt="Rectangle"
-                        src="/img/rectangle-22.svg"
+                        className="absolute top-0 left-0 w-3.5 h-3.5"
+                        alt="Selected"
+                        src="/img/rectangle-22DI.svg"
                       />
                     )}
                   </button>

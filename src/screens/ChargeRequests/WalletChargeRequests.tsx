@@ -12,17 +12,12 @@ export const WalletChargeRequests = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
-        title: "محفظــــــــــــــتي / طلبــــــــات اشترداد الأموال",
-        titleIconSrc: "/img/side-icons-6.svg",
-        navigationIcons: navigationIcons,
+        title: "محفظــــــــــــــتي / طلبات شحن المحفظة",
+        titleIconSrc: <img src="/img/side-icons-6.svg" alt="Wallet" className="w-5 h-5" />,
         showSearch: false,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
           onSearch: (query) => console.log("Search:", query),
-        },
-        walletButton: {
-          label: "محفظــــــــــــــتي / طلبات شحن المحفظة",
-          iconSrc: "/img/side-icons.svg",
         },
       }}
       sidebarProps={{
@@ -32,9 +27,11 @@ export const WalletChargeRequests = (): JSX.Element => {
         userInfo: userInfo,
       }}
     >
-      <HeaderSection />
-      <ContentSection />
-      <PaginationSection />
+      <div className="flex flex-col items-start gap-6 pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
+        <HeaderSection />
+        <ContentSection />
+        <PaginationSection />
+      </div>
     </Layout>
   );
 };
