@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 import {
@@ -168,6 +169,7 @@ const ExportMenu = ({ isTableRow = false }: { isTableRow?: boolean }) => {
 };
 
 export const TransactionListSection = (): JSX.Element => {
+  const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(3);
 
@@ -284,7 +286,11 @@ export const TransactionListSection = (): JSX.Element => {
                <span className="text-base">ر.س</span> 7,250
           </p>
           <div className="flex gap-4">
-               <button className="border border-white text-white rounded-full py-2 px-4 hover:bg-white hover:bg-opacity-10 transition" style={{ border: '1px solid white' }}>
+               <button 
+                onClick={() => navigate('/walletchargerequests')}
+                className="border border-white text-white rounded-full py-2 px-4 hover:bg-white hover:bg-opacity-10 transition" 
+                style={{ border: '1px solid white' }}
+              >
               طلبات شحن المحفظة
             </button>
             <button className="flex-1 bg-white text-color-mode-text-icons-t-blue rounded-full py-2 px-4 hover:bg-gray-50 transition">
