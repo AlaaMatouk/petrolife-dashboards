@@ -11,7 +11,7 @@ export const MoneyRefundRequests = (): JSX.Element => {
     <Layout
       headerProps={{
         title: "محفظــــــــــــــتي / طلبــــــــات اشترداد الأموال",
-        titleIconSrc: "/img/side-icons-6.svg",
+        titleIconSrc: <img src="/img/side-icons-6.svg" alt="Wallet" className="w-5 h-5" />,
         navigationIcons: navigationIcons,
         showSearch: false,
         searchProps: {
