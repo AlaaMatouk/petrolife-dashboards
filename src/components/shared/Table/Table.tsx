@@ -1,12 +1,11 @@
 import React from "react";
-import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 export interface TableColumn<T = any> {
   key: string;
   label: string;
   width?: string;
   render?: (value: any, row: T, index: number) => React.ReactNode;
-  sortable?: boolean;
   className?: string;
 }
 
@@ -17,9 +16,6 @@ export interface TableProps<T = any> {
   headerClassName?: string;
   rowClassName?: string;
   cellClassName?: string;
-  onSort?: (column: string, direction: "asc" | "desc") => void;
-  sortColumn?: string;
-  sortDirection?: "asc" | "desc";
   loading?: boolean;
   emptyMessage?: string;
 }
@@ -31,18 +27,9 @@ export const Table = <T extends Record<string, any>>({
   headerClassName = "",
   rowClassName = "",
   cellClassName = "",
-  onSort,
-  sortColumn,
-  sortDirection,
   loading = false,
   emptyMessage = "لا توجد بيانات",
 }: TableProps<T>) => {
-  const handleSort = (column: string) => {
-    if (!onSort) return;
-    const newDirection =
-      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
-    onSort(column, newDirection);
-  };
 
   if (loading) {
     return (
@@ -75,15 +62,6 @@ export const Table = <T extends Record<string, any>>({
                     <span>{column.label}</span>
                     {column.key === "accountStatus" && (
                       <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-                    )}
-                    {column.sortable && onSort && (
-                      <button
-                        onClick={() => handleSort(column.key)}
-                        className="w-3.5 h-3.5 hover:bg-gray-200 rounded p-0.5"
-                        aria-label={`ترتيب حسب ${column.label}`}
-                      >
-                        <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
-                      </button>
                     )}
                   </div>
                 </th>
