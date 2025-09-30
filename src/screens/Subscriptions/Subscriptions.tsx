@@ -12,7 +12,7 @@ export const SubscriptionsScreen = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
-        title: "الاشتراكات",
+        title: "اشتراكاتي",
         titleIconSrc: <CreditCard className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {

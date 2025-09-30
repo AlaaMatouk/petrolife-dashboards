@@ -101,12 +101,12 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         aria-label="تصدير البيانات"
       >
         <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+          <Download className="w-4 h-4 text-gray-500" />
           <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
             <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
               {buttonText}
             </span>
           </div>
-          <Download className="w-4 h-4 text-gray-500" />
         </div>
       </button>
 

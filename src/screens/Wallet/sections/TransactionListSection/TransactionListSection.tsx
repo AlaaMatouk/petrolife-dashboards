@@ -132,7 +132,10 @@ export const TransactionListSection = (): JSX.Element => {
               >
               طلبات شحن المحفظة
             </button>
-            <button className="flex-1 bg-white text-color-mode-text-icons-t-blue rounded-full py-2 px-4 hover:bg-gray-50 transition">
+            <button 
+              onClick={() => navigate('/chargewallet')}
+              className="flex-1 bg-white text-color-mode-text-icons-t-blue rounded-full py-2 px-4 hover:bg-gray-50 transition"
+            >
               شحن المحفظة
             </button>
              </div>

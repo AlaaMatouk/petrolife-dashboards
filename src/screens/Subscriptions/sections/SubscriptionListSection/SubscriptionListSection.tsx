@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { Star, FileText } from "lucide-react";
+import { Table, Pagination, ExportButton } from "../../../../components/shared";
 
 const currentSubscriptionData = {
   price: "150",
@@ -116,19 +118,56 @@ const paginationData = [
 ];
 
 export const SubscriptionListSection = (): JSX.Element => {
+  const [currentPage, setCurrentPage] = useState(3);
+
+  const tableColumns = [
+    {
+      key: "export",
+      label: "",
+      width: "w-[100px] min-w-[100px]",
+      render: () => <div className="flex justify-end"><ExportButton className="!border-0 inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors" /></div>,
+    },
+    {
+      key: "operationType",
+      label: "الحالة",
+      width: "w-[150px] min-w-[150px]",
+    },
+    {
+      key: "expiryDate",
+      label: "تاريخ الانتهاء",
+      width: "w-[200px] min-w-[200px]",
+    },
+    {
+      key: "subscriptionDate",
+      label: "تاريخ الاشتراك",
+      width: "w-[200px] min-w-[200px]",
+    },
+    {
+      key: "packageName",
+      label: "اسم الباقة",
+      width: "w-[200px] min-w-[200px]",
+    },
+    {
+      key: "packageCode",
+      label: "كود الباقة",
+      width: "w-[120px] min-w-[120px]",
+    },
+  ];
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    console.log(`Navigate to page ${page}`);
+  };
+
   return (
-    <section className="flex flex-col w-[1077px] items-start gap-5 absolute top-28 left-[50px]" role="main" aria-label="قسم قائمة الاشتراكات">
+    <section className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4" role="main" aria-label="قسم قائمة الاشتراكات">
 <article className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
 <div className="flex flex-col items-end gap-7 relative self-stretch w-full flex-[0_0_auto]">
 <header className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
 <h2 className="relative w-[103px] h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
 الباقة الحالية
             </h2>
-<img
-              className="relative w-[18px] h-[18px] aspect-[1]"
-              alt="أيقونة الباقة الحالية"
-              src="/img/side-icons-14.svg"
-            />
+            <Star className="relative w-[18px] h-[18px] text-gray-500" />
 </header>
 <div className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
 <div className="flex flex-col items-start justify-center gap-[var(--corner-radius-medium)] relative flex-1 grow">
@@ -225,117 +264,44 @@ export const SubscriptionListSection = (): JSX.Element => {
 </div>
 </div>
 </div>
-<div className="flex flex-col w-[138px] items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] bg-color-mode-surface-bg-orange-light rounded-[var(--corner-radius-small)]">
+<div className="flex flex-col w-[138px] items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] bg-orange-100 rounded-[var(--corner-radius-small)]">
 <div className="items-center justify-center gap-[var(--corner-radius-small)] self-stretch w-full flex-[0_0_auto] flex relative">
 <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
 <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-orange text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
 باقاتنا المميزة
               </span>
 </div>
-<img
-              className="relative w-[18px] h-[18px] aspect-[1]"
-              alt="أيقونة الباقات المميزة"
-              src="/img/side-icons-15.svg"
-            />
+            <Star className="relative w-[18px] h-[18px] text-orange-500" />
 </div>
 </div>
 </article>
 <article className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
 <div className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
 <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-<button className="relative w-[79px] h-[30px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder bg-transparent hover:bg-color-mode-surface-bg-icon-gray transition-colors" aria-label="تصدير البيانات">
-<span className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-3-font-style)]">
-تصدير
-              </span>
-<div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-<div className="flex-1 w-[21.26px] relative">
-<img
-                    className="absolute w-[58.33%] h-[75.00%] top-[9.06%] left-[18.48%]"
-                    alt="أيقونة التصدير"
-                    src="/img/icon.svg"
-                  />
-</div>
-</div>
-</button>
+            <ExportButton />
 <header className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
 <h2 className="relative w-[156px] h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
 سجل الباقات السابقة
               </h2>
-<img
-                className="relative w-[18px] h-[18px] aspect-[1]"
-                alt="أيقونة سجل الباقات السابقة"
-                src="/img/side-icons-16.svg"
-              />
+            <FileText className="relative w-[18px] h-[18px] text-gray-500" />
 </header>
 </div>
 </div>
-<div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
-<div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-<div className="flex items-start justify-end relative self-stretch w-full flex-[0_0_auto]">
-<table className="flex flex-col items-end relative flex-1 grow" role="table" aria-label="جدول سجل الباقات السابقة">
-<thead className="relative self-stretch w-full h-[42px] bg-color-mode-surface-bg-icon-gray">
-<tr className="flex items-start justify-end relative self-stretch w-full flex-[0_0_auto]">
-<th className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[91px] flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-<span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-كود الباقة
-                      </span>
-</th>
-<th className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[117px] flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-<span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-اسم الباقة
-                      </span>
-</th>
-<th className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[255px] flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-<span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-تاريخ الاشتراك
-                      </span>
-</th>
-<th className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[203px] flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-<span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-تاريخ الانتهاء
-                      </span>
-</th>
-<th className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[159px] flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray">
-<span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-الحالة
-</span>
-</th>
-</tr>
-</thead>
-<tbody>
-{historyTableData.map((subscription, index) => (
-<tr key={index} className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-<td className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[117px] flex-[0_0_auto] bg-white border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-<span className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-{subscription.packageCode}
-</span>
-</td>
-<td className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[255px] flex-[0_0_auto] bg-white border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-<span className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-{subscription.packageName}
-</span>
-</td>
-<td className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[203px] flex-[0_0_auto] bg-white border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-<span className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-{subscription.subscriptionDate}
-</span>
-</td>
-<td className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[203px] flex-[0_0_auto] bg-white border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-<span className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-{subscription.expiryDate}
-</span>
-</td>
-<td className="flex items-center justify-end gap-2.5 pr-[var(--corner-radius-none)] pl-[var(--corner-radius-none)] py-2.5 relative w-[159px] flex-[0_0_auto] bg-white border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-<span className="relative w-fit mt-[-0.20px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-black text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-{subscription.operationType}
-</span>
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
+<div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
+<Table
+  columns={tableColumns}
+  data={historyTableData}
+  className="w-full"
+  headerClassName="bg-color-mode-surface-bg-icon-gray"
+  rowClassName="hover:bg-gray-50"
+  cellClassName="text-right [direction:rtl] whitespace-nowrap"
+/>
+<Pagination
+  currentPage={currentPage}
+  totalPages={20}
+  onPageChange={handlePageChange}
+  className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+/>
 </div>
 </article>
 </section>
