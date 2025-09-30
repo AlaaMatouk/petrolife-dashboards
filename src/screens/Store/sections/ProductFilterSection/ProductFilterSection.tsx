@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Heart, Share2, ShoppingCart, DollarSign } from "lucide-react";
+import { Star, Heart, Share2, ShoppingCart, DollarSign, Store } from "lucide-react";
 
 const filterCategories = [
   { id: "accessories", label: "اكسسوارات" },
@@ -326,11 +326,7 @@ export const ProductFilterSection = (): JSX.Element => {
             المنتجات
           </div>
 
-          <img
-            className="relative w-[18px] h-[18px] aspect-[1]"
-            alt="Side icons"
-            src="/img/side-icons.svg"
-          />
+          <Store className="relative w-[18px] h-[18px] text-gray-500" />
         </div>
       </div>
 

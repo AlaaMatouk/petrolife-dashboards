@@ -17,7 +17,7 @@ export interface HeaderProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = "بحث",
+  placeholder = "البحث...",
   onSearch,
   className = "",
 }) => {
@@ -36,28 +36,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <form
       onSubmit={handleSearchSubmit}
-      className={`flex items-center h-[46px] w-full sm:max-w-[390px] rounded-full border border-color-mode-text-icons-t-placeholder bg-white px-3 ${className}`}
+      className={`flex items-center h-[46px] w-full min-w-[300px] sm:min-w-[400px] lg:min-w-[500px] rounded-full border border-gray-300 bg-white px-4 shadow-sm ${className}`}
       role="search"
     >
-      <div className="flex h-[46px]  w-full items-center justify-between gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] relative self-stretch w-full rounded-full border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-        {/* Input */}
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder={placeholder}
-          dir="rtl"
-          className="flex-1 text-sm text-color-mode-text-icons-t-primary-gray bg-transparent border-none outline-none placeholder-color-mode-text-icons-t-placeholder text-right"
-        />
-        {/* Icon */}
-        <button
-          type="submit"
-          className="ml-2 flex items-center justify-center text-gray-500 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue rounded-full transition-opacity"
-          aria-label="Submit search"
-        >
-          <Search className="w-4 h-4" />
-        </button>
-      </div>
+      {/* Input */}
+      <input
+        type="search"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        placeholder={placeholder}
+        dir="rtl"
+        className="flex-1 text-sm text-color-mode-text-icons-t-primary-gray bg-transparent border-none outline-none placeholder-color-mode-text-icons-t-placeholder text-right pr-2"
+      />
+      {/* Icon */}
+      <button
+        type="submit"
+        className="flex items-center justify-center text-gray-500 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue rounded-full transition-opacity p-1"
+        aria-label="Submit search"
+      >
+        <Search className="w-4 h-4" />
+      </button>
     </form>
   );
 };
@@ -103,14 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex flex-wrap items-center justify-end gap-2 w-auto sm:w-auto flex-1 sm:flex-none">
           {/* Search Bar */}
           {showSearch && (
-            <div className="w-full sm:w-auto mr-2">
+            <div className="w-full sm:w-auto mr-2 flex-1 max-w-[600px]">
               <SearchBar {...searchProps} />
             </div>
           )}
 
           {/* Title + Icon */}
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+            <h1 className="text-lg font-normal text-[#5B738B]">{title}</h1>
             {titleIconSrc && <span>{titleIconSrc}</span>}
           </div>
 

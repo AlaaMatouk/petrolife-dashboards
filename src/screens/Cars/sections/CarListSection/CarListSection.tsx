@@ -4,7 +4,8 @@ import { ExportButton } from "../../../../components/shared";
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
 import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 // Define table columns for cars - original order with responsive design
 const carColumns = [

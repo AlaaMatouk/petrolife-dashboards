@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Store } from "lucide-react";
 
 const productData = [
   {
@@ -154,11 +155,7 @@ export const ProductGridSection = (): JSX.Element => {
             المنتجات
           </div>
 
-          <img
-            className="relative w-[18px] h-[18px] aspect-[1]"
-            alt="Side icons"
-            src="/img/side-icons.svg"
-          />
+          <Store className="relative w-[18px] h-[18px] text-gray-500" />
         </div>
       </div>
 
