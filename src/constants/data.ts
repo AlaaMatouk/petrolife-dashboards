@@ -55,6 +55,23 @@ export const navigationMenuData = {
         },
       ],
     },
+    {
+      title: "المتجر والاشتراكات",
+      items: [
+        {
+          id: "store",
+          label: "المتجر",
+          icon: "/img/side-icons-10.svg",
+          href: ROUTES.STORE,
+        },
+        {
+          id: "subscriptions",
+          label: "اشتراكاتي",
+          icon: "/img/side-icons-11.svg",
+          href: ROUTES.SUBSCRIPTIONS,
+        },
+      ],
+    },
   ],
   bottomItems: [
     {
