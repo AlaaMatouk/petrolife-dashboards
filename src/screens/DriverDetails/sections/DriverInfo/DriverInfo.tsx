@@ -1,8 +1,11 @@
 import { UserRound, ArrowLeft, Upload, User, MapPin, Car, Calendar, ChevronDown } from "lucide-react";
 import React from "react";
 import { RadioGroup } from "../../../../components/shared/Form";
+import { useNavigate } from "react-router-dom";
 
 export const DriverInfo = (): JSX.Element => {
+  const navigate = useNavigate();
+  
   // Driver information data
   const driverInfo = {
     name: "محمد احمد علي",
@@ -74,6 +77,7 @@ export const DriverInfo = (): JSX.Element => {
       <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
         <nav className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
           <button
+            onClick={() => navigate(-1)}
             className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]"
             aria-label="العودة"
           >

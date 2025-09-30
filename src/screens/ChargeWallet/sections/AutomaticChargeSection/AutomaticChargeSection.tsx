@@ -1,11 +1,14 @@
 import React from 'react';
-import { Wallet, Copy, Wifi, CircleAlert } from 'lucide-react';
+import { Wallet, Copy, Wifi, CircleAlert, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AutomaticChargeSectionProps {
   onTabChange: (tab: 'automatic' | 'manual') => void;
 }
 
 export const AutomaticChargeSection = ({ onTabChange }: AutomaticChargeSectionProps): JSX.Element => {
+  const navigate = useNavigate();
+  
   const virtualAccounts = [
     {
       id: 1,
@@ -44,6 +47,15 @@ export const AutomaticChargeSection = ({ onTabChange }: AutomaticChargeSectionPr
       {/* Header with Tabs */}
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex h-10 items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]"
+            aria-label="العودة"
+          >
+            <div className="flex flex-col w-10 items-center justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
+            </div>
+          </button>
           <button
             onClick={() => onTabChange('automatic')}
             className="px-4 py-2 rounded-lg font-medium transition-colors"
