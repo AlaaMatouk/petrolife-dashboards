@@ -115,13 +115,13 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           // Regular section with header
           return (
             <div key={sectionIndex} className="mb-4">
-              <SectionHeader title={section.title} />
-              <div className="space-y-1 mt-2">
+              {section.title !== "المتجر والاشتراكات" && <SectionHeader title={section.title} />}
+              <div className={`space-y-1 ${section.title === "المتجر والاشتراكات" ? "mt-0" : "mt-2"}`}>
                 {section.items.map((item) => (
                   <MenuItem
                     key={item.id}
                     item={item}
-                    isSubItem={true}
+                    isSubItem={section.title !== "المتجر والاشتراكات"}
                     isActive={isItemActive(item)}
                     onClick={handleMenuItemClick}
                   />

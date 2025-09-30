@@ -16,6 +16,10 @@ import { MoneyRefundRequests } from '../screens/MoneyRefundRequests/MoneyRefundR
 import { WalletChargeRequests } from '../screens/ChargeRequests/WalletChargeRequests';
 import { ChargeWallet } from '../screens/ChargeWallet';
 import { PerolifeStationLocations } from '../screens/PerolifeStationLocations/perolifestationlocations';
+import { StoreScreen } from '../screens/Store';
+import { SubscriptionsScreen } from '../screens/Subscriptions';
+import { DeliveryFuelRequests } from '../screens/DeliveryFuelRequests';
+import { CreateDeliveryRequest } from '../screens/CreateDeliveryRequest';
 import LoginAndRegister from '../screens/Login And Register/LoginAndRegister';
 
 // 404 Component
@@ -53,9 +57,15 @@ export const AppRouter = () => {
       <Route path={ROUTES.WALLET_REPORTS} element={<WalletReports />} />
       
       {/* Operations */}
+      <Route path={ROUTES.FUEL_DELIVERY} element={<DeliveryFuelRequests />} />
+      <Route path={ROUTES.CREATE_DELIVERY_REQUEST} element={<CreateDeliveryRequest />} />
       <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyRefundRequests />} />
       <Route path={ROUTES.CHARGE_REQUESTS} element={<WalletChargeRequests />} />
       <Route path={ROUTES.PEROLIFE_STATION_LOCATIONS} element={<PerolifeStationLocations />} />
+      
+      {/* Store and Subscriptions */}
+      <Route path={ROUTES.STORE} element={<StoreScreen />} />
+      <Route path={ROUTES.SUBSCRIPTIONS} element={<SubscriptionsScreen />} />
       
       {/* Settings */}
       <Route path={ROUTES.SETTINGS} element={<NotFound />} />

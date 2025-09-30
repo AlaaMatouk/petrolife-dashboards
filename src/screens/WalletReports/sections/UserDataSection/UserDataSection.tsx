@@ -1,4 +1,5 @@
 import { userDataColumns } from "../../../../constants/data";
+import { UserRound } from "lucide-react";
 
 export const UserDataSection = (): JSX.Element => {
   return (
@@ -9,11 +10,7 @@ export const UserDataSection = (): JSX.Element => {
             بيانات العميل
           </h2>
 
-          <img
-            className="relative w-[18px] h-[18px] aspect-[1]"
-            alt="Side icons"
-            src="/img/side-icons.svg"
-          />
+          <UserRound className="relative w-[18px] h-[18px] text-gray-500" />
         </header>
 
         <div className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">

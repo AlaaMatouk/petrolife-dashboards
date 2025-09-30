@@ -55,6 +55,23 @@ export const navigationMenuData = {
         },
       ],
     },
+    {
+      title: "المتجر والاشتراكات",
+      items: [
+        {
+          id: "store",
+          label: "المتجر",
+          icon: "/img/side-icons-10.svg",
+          href: ROUTES.STORE,
+        },
+        {
+          id: "subscriptions",
+          label: "اشتراكاتي",
+          icon: "/img/side-icons-11.svg",
+          href: ROUTES.SUBSCRIPTIONS,
+        },
+      ],
+    },
   ],
   bottomItems: [
     {
@@ -67,13 +84,7 @@ export const navigationMenuData = {
       id: "stations",
       label: "محطات البترول",
       icon: "/img/side-icons-8.svg",
-      href: ROUTES.STATIONS,
-    },
-    {
-      id: "used-stations",
-      label: "المحطات المستخدمة",
-      icon: "/img/side-icons-9.svg",
-      href: ROUTES.USED_STATIONS,
+      href: ROUTES.PEROLIFE_STATION_LOCATIONS,
     },
     {
       id: "refund-requests",

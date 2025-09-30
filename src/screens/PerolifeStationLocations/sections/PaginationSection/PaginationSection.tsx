@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { ChevronLeft } from "lucide-react";
 
 export const PaginationSection = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(3);
 
   const paginationItems = [
-    { type: "next", label: "التالي", icon: "/img/icon-16-arrow-right.svg" },
+    { type: "next", label: "التالي" },
     { type: "page", value: 20 },
     { type: "ellipsis", value: "..." },
     { type: "page", value: 7 },
@@ -14,7 +15,7 @@ export const PaginationSection = (): JSX.Element => {
     { type: "page", value: 3, active: true },
     { type: "page", value: 2 },
     { type: "page", value: 1 },
-    { type: "prev", label: "السابق", icon: "/img/icon-16-arrow-left.svg" },
+    { type: "prev", label: "السابق" },
   ];
 
   const handlePageClick = (page: number) => {
@@ -29,11 +30,7 @@ export const PaginationSection = (): JSX.Element => {
           className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors"
           aria-label="الصفحة التالية"
         >
-          <img
-            className="relative w-4 h-4"
-            alt="Icon arrow right"
-            src={item.icon}
-          />
+          <ChevronLeft className="relative w-4 h-4 text-gray-600 rotate-180" />
           <div className="w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
             {item.label}
           </div>
@@ -51,11 +48,7 @@ export const PaginationSection = (): JSX.Element => {
           <div className="w-fit ml-[-3.50px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
             {item.label}
           </div>
-          <img
-            className="mr-[-3.50px] relative w-4 h-4"
-            alt="Icon arrow left"
-            src={item.icon}
-          />
+          <ChevronLeft className="mr-[-3.50px] relative w-4 h-4 text-gray-600" />
         </button>
       );
     }

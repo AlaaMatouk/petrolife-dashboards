@@ -1,1 +1,1 @@
-export { FrameScreen } from "./perolifestationlocations";
+export { PerolifeStationLocations } from "./perolifestationlocations";

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { Download, Filter, SlidersHorizontal } from "lucide-react";
-import { Table } from "../../../../components/shared/Table/Table";
+import React, { useState } from "react";
+import { Filter, SlidersHorizontal } from "lucide-react";
+import { Table, ExportButton } from "../../../../components/shared";
 
 interface TableRow {
   id: string;
@@ -106,105 +105,6 @@ const tableData: TableRow[] = [
   },
 ];
 
-const ExportMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-
-  const handleExport = (format: string) => {
-    console.log(`Exporting as ${format}`);
-    setIsOpen(false);
-  };
-
-  const updateMenuPosition = () => {
-    if (!buttonRef) return;
-    
-    const rect = buttonRef.getBoundingClientRect();
-    const menuWidth = 150;
-    const viewportWidth = window.innerWidth;
-    
-    let left = rect.right + 4;
-    
-    if (left + menuWidth > viewportWidth) {
-      left = rect.left - menuWidth - 4;
-    }
-    
-    const newPosition = {
-      top: rect.bottom + 4,
-      left: Math.max(4, left)
-    };
-    
-    setMenuPosition(newPosition);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      updateMenuPosition();
-      
-      const handleScroll = () => updateMenuPosition();
-      const handleResize = () => updateMenuPosition();
-      
-      window.addEventListener('scroll', handleScroll);
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('resize', handleResize);
-      };
-    }
-  }, [isOpen, buttonRef]);
-
-  return (
-    <div className="relative">
-      <button
-        ref={setButtonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors p-2"
-      >
-        <span className="text-sm">تصدير</span>
-        <Download className="w-4 h-4" />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {createPortal(
-            <div 
-              className="fixed w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
-              style={{
-                top: `${menuPosition.top}px`,
-                left: `${menuPosition.left}px`
-              }}
-            >
-              <div className="py-1">
-                <button
-                  onClick={() => handleExport('excel')}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
-                >
-                  <span>ملف Excel</span>
-                  <Download className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleExport('pdf')}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
-                >
-                  <span>ملف PDF</span>
-                  <Download className="w-4 h-4" />
-                </button>
-              </div>
-            </div>,
-            document.body
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
 export const ContentSection = (): JSX.Element => {
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -219,7 +119,7 @@ export const ContentSection = (): JSX.Element => {
       key: "export",
       label: "",
       width: "min-w-[100px]",
-      render: () => <ExportMenu />,
+      render: () => <ExportButton className="!border-0 flex items-center gap-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors p-2" />,
     },
     {
       key: "status",

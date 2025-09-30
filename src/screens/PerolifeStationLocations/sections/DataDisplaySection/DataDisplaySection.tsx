@@ -1,4 +1,4 @@
-import { Fuel } from "lucide-react";
+import { Fuel, ChevronLeft } from "lucide-react";
 import React, { useState } from "react";
 
 export const DataDisplaySection = (): JSX.Element => {
@@ -45,12 +45,7 @@ export const DataDisplaySection = (): JSX.Element => {
                   aria-label={`تغيير فلتر ${filter.label}`}
                   type="button"
                 >
-                  <img
-                    className="relative w-[18px] h-[18px] aspect-[1]"
-                    alt=""
-                    src={filter.icon}
-                    role="presentation"
-                  />
+                  <ChevronLeft className="relative w-[18px] h-[18px] text-gray-500" />
 
                   <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
                     {filter.label}

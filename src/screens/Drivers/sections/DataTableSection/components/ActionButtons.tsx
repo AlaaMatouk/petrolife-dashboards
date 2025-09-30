@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ExportButton } from '../../../../../components/shared';
 
 export const ActionButtons: React.FC = () => {
   const navigate = useNavigate();
@@ -23,22 +24,7 @@ export const ActionButtons: React.FC = () => {
         </button>
       </div>
 
-      <div className="relative self-stretch w-[79px] rounded-[5px] border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder">
-        <button>
-          <div className="absolute w-[46.84%] h-[56.67%] top-[23.33%] left-[13.92%] flex items-center justify-center font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]">
-            تصدير
-          </div>
-          <div className="absolute w-[26.91%] h-[48.48%] top-[24.24%] left-[63.26%] flex">
-            <div className="flex-1 w-[21.26px] relative">
-              <img
-                className="absolute w-[58.33%] h-[75.00%] top-[10.04%] left-[18.48%]"
-                alt="Icon"
-                src="/img/icon.svg"
-              />
-            </div>
-          </div>
-        </button>
-      </div>
+      <ExportButton />
     </div>
   );
 };

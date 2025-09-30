@@ -7,13 +7,14 @@ import {
   navigationMenuData,
   userInfo,
 } from "../../constants/data";
+import { ChartNoAxesCombined } from "lucide-react";
 
 export const FinancialReports = (): JSX.Element => {
   return (
     <Layout
       headerProps={{
         title: "التقــــــــــــــــارير / التقارير المالية",
-        titleIconSrc: "/img/side-icons-5.svg",
+        titleIconSrc: <ChartNoAxesCombined className="w-5 h-5 text-gray-500" />,
         navigationIcons: navigationIcons,
         showSearch: true,
         searchProps: {

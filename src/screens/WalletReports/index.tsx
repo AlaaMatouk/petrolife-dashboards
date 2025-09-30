@@ -2,6 +2,7 @@ import { TransactionHistorySection } from "./sections/TransactionHistorySection/
 import { UserDataSection } from "./sections/UserDataSection/UserDataSection";
 import { Layout } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
+import { Wallet } from "lucide-react";
 
 export const WalletReports = (): JSX.Element => {
   const handleLogout = () => {
@@ -32,7 +33,7 @@ export const WalletReports = (): JSX.Element => {
     <Layout
       headerProps={{
         title: "التقــــــــــــــــارير / تقرير المحفظة",
-        titleIconSrc: "/img/Wallet.svg",
+        titleIconSrc: <Wallet className="w-5 h-5 text-gray-500" />,
         navigationIcons: walletReportsNavigationIcons,
         showSearch: true,
         searchProps: {
