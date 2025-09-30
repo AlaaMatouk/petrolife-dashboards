@@ -6,7 +6,7 @@ const productData = [
     name: "منتج رقم 1",
     price: "150.00",
     originalPrice: "200.00",
-    image: "/img/product-1.jpg",
+    image: "/img/image-2.png",
     discount: "25%",
   },
   {
@@ -14,7 +14,7 @@ const productData = [
     name: "منتج رقم 2",
     price: "120.00",
     originalPrice: "160.00",
-    image: "/img/product-2.jpg",
+    image: "/img/image-6-2.png",
     discount: "25%",
   },
   {
@@ -22,7 +22,7 @@ const productData = [
     name: "منتج رقم 3",
     price: "180.00",
     originalPrice: "240.00",
-    image: "/img/product-3.jpg",
+    image: "/img/image-7-1.png",
     discount: "25%",
   },
   {
@@ -30,7 +30,7 @@ const productData = [
     name: "منتج رقم 4",
     price: "90.00",
     originalPrice: "120.00",
-    image: "/img/product-4.jpg",
+    image: "/img/image-8-1.png",
     discount: "25%",
   },
   {
@@ -38,7 +38,7 @@ const productData = [
     name: "منتج رقم 5",
     price: "210.00",
     originalPrice: "280.00",
-    image: "/img/product-5.jpg",
+    image: "/img/image-9-1.png",
     discount: "25%",
   },
   {
@@ -46,7 +46,7 @@ const productData = [
     name: "منتج رقم 6",
     price: "75.00",
     originalPrice: "100.00",
-    image: "/img/product-6.jpg",
+    image: "/img/image-10.png",
     discount: "25%",
   },
   {
@@ -54,7 +54,7 @@ const productData = [
     name: "منتج رقم 7",
     price: "300.00",
     originalPrice: "400.00",
-    image: "/img/product-7.jpg",
+    image: "/img/image-11-1.png",
     discount: "25%",
   },
   {
@@ -62,7 +62,7 @@ const productData = [
     name: "منتج رقم 8",
     price: "135.00",
     originalPrice: "180.00",
-    image: "/img/product-8.jpg",
+    image: "/img/logo-2.png",
     discount: "25%",
   },
   {
@@ -70,7 +70,7 @@ const productData = [
     name: "منتج رقم 9",
     price: "165.00",
     originalPrice: "220.00",
-    image: "/img/product-9.jpg",
+    image: "/img/logo-3.png",
     discount: "25%",
   },
   {
@@ -78,7 +78,7 @@ const productData = [
     name: "منتج رقم 10",
     price: "225.00",
     originalPrice: "300.00",
-    image: "/img/product-10.jpg",
+    image: "/img/paper-money-or-dollar-bills-and-blue-credit-card-3d-illustration.png",
     discount: "25%",
   },
   {
@@ -86,7 +86,7 @@ const productData = [
     name: "منتج رقم 11",
     price: "105.00",
     originalPrice: "140.00",
-    image: "/img/product-11.jpg",
+    image: "/img/image-20DI.png",
     discount: "25%",
   },
   {
@@ -94,7 +94,7 @@ const productData = [
     name: "منتج رقم 12",
     price: "195.00",
     originalPrice: "260.00",
-    image: "/img/product-12.jpg",
+    image: "/img/image-2car.png",
     discount: "25%",
   },
 ];
@@ -162,24 +162,29 @@ export const ProductGridSection = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-6 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {productData.map((product) => (
           <div
             key={product.id}
-            className="flex flex-col bg-white rounded-[var(--corner-radius-medium)] shadow-sm border border-gray-100 overflow-hidden"
+            className="flex flex-col bg-white rounded-[var(--corner-radius-medium)] shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300"
           >
-            <div className="relative aspect-square bg-gray-50 flex items-center justify-center">
-              <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-gray-400 rounded-full"></div>
-              </div>
-              <div className="absolute top-2 right-2 bg-color-mode-text-icons-t-orange text-white text-xs px-2 py-1 rounded-full font-medium">
+            <div className="relative aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover object-center"
+                onError={(e) => {
+                  e.currentTarget.src = "/img/image-2.png"; // Fallback image
+                }}
+              />
+              <div className="absolute top-3 right-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-md">
                 {product.discount}
               </div>
             </div>
 
-            <div className="p-4 flex flex-col gap-3">
+            <div className="p-4 flex flex-col gap-3 flex-1">
               <div className="text-right">
-                <h3 className="font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)]">
+                <h3 className="font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)] line-clamp-2">
                   {product.name}
                 </h3>
               </div>
@@ -198,12 +203,12 @@ export const ProductGridSection = (): JSX.Element => {
                   <img
                     className="w-4 h-4"
                     alt="Currency icon"
-                    src="/img/currency-icon.svg"
+                    src="/img/icon.svg"
                   />
                 </div>
               </div>
 
-              <button className="w-full bg-color-mode-surface-primary-blue text-color-mode-text-icons-t-btn-negative py-3 px-4 rounded-[var(--corner-radius-small)] font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)] transition-colors hover:opacity-90">
+              <button className="w-full bg-color-mode-surface-primary-blue text-color-mode-text-icons-t-btn-negative py-3 px-4 rounded-[var(--corner-radius-small)] font-subtitle-subtitle-3 font-[number:var(--subtitle-subtitle-3-font-weight)] text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [font-style:var(--subtitle-subtitle-3-font-style)] transition-colors hover:opacity-90 hover:bg-blue-600">
                 أضف إلى السلة
               </button>
             </div>
