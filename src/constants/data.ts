@@ -98,12 +98,6 @@ export const navigationMenuData = {
       icon: "/img/side-icons-11.svg",
       href: ROUTES.CHARGE_REQUESTS,
     },
-    {
-      id: "settings",
-      label: "الإعدادات العامـــــة",
-      icon: "/img/side-icons-12.svg",
-      href: ROUTES.SETTINGS,
-    },
   ],
 };
 
