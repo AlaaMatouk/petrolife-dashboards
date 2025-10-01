@@ -1,0 +1,54 @@
+{
+  "nodes": [
+    {
+      "id": "src/screens/Wallet/Wallet.tsx",
+      "label": "Wallet",
+      "routes": [
+        "/wallet"
+      ]
+    },
+    {
+      "id": "src/screens/Cars/Cars.tsx",
+      "label": "Cars",
+      "routes": [
+        "/cars"
+      ]
+    },
+    {
+      "id": "src/screens/FinancialReports/FinancialReports.tsx",
+      "label": "FinancialReports",
+      "routes": [
+        "/financialreports"
+      ]
+    },
+    {
+      "id": "src/screens/MoneyRefundRequests/MoneyRefundRequests.tsx",
+      "label": "MoneyRefundRequests",
+      "routes": [
+        "/moneyrefundrequests"
+      ]
+    },
+    {
+      "id": "src/screens/ChargeRequests/WalletChargeRequests.tsx",
+      "label": "WalletChargeRequests",
+      "routes": [
+        "/walletchargerequests"
+      ]
+    },
+    {
+      "id": "src/screens/AddDriver/AddDriver.tsx",
+      "label": "AddDriver",
+      "routes": [
+        "/adddriver"
+      ]
+    },
+    {
+      "id": "src/screens/DriverDetails/DriverDetails.tsx",
+      "label": "DriverDetails",
+      "routes": [
+        "/driverdetails"
+      ]
+    }
+  ],
+  "edges": []
+}

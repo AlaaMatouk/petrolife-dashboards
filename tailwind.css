@@ -1,0 +1,344 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  button,
+  input,
+  select,
+  textarea {
+    @apply appearance-none bg-transparent border-0 outline-none;
+  }
+}
+
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --basewhite: rgba(255, 255, 255, 1);
+  --border-light: #e5e7eb;
+  --border-medium: #a9b4be;
+  --border-dark: #5b738b;
+  --text-primary: #213547;
+  --text-secondary: #5b738b;
+  --text-tertiary: #a9b4be;
+  /* Form color variables */
+  --form-active-label-color: #5b738b;
+  --form-active-input-text-color: #5b738b;
+  --form-active-placeholder-color: #a9b4be;
+  --form-readonly-label-color: #a9b4be;
+  --form-readonly-input-text-color: #5b738b;
+  --form-section-title-color: #5b738b;
+  --form-header-title-color: #5b738b;
+  --shadow-sm: 0px 2.32px 0.77px #0000000f, 0px 2.32px 6.19px #00000026, 0px 0px 0px 0.77px #0000000a;
+  --shadow-md: 0px 4px 10px #0000000a;
+  --shadow-lg: 0px 3.89px 5.84px -1.95px #10182808, 0px 11.68px 15.57px -3.89px #10182814;
+  --shadow-xl: 0px 4px 10px #00000026;
+  --body-body-1-font-family: "Tajawal", Helvetica;
+  --body-body-1-font-size: 16px;
+  --body-body-1-font-style: normal;
+  --body-body-1-font-weight: 400;
+  --body-body-1-letter-spacing: 0.20000000298023224px;
+  --body-body-1-line-height: 24px;
+  --body-body-2-font-family: "Tajawal", Helvetica;
+  --body-body-2-font-size: 14px;
+  --body-body-2-font-style: normal;
+  --body-body-2-font-weight: 400;
+  --body-body-2-letter-spacing: 0.25px;
+  --body-body-2-line-height: 160.0000023841858%;
+  --caption-caption-1-font-family: "Tajawal", Helvetica;
+  --caption-caption-1-font-size: 12px;
+  --caption-caption-1-font-style: normal;
+  --caption-caption-1-font-weight: 400;
+  --caption-caption-1-letter-spacing: 0.4000000059604645px;
+  --caption-caption-1-line-height: 160.0000023841858%;
+  --caption-caption-2-font-family: "Tajawal", Helvetica;
+  --caption-caption-2-font-size: 12px;
+  --caption-caption-2-font-style: normal;
+  --caption-caption-2-font-weight: 700;
+  --caption-caption-2-letter-spacing: 0.4000000059604645px;
+  --caption-caption-2-line-height: 160.0000023841858%;
+  --color-mode-backgrounds-opaque-subdued: var(
+    --color-mode-special-body-AKA-page
+  );
+  --color-mode-special-body-AKA-page: var(--color-shades-shades-10);
+  --color-mode-surface-bg-icon-gray: rgba(245, 246, 247, 0.4);
+  --color-mode-surface-bg-screen: var(--core-colors-base-white);
+  --color-mode-surface-primary-blue: rgba(90, 102, 193, 1);
+  --color-mode-surface-purple-bg: rgba(249, 243, 255, 1);
+  --color-mode-text-icons-t-blue: rgba(90, 102, 193, 1);
+  --color-mode-text-icons-t-btn-negative: var(--core-colors-base-white);
+  --color-mode-text-icons-t-green: var(--core-colors-green-green-6);
+  --color-mode-text-icons-t-orange: var(--core-colors-mango-mango-6);
+  --color-mode-text-icons-t-placeholder: var(--core-colors-grey-grey-4);
+  --color-mode-text-icons-t-primary-gray: var(--core-colors-grey-grey-9);
+  --color-mode-text-icons-t-red: var(--core-colors-red-red-6);
+  --color-mode-text-icons-t-sec: var(--core-colors-grey-grey-6);
+  --color-primitives-blue-grey-10: rgba(246, 249, 252, 1);
+  --color-primitives-cool-black: rgba(7, 16, 31, 1);
+  --color-primitives-muted-grey-10: rgba(246, 249, 252, 1);
+  --color-primitives-neutral-black: rgba(14, 15, 18, 1);
+  --color-shades-plain-dark: var(--color-primitives-cool-black);
+  --color-shades-shades-10: var(--color-primitives-blue-grey-10);
+  --core-colors-base-white: rgba(255, 255, 255, 1);
+  --core-colors-blue-blue-5: rgba(77, 177, 255, 1);
+  --core-colors-blue-blue-7: rgba(0, 112, 242, 1);
+  --core-colors-green-green-6: rgba(0, 201, 80, 1);
+  --core-colors-grey-grey-1: rgba(245, 246, 247, 1);
+  --core-colors-grey-grey-11: rgba(18, 23, 28, 1);
+  --core-colors-grey-grey-2: rgba(234, 236, 238, 1);
+  --core-colors-grey-grey-4: rgba(169, 180, 190, 1);
+  --core-colors-grey-grey-6: rgba(91, 115, 139, 1);
+  --core-colors-grey-grey-9: rgba(34, 53, 72, 1);
+  --core-colors-mango-mango-5: rgba(255, 179, 0, 1);
+  --core-colors-mango-mango-6: rgba(231, 101, 0, 1);
+  --core-colors-purple-purple-11: rgba(48, 22, 75, 1);
+  --core-colors-red-red-5: rgba(255, 92, 119, 1);
+  --core-colors-red-red-6: rgba(238, 57, 57, 1);
+  --corner-radius-extra-large: 28px;
+  --corner-radius-extra-large-2: 32px;
+  --corner-radius-extra-large-6: 64px;
+  --corner-radius-extra-small: 4px;
+  --corner-radius-full: 100px;
+  --corner-radius-large: 16px;
+  --corner-radius-medium: 12px;
+  --corner-radius-none: 0px;
+  --corner-radius-small: 8px;
+  --dimensions-size-base: 16px;
+  --dimensions-size-large: 24px;
+  --dimensions-size-medium: 12px;
+  --dimensions-size-small: 8px;
+  --dimensions-size-x-large: 32px;
+  --dimensions-size-x-small: 4px;
+  --dimensions-size-XX-small: 2px;
+  --dimensions-size-XXXX-large: 64px;
+  --fine-print-small-medium-underline-font-family: "Tajawal", Helvetica;
+  --fine-print-small-medium-underline-font-size: 14px;
+  --fine-print-small-medium-underline-font-style: normal;
+  --fine-print-small-medium-underline-font-weight: 500;
+  --fine-print-small-medium-underline-letter-spacing: 0px;
+  --fine-print-small-medium-underline-line-height: 24px;
+  --headings-h1-h6-heading-5-font-family: "Tajawal", Helvetica;
+  --headings-h1-h6-heading-5-font-size: 14px;
+  --headings-h1-h6-heading-5-font-style: normal;
+  --headings-h1-h6-heading-5-font-weight: 700;
+  --headings-h1-h6-heading-5-letter-spacing: 0px;
+  --headings-h1-h6-heading-5-line-height: 20px;
+  --headings-h1-h6-heading-6-font-family: "Tajawal", Helvetica;
+  --headings-h1-h6-heading-6-font-size: 12px;
+  --headings-h1-h6-heading-6-font-style: normal;
+  --headings-h1-h6-heading-6-font-weight: 700;
+  --headings-h1-h6-heading-6-letter-spacing: 0px;
+  --headings-h1-h6-heading-6-line-height: 16px;
+  --headline-h3l-font-family: "Tajawal", Helvetica;
+  --headline-h3l-font-size: 48px;
+  --headline-h3l-font-style: normal;
+  --headline-h3l-font-weight: 300;
+  --headline-h3l-letter-spacing: 0px;
+  --headline-h3l-line-height: 52px;
+  --headline-h5b-font-family: "Tajawal", Helvetica;
+  --headline-h5b-font-size: 24px;
+  --headline-h5b-font-style: normal;
+  --headline-h5b-font-weight: 800;
+  --headline-h5b-letter-spacing: 0px;
+  --headline-h5b-line-height: 28px;
+  --headline-h6-m-font-family: "Tajawal", Helvetica;
+  --headline-h6-m-font-size: 20px;
+  --headline-h6-m-font-style: normal;
+  --headline-h6-m-font-weight: 700;
+  --headline-h6-m-letter-spacing: 0px;
+  --headline-h6-m-line-height: 28px;
+  --headline-h7-font-family: "Tajawal", Helvetica;
+  --headline-h7-font-size: 18px;
+  --headline-h7-font-style: normal;
+  --headline-h7-font-weight: 800;
+  --headline-h7-letter-spacing: 0.1599999964237213px;
+  --headline-h7-line-height: 24px;
+  --headline-h8-font-family: "Tajawal", Helvetica;
+  --headline-h8-font-size: 16px;
+  --headline-h8-font-style: normal;
+  --headline-h8-font-weight: 700;
+  --headline-h8-letter-spacing: 0px;
+  --headline-h8-line-height: 24px;
+  --subtitle-subtitle-2-font-family: "Tajawal", Helvetica;
+  --subtitle-subtitle-2-font-size: 16px;
+  --subtitle-subtitle-2-font-style: normal;
+  --subtitle-subtitle-2-font-weight: 700;
+  --subtitle-subtitle-2-letter-spacing: 0px;
+  --subtitle-subtitle-2-line-height: 24px;
+  --subtitle-subtitle-3-font-family: "Tajawal", Helvetica;
+  --subtitle-subtitle-3-font-size: 14px;
+  --subtitle-subtitle-3-font-style: normal;
+  --subtitle-subtitle-3-font-weight: 500;
+  --subtitle-subtitle-3-letter-spacing: 0.10000000149011612px;
+  --subtitle-subtitle-3-line-height: 160.0000023841858%;
+}
+
+/*
+
+To enable a theme in your HTML, simply add one of the following data attributes to an HTML element, like so:
+
+<body data-color-mode-mode="light">
+    <!-- the rest of your content -->
+</body>
+
+You can apply the theme on any DOM node, not just the `body`
+
+*/
+
+[data-color-mode-mode="light"] {
+  --color-mode-special-body-AKA-page: var(--color-shades-shades-10);
+}
+
+[data-color-mode-mode="dark"] {
+  --color-mode-special-body-AKA-page: var(--color-shades-plain-dark);
+}
+
+[data-color-shades-mode="cool"] {
+  --color-shades-plain-dark: var(--color-primitives-cool-black);
+  --color-shades-shades-10: var(--color-primitives-blue-grey-10);
+}
+
+[data-color-shades-mode="neutral"] {
+  --color-shades-plain-dark: var(--color-primitives-neutral-black);
+  --color-shades-shades-10: var(--color-primitives-muted-grey-10);
+}
+
+[data-color-mode-mode="light"] {
+  --color-mode-surface-bg-icon-gray: rgba(245, 246, 247, 0.4);
+  --color-mode-surface-bg-screen: var(--core-colors-base-white);
+  --color-mode-surface-primary-blue: rgba(90, 102, 193, 1);
+  --color-mode-surface-purple-bg: rgba(249, 243, 255, 1);
+  --color-mode-text-icons-t-blue: rgba(90, 102, 193, 1);
+  --color-mode-text-icons-t-orange: var(--core-colors-mango-mango-6);
+  --color-mode-text-icons-t-placeholder: var(--core-colors-grey-grey-4);
+  --color-mode-text-icons-t-primary-gray: var(--core-colors-grey-grey-9);
+  --color-mode-text-icons-t-red: var(--core-colors-red-red-6);
+  --color-mode-text-icons-t-sec: var(--core-colors-grey-grey-6);
+}
+
+[data-color-mode-mode="dark"] {
+  --color-mode-surface-bg-icon-gray: rgba(19, 26, 32, 1);
+  --color-mode-surface-bg-screen: var(--core-colors-grey-grey-11);
+  --color-mode-surface-primary-blue: var(--core-colors-blue-blue-7);
+  --color-mode-surface-purple-bg: var(--core-colors-purple-purple-11);
+  --color-mode-text-icons-t-blue: var(--core-colors-blue-blue-5);
+  --color-mode-text-icons-t-orange: var(--core-colors-mango-mango-5);
+  --color-mode-text-icons-t-placeholder: var(--core-colors-grey-grey-6);
+  --color-mode-text-icons-t-primary-gray: var(--core-colors-grey-grey-1);
+  --color-mode-text-icons-t-red: var(--core-colors-red-red-5);
+  --color-mode-text-icons-t-sec: var(--core-colors-grey-grey-2);
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
