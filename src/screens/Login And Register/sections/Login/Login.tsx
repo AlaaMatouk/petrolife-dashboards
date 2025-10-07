@@ -1,61 +1,113 @@
 import React, { useState } from "react";
 import PasswordInput from "../../../../components/shared/Inputs/PasswordInput";
 import EmailInput from "../../../../components/shared/Inputs/EmailInput";
-// import { signInUser, signInWithGoogle } from "../firebase/auth";
+import { signInUser, signInWithGoogle } from "../../../../services/auth";
 import { useNavigate } from "react-router-dom";
+import { useGlobalState } from "../../../../context/GlobalStateContext";
 
 interface LoginProps {
   onSwitch: () => void;
 }
 
 export default function Login({ onSwitch }: LoginProps) {
+  const { dispatch } = useGlobalState();
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(""); // Clear error when user types
   };
 
-  //   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //     e.preventDefault();
-  //     try {
-  //       const result = await signInUser(form.email, form.password);
-  //       console.log("Login successful ✅", result.user);
-  //       navigate("/");
-  //     } catch (error: any) {
-  //       console.error("Login error ❌:", error.message);
-  //     }
-  //   };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    try {
+      const result = await signInUser(form.email, form.password);
+      console.log("Login successful ✅", result.user);
+      
+      // Update global state
+      dispatch({
+        type: 'SET_USER',
+        payload: {
+          id: result.user.uid,
+          name: result.user.displayName || result.user.email || "مستخدم",
+          email: result.user.email || "",
+          avatar: result.user.photoURL || "",
+          role: "admin",
+        },
+      });
+      dispatch({ type: 'SET_AUTHENTICATED', payload: true });
+      
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Login error ❌:", error.message);
+      setError(error.message || "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  //   const handleGoogleLogin = async () => {
-  //     try {
-  //       const result = await signInWithGoogle();
-  //       console.log("Google Login ✅", result.user);
-  //       navigate("/");
-  //     } catch (error: any) {
-  //       console.error("Google login failed ❌", error.message);
-  //     }
-  //   };
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      const result = await signInWithGoogle();
+      console.log("Google Login ✅", result.user);
+      
+      // Update global state
+      dispatch({
+        type: 'SET_USER',
+        payload: {
+          id: result.user.uid,
+          name: result.user.displayName || result.user.email || "مستخدم",
+          email: result.user.email || "",
+          avatar: result.user.photoURL || "",
+          role: "admin",
+        },
+      });
+      dispatch({ type: 'SET_AUTHENTICATED', payload: true });
+      
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Google login failed ❌", error.message);
+      setError(error.message || "فشل تسجيل الدخول باستخدام Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
       <form
-        // onSubmit={handleSubmit}
+        onSubmit={handleSubmit}
         className="flex gap-3 flex-col justify-center text-center "
-        action="submit"
       >
         <h1 className="font-bold text-[var(--form-header-title-color)] ">
           تسجيل الدخول
         </h1>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-right" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+        
         <EmailInput onChange={handleChange} value={form.email} />
         <PasswordInput onChange={handleChange} value={form.password} />
         <button
           type="button"
-          // onClick={handleGoogleLogin}
-          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             aria-label="Google logo"
@@ -91,9 +143,10 @@ export default function Login({ onSwitch }: LoginProps) {
 
         <button
           type="submit"
-          className="btn btn-wide rounded-full bg-color-mode-surface-primary-blue text-basewhite pl-4 pr-4 py-2"
+          disabled={loading}
+          className="btn btn-wide rounded-full bg-color-mode-surface-primary-blue text-basewhite pl-4 pr-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          تسجيل الدخول
+          {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
         </button>
       </form>
     </div>

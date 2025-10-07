@@ -1,8 +1,8 @@
 // Route constants for the application
 export const ROUTES = {
   // Main routes
-  DASHBOARD: '/',
-  LOGIN: '/login',
+  LOGIN: '/',
+  DASHBOARD: '/dashboard',
   
   // Resource management
   DRIVERS: '/drivers',

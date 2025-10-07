@@ -3,6 +3,7 @@ import { AppRouter } from './routes';
 import { GlobalStateProvider } from './context/GlobalStateContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './components/shared/Toast';
+import { AuthListener } from './components/AuthListener';
 import './App.css'
 
 function AppContent() {
@@ -20,9 +21,11 @@ function App() {
   return (
     <BrowserRouter>
       <GlobalStateProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
+        <AuthListener>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </AuthListener>
       </GlobalStateProvider>
     </BrowserRouter>
   );

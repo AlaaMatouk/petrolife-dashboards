@@ -1,5 +1,9 @@
-import React, { ReactNode, useState } from "react";
-import { Bell, Sun, Search, ShoppingCart } from "lucide-react";
+import React, { ReactNode, useState, useRef, useEffect } from "react";
+import { Bell, Sun, Search, ShoppingCart, User, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../../config/firebase";
+import { signOutUser } from "../../../services/auth";
+import { useGlobalState } from "../../../context/GlobalStateContext";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -60,6 +64,91 @@ const SearchBar: React.FC<SearchBarProps> = ({
   );
 };
 
+// Profile Dropdown Component
+const ProfileDropdown: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { dispatch } = useGlobalState();
+  const currentUser = auth.currentUser;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      
+      // Clear global state
+      dispatch({ type: 'SET_USER', payload: null });
+      dispatch({ type: 'SET_AUTHENTICATED', payload: false });
+      
+      console.log("Logout successful ✅");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Logout error ❌:", error.message);
+    }
+  };
+
+  // If no user is logged in, don't show the profile dropdown
+  if (!currentUser) {
+    return null;
+  }
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-center w-10 h-10 bg-color-mode-surface-primary-blue rounded-full border-2 border-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+        aria-label="User profile menu"
+      >
+        {currentUser.photoURL ? (
+          <img
+            src={currentUser.photoURL}
+            alt="Profile"
+            className="w-full h-full rounded-full object-cover"
+          />
+        ) : (
+          <User className="w-5 h-5 text-white" />
+        )}
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+          <div className="p-4 border-b border-gray-200">
+            <p className="text-sm font-semibold text-gray-700 text-right">
+              {currentUser.displayName || "مستخدم"}
+            </p>
+            <p className="text-xs text-gray-500 text-right truncate">
+              {currentUser.email}
+            </p>
+          </div>
+          
+          <div className="py-2">
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 transition-colors duration-150 flex items-center justify-end gap-2"
+            >
+              <span>تسجيل الخروج</span>
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const Header: React.FC<HeaderProps> = ({
   title,
   titleIconSrc,
@@ -80,6 +169,9 @@ export const Header: React.FC<HeaderProps> = ({
           role="navigation"
           aria-label="Main navigation"
         >
+          {/* Profile Dropdown - First on the left */}
+          <ProfileDropdown />
+
           <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <Bell className="w-4 h-4 text-gray-600" />
           </button>
