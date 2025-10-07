@@ -4,6 +4,7 @@ import { Pagination } from "../../../../components/shared/Pagination/Pagination"
 import { useDrivers } from "../../../../hooks/useGlobalState";
 import { driversData as mockDriversData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
+import { fetchCompaniesDrivers } from "../../../../services/firestore";
 import { 
   UserRound, 
   CirclePlus, 
@@ -37,39 +38,146 @@ interface Driver {
   accountStatus: { active: boolean; text: string };
 }
 
-// Mock data for driver stats cards
-const driverStats = [
-  {
-    title: "سائقي السيارات ال VIP",
-    count: "3",
-    icon: <Car className="w-6 h-6 text-purple-600" />,
-    iconBgColor: "bg-purple-100",
-    iconBorderColor: "border-purple-300"
-  },
-  {
-    title: "سائقي السيارات الكبيرة",
-    count: "10",
-    icon: <Truck className="w-6 h-6 text-blue-600" />,
-    iconBgColor: "bg-blue-100",
-    iconBorderColor: "border-blue-300"
-  },
-  {
-    title: "سائقي السيارات المتوسطة",
-    count: "12",
-    icon: <CarFront className="w-6 h-6 text-orange-600" />,
-    iconBgColor: "bg-orange-100",
-    iconBorderColor: "border-orange-300"
-  },
-  {
-    title: "سائقي السيارات الصغيرة",
-    count: "20",
-    icon: <Car className="w-6 h-6 text-orange-600" />,
-    iconBgColor: "bg-orange-100",
-    iconBorderColor: "border-orange-300"
-  },
-];
+// Helper function to calculate driver stats by category
+const calculateDriverStats = (drivers: Driver[]) => {
+  const stats = {
+    vip: 0,
+    large: 0,
+    medium: 0,
+    small: 0,
+  };
 
-// Convert mock data to match our Driver interface
+  drivers.forEach(driver => {
+    const category = driver.carCategory?.text;
+    if (!category) return;
+    
+    // Handle VIP (case-insensitive)
+    if (category.toUpperCase() === 'VIP') {
+      stats.vip++;
+    } 
+    // Handle كبيرة (big/large)
+    else if (category === 'كبيرة') {
+      stats.large++;
+    } 
+    // Handle متوسطة (middle/medium)
+    else if (category === 'متوسطة') {
+      stats.medium++;
+    } 
+    // Handle صغيرة (small)
+    else if (category === 'صغيرة') {
+      stats.small++;
+    }
+  });
+
+  return [
+    {
+      title: "سائقي السيارات ال VIP",
+      count: stats.vip.toString(),
+      icon: <Car className="w-6 h-6 text-purple-600" />,
+      iconBgColor: "bg-purple-100",
+      iconBorderColor: "border-purple-300"
+    },
+    {
+      title: "سائقي السيارات الكبيرة",
+      count: stats.large.toString(),
+      icon: <Truck className="w-6 h-6 text-blue-600" />,
+      iconBgColor: "bg-blue-100",
+      iconBorderColor: "border-blue-300"
+    },
+    {
+      title: "سائقي السيارات المتوسطة",
+      count: stats.medium.toString(),
+      icon: <CarFront className="w-6 h-6 text-orange-600" />,
+      iconBgColor: "bg-orange-100",
+      iconBorderColor: "border-orange-300"
+    },
+    {
+      title: "سائقي السيارات الصغيرة",
+      count: stats.small.toString(),
+      icon: <Car className="w-6 h-6 text-green-600" />,
+      iconBgColor: "bg-green-100",
+      iconBorderColor: "border-green-300"
+    },
+  ];
+};
+
+// Helper function to safely get value or return "-"
+const getValueOrDash = (value: any): string => {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+  return String(value);
+};
+
+// Helper function to get car size text in Arabic
+const getCarSizeText = (size: string): string => {
+  const sizeMap: { [key: string]: string } = {
+    'small': 'صغيرة',
+    'medium': 'متوسطة',
+    'large': 'كبيرة',
+    'vip': 'VIP',
+  };
+  return sizeMap[size?.toLowerCase()] || getValueOrDash(size);
+};
+
+// Helper function to get fuel type text in Arabic
+const getFuelTypeText = (fuelType: string): string => {
+  const fuelMap: { [key: string]: string } = {
+    'fuel91': 'بنزين 91',
+    'fuel95': 'بنزين 95',
+    'diesel': 'ديزل',
+  };
+  return fuelMap[fuelType?.toLowerCase()] || getValueOrDash(fuelType);
+};
+
+// Convert Firestore companies-drivers data to match our Driver interface
+const convertFirestoreToDrivers = (firestoreData: any[]): Driver[] => {
+  return firestoreData.map((driver, index) => {
+    // Extract car size from plan.carSize or size
+    const carSize = driver.plan?.carSize || driver.size || driver.car?.size;
+    
+    // Extract plate number (prefer Arabic)
+    const plateNumber = driver.plateNumber?.ar || driver.plateNumber?.en || driver.car?.plateNumber?.ar || driver.car?.plateNumber?.en;
+    
+    // Extract city/address (prefer Arabic)
+    const cityName = driver.city?.name?.ar || driver.city?.name?.en || driver.location;
+    
+    // Extract fuel type
+    const fuelType = driver.fuelType || driver.car?.fuelType;
+    
+    // Extract financial values
+    const balance = driver.balance;
+    const dailyLimit = driver.plan?.dailyTrans;
+    const financialValue = balance && dailyLimit 
+      ? `${balance} / ${dailyLimit}`
+      : balance 
+        ? String(balance)
+        : dailyLimit 
+          ? String(dailyLimit)
+          : '-';
+    
+    return {
+      id: driver.id || index + 1,
+      driverCode: getValueOrDash(driver.id || driver.code),
+      driverName: getValueOrDash(driver.name || driver.driverName || driver.fullName),
+      phone: getValueOrDash(driver.phone || driver.phoneNumber || driver.mobile || driver.email),
+      address: getValueOrDash(cityName),
+      fuelType: getFuelTypeText(fuelType),
+      financialValue: financialValue,
+      carNumber: getValueOrDash(plateNumber),
+      carCategory: {
+        text: getCarSizeText(carSize),
+        icon: null
+      },
+      accountStatus: {
+        active: driver.isActive ?? driver.accountStatus?.active ?? driver.status === 'active' ?? true,
+        text: driver.isActive ? 'مفعل' : 'معطل'
+      },
+    };
+  });
+};
+
+// Convert mock data to match our Driver interface (fallback)
 const convertMockDataToDrivers = (mockData: any[]): Driver[] => {
   return mockData.map((driver, index) => ({
     id: driver.id || index + 1,
@@ -316,13 +424,43 @@ export const DataTableSection = (): JSX.Element => {
     updateDriver
   } = useDrivers();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initialize drivers data on component mount
+  // Fetch companies-drivers data from Firestore on component mount
   useEffect(() => {
-    if (drivers.length === 0) {
-      const convertedDrivers = convertMockDataToDrivers(mockDriversData);
-      setDrivers(convertedDrivers);
-    }
+    const loadDriversData = async () => {
+      if (drivers.length === 0) {
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+          console.log('Loading companies-drivers data from Firestore...');
+          const firestoreDrivers = await fetchCompaniesDrivers();
+          
+          if (firestoreDrivers && firestoreDrivers.length > 0) {
+            console.log('Converting Firestore data to Driver format...');
+            const convertedDrivers = convertFirestoreToDrivers(firestoreDrivers);
+            console.log('Converted drivers:', convertedDrivers);
+            setDrivers(convertedDrivers);
+          } else {
+            console.log('No drivers found in Firestore, using mock data...');
+            const convertedDrivers = convertMockDataToDrivers(mockDriversData);
+            setDrivers(convertedDrivers);
+          }
+        } catch (err) {
+          console.error('Error loading drivers from Firestore:', err);
+          setError('فشل في تحميل بيانات السائقين. استخدام البيانات التجريبية.');
+          // Fallback to mock data on error
+          const convertedDrivers = convertMockDataToDrivers(mockDriversData);
+          setDrivers(convertedDrivers);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadDriversData();
   }, [drivers.length, setDrivers]);
 
   const handlePageChange = (page: number) => {
@@ -340,6 +478,9 @@ export const DataTableSection = (): JSX.Element => {
       });
     }
   };
+
+  // Calculate driver statistics based on actual data
+  const driverStats = calculateDriverStats(drivers);
 
   // Define table columns for drivers
   const driverColumns = [
@@ -467,6 +608,23 @@ export const DataTableSection = (): JSX.Element => {
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center w-full py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">جاري تحميل بيانات السائقين...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-yellow-800 text-center [direction:rtl]">{error}</p>
+        </div>
+      )}
+
       {/* Driver Stats Cards */}
       <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <div className="flex items-center justify-end gap-1.5 relative self-stretch w-full flex-[0_0_auto]">

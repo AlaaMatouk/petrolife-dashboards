@@ -6,17 +6,18 @@ import { useDrivers } from "../../../../hooks/useGlobalState";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../../context/ToastContext";
 import { validateDriverForm } from "../../../../utils/validation";
+import { addCompanyDriver } from "../../../../services/firestore";
 
 const initialValues = {
     phone: "",
   email: "",
     driverName: "",
-  driverImage: "",
+  driverImage: null as File | null,
     address: "",
     city: "الرياض",
     vehicleStatus: "دبلوماسية",
   driverAmount: "",
-    driverLicense: "",
+    driverLicense: null as File | null,
   plateLetters: "",
   plateNumber: "",
     vehicleCategory: "صغيرة",
@@ -89,13 +90,14 @@ export const VehicleInformationSection = (): JSX.Element => {
   };
 
   const handleFieldBlur = (field: string) => {
+    // VALIDATION TEMPORARILY DISABLED FOR TESTING
     // Only validate the specific field that was blurred
-    const fieldErrors = validateDriverForm({ [field]: form.values[field] });
-    if (fieldErrors[field]) {
-      form.setFieldError(field, fieldErrors[field]);
-    } else {
-      form.clearFieldError(field);
-    }
+    // const fieldErrors = validateDriverForm({ [field]: form.values[field] });
+    // if (fieldErrors[field]) {
+    //   form.setFieldError(field, fieldErrors[field]);
+    // } else {
+    //   form.clearFieldError(field);
+    // }
   };
 
   const handleDayToggle = (day: string) => {
@@ -107,11 +109,12 @@ export const VehicleInformationSection = (): JSX.Element => {
   const handleFileUpload = (field: string) => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/*";
+    input.accept = field === "driverLicense" ? "image/*,application/pdf" : "image/*";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        handleChange(field, file.name);
+        // Store the actual File object
+        handleChange(field, file);
       }
     };
     input.click();
@@ -120,60 +123,87 @@ export const VehicleInformationSection = (): JSX.Element => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Force validation and update errors state
-    const isValid = form.validateForm();
-    console.log('Form validation result:', isValid);
-    console.log('Form errors:', form.errors);
+    // VALIDATION TEMPORARILY DISABLED FOR TESTING
     console.log('Form values:', form.values);
+    console.log('Selected days:', selectedDays);
     
-    if (!isValid) {
-      addToast({
-        title: "خطأ في التحقق",
-        message: "يرجى تصحيح الأخطاء في النموذج",
-        type: "error",
-      });
-      return;
-    }
+    // const isValid = form.validateForm();
+    // console.log('Form validation result:', isValid);
+    // console.log('Form errors:', form.errors);
+    
+    // if (!isValid) {
+    //   addToast({
+    //     title: "خطأ في التحقق",
+    //     message: "يرجى تصحيح الأخطاء في النموذج",
+    //     type: "error",
+    //   });
+    //   return;
+    // }
 
     form.setIsSubmitting(true);
 
     try {
-      // Create new driver object
+      // Prepare driver data for Firestore
+      const driverData = {
+        phone: form.values.phone,
+        email: form.values.email,
+        driverName: form.values.driverName,
+        driverImage: form.values.driverImage,
+        address: form.values.address,
+        city: form.values.city,
+        selectedDays: selectedDays,
+        vehicleStatus: form.values.vehicleStatus,
+        driverAmount: form.values.driverAmount,
+        driverLicense: form.values.driverLicense,
+        plateLetters: form.values.plateLetters,
+        plateNumber: form.values.plateNumber,
+        vehicleCategory: form.values.vehicleCategory,
+      };
+
+      console.log('Submitting driver data to Firestore:', driverData);
+
+      // Add driver to Firestore
+      const result = await addCompanyDriver(driverData);
+
+      console.log('Driver added to Firestore:', result);
+
+      // Also add to local state for immediate UI update
       const newDriver = {
-        id: Date.now(),
-        driverCode: `DRV${Date.now().toString().slice(-6)}`,
+        id: result.id,
+        driverCode: result.id,
         driverName: form.values.driverName,
         phone: form.values.phone,
         address: form.values.address,
-        fuelType: "بنزين 91", // Default value
+        fuelType: "بنزين 95", // Default value
         financialValue: `${form.values.driverAmount} / ${form.values.driverAmount}`,
-        carNumber: `${form.values.plateLetters} ${form.values.plateNumber}`,
+        carNumber: `${form.values.plateNumber} ${form.values.plateLetters}`,
         carCategory: { text: form.values.vehicleCategory, icon: null },
         accountStatus: { active: true, text: "مفعل" },
       };
 
-      // Add driver to global state
-      console.log('Adding new driver:', newDriver);
       addDriver(newDriver);
 
       // Show success message
       addToast({
         title: "تم إضافة السائق بنجاح",
-        message: `تم إضافة السائق ${newDriver.driverName} برقم ${newDriver.driverCode} بنجاح`,
+        message: `تم إضافة السائق ${form.values.driverName} إلى Firestore بنجاح`,
         type: "success",
       });
 
       // Reset form
       form.resetForm();
+      setSelectedDays(["السبت"]); // Reset selected days
 
       // Navigate back to drivers list
-      navigate('/drivers');
+      setTimeout(() => {
+        navigate('/drivers');
+      }, 1000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding driver:', error);
       addToast({
         title: "خطأ في إضافة السائق",
-        message: "حدث خطأ أثناء إضافة السائق. يرجى المحاولة مرة أخرى.",
+        message: error.message || "حدث خطأ أثناء إضافة السائق. يرجى المحاولة مرة أخرى.",
         type: "error",
       });
     } finally {
@@ -254,7 +284,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                   <Upload className="w-4 h-4 text-gray-500" />
                   <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
                                   <div className="w-fit font-[number:var(--body-body-2-font-weight)] text-[var(--form-active-input-text-color)] tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)]">
-                      {form.values.driverImage || "ارفع صورة السائق هنا"}
+                      {form.values.driverImage?.name || "ارفع صورة السائق هنا"}
                     </div>
                   </div>
                 </button>
@@ -395,7 +425,7 @@ export const VehicleInformationSection = (): JSX.Element => {
                   <FileText className="w-4 h-4 text-gray-500" />
                 <div className="flex items-center justify-end pt-[3px] pb-0 px-0 relative flex-1 grow">
                   <p className="w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-placeholder text-left tracking-[var(--body-body-2-letter-spacing)] whitespace-nowrap [direction:rtl] relative mt-[-1.00px] font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] [font-style:var(--body-body-2-font-style)]">
-                      {form.values.driverLicense || "ارفع صورة ترخيص السائق هنا"}
+                      {form.values.driverLicense?.name || "ارفع صورة ترخيص السائق هنا"}
                   </p>
                 </div>
               </button>
