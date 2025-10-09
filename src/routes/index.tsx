@@ -21,6 +21,7 @@ import { SubscriptionsScreen } from '../screens/Subscriptions';
 import { DeliveryFuelRequests } from '../screens/DeliveryFuelRequests';
 import { CreateDeliveryRequest } from '../screens/CreateDeliveryRequest';
 import LoginAndRegister from '../screens/Login And Register/LoginAndRegister';
+import { TestTransfer } from '../screens/TestTransfer';
 
 // 404 Component
 const NotFound = () => (
@@ -69,6 +70,9 @@ export const AppRouter = () => {
       
       {/* Settings */}
       <Route path={ROUTES.SETTINGS} element={<NotFound />} />
+      
+      {/* Test Route - Companies-Drivers-Transfer */}
+      <Route path="/test-transfer" element={<TestTransfer />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

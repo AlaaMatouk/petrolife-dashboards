@@ -1,122 +1,148 @@
-import React, { useState } from "react";
-import { Table, Pagination, ExportButton } from "../../../../components/shared";
-import { MoreVertical } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Table, Pagination, LoadingSpinner } from "../../../../components/shared";
+import { MoreVertical, ShoppingCart } from "lucide-react";
+import { fetchOrders } from "../../../../services/firestore";
+
+// Helper function to get status text in Arabic
+const getStatusText = (status: string): { text: string; type: string } => {
+  const statusMap: { [key: string]: { text: string; type: string } } = {
+    'done': { text: 'مكتمل', type: 'completed' },
+    'completed': { text: 'مكتمل', type: 'completed' },
+    'pending': { text: 'بانتظار التوصيل', type: 'pending' },
+    'reviewing': { text: 'جاري المراجعة', type: 'reviewing' },
+    'rejected': { text: 'مرفوض', type: 'rejected' },
+    'approved': { text: 'موافق عليه', type: 'completed' },
+    'cancelled': { text: 'ملغي', type: 'rejected' },
+  };
+  return statusMap[status?.toLowerCase()] || { text: status || '-', type: 'pending' };
+};
+
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return '-';
+  
+  try {
+    if (date.toDate && typeof date.toDate === 'function') {
+      return new Date(date.toDate()).toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return new Date(date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to format number
+const formatNumber = (num: any): string => {
+  if (!num && num !== 0) return '-';
+  return new Intl.NumberFormat('en-US').format(Number(num));
+};
+
+// Helper function to get product name
+const getProductName = (order: any): string => {
+  if (order.selectedOption?.name?.ar) return order.selectedOption.name.ar;
+  if (order.selectedOption?.name?.en) return order.selectedOption.name.en;
+  if (order.selectedOption?.title?.ar) return order.selectedOption.title.ar;
+  if (order.selectedOption?.title?.en) return order.selectedOption.title.en;
+  
+  if (order.cartItems && order.cartItems.length > 0) {
+    const labels = order.cartItems.map((item: any) => item.label || item.name).filter(Boolean);
+    if (labels.length > 0) return labels.join(', ');
+  }
+  
+  if (order.productName) return order.productName;
+  if (order.product?.name) return order.product.name;
+  
+  return '-';
+};
+
+// Helper function to get quantity
+const getQuantity = (order: any): string => {
+  if (order.totalLitre) {
+    return `${formatNumber(order.totalLitre)} لتر`;
+  }
+  
+  if (order.cartItems && order.cartItems.length > 0) {
+    const total = order.cartItems.reduce((sum: number, item: any) => {
+      return sum + (Number(item.quantity) || 0);
+    }, 0);
+    if (total > 0) return `${formatNumber(total)} لتر`;
+  }
+  
+  return '-';
+};
+
+// Convert Firestore data to table format
+const convertOrdersToTableData = (orders: any[]): any[] => {
+  return orders.map((order) => ({
+    id: order.refId || order.id || '-',
+    date: formatDate(order.orderDate || order.createdDate),
+    product: getProductName(order),
+    quantity: getQuantity(order),
+    totalValue: order.totalPrice ? `${formatNumber(order.totalPrice)} ر.س` : '-',
+    recipient: order.enrichedDriverName || order.assignedDriver?.name || '-',
+    phone: order.enrichedDriverPhone || order.assignedDriver?.phoneNumber || '-',
+    address: order.city?.name?.ar || order.city?.name?.en || order.address || '-',
+    status: getStatusText(order.status),
+    _raw: order,
+  }));
+};
 
 export const OrderDetailsSection = (): JSX.Element => {
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const orderData = [
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "جاري المراجعة", type: "reviewing" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مرفوض", type: "rejected" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "بانتظار التوصيل", type: "pending" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-    {
-      id: "21A254",
-      date: "21 فبراير 2025 - 5:05 ص",
-      product: "بنزين 91",
-      quantity: "20",
-      totalValue: "34.6",
-      recipient: "أحمد محمد",
-      phone: "00965284358",
-      address: "12 ش المنيل ، مصر",
-      status: { text: "مكتمل", type: "completed" },
-    },
-  ];
+  useEffect(() => {
+    const loadOrders = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const firestoreOrders = await fetchOrders();
+        console.log('🔍 Firestore Orders in Component:', firestoreOrders);
+        
+        const convertedOrders = convertOrdersToTableData(firestoreOrders);
+        console.log('📊 Converted Orders:', convertedOrders);
+        
+        if (convertedOrders.length > 0) {
+          console.log('Sample converted order address:', convertedOrders[0].address);
+          console.log('Sample raw order:', convertedOrders[0]._raw);
+        }
+        
+        setOrders(convertedOrders);
+      } catch (err) {
+        console.error('Error loading orders from Firestore:', err);
+        setError('فشل في تحميل بيانات الطلبات.');
+        setOrders([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadOrders();
+  }, []);
 
   const tableColumns = [
     {
@@ -224,15 +250,46 @@ export const OrderDetailsSection = (): JSX.Element => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    console.log(`Navigate to page ${page}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
+        <LoadingSpinner size="lg" message="جاري التحميل..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
+        <div className="w-full bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-800 text-center text-lg [direction:rtl]">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
+        <div className="w-full bg-white rounded-lg border border-gray-200 p-12">
+          <div className="text-center text-gray-500">
+            <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-xl font-semibold [direction:rtl]">لا توجد طلبات</p>
+            <p className="text-sm mt-2 [direction:rtl]">لم يتم العثور على أي طلبات توصيل</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
       <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
         <Table
           columns={tableColumns}
-          data={orderData}
+          data={orders}
           className="w-full"
           headerClassName="bg-color-mode-surface-bg-icon-gray"
           rowClassName="hover:bg-gray-50"
@@ -242,7 +299,7 @@ export const OrderDetailsSection = (): JSX.Element => {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={20}
+        totalPages={Math.ceil(orders.length / 10) || 1}
         onPageChange={handlePageChange}
         className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
       />

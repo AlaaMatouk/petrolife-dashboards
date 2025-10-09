@@ -6,7 +6,7 @@ import { OrderListSection } from "./sections/OrderListSection";
 
 export const DeliveryFuelRequests = (): JSX.Element => {
   const handleLogout = () => {
-    console.log("Logout clicked");
+    // console.log("Logout clicked");
   };
 
   return (
@@ -17,7 +17,7 @@ export const DeliveryFuelRequests = (): JSX.Element => {
         showSearch: true,
         searchProps: {
           placeholder: "البحث في طلبات التوصيل",
-          onSearch: (query) => console.log("Search:", query),
+          onSearch: (query) => {}, // console.log("Search:", query)
         },
       }}
       sidebarProps={{

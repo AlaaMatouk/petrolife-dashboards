@@ -435,16 +435,16 @@ export const DataTableSection = (): JSX.Element => {
       setError(null);
       
       try {
-        console.log('Loading companies-drivers data from Firestore...');
+        // console.log('Loading companies-drivers data from Firestore...');
         const firestoreDrivers = await fetchCompaniesDrivers();
         
         if (firestoreDrivers && firestoreDrivers.length > 0) {
-          console.log('Converting Firestore data to Driver format...');
+          // console.log('Converting Firestore data to Driver format...');
           const convertedDrivers = convertFirestoreToDrivers(firestoreDrivers);
-          console.log('Converted drivers:', convertedDrivers);
+          // console.log('Converted drivers:', convertedDrivers);
           setDrivers(convertedDrivers);
         } else {
-          console.log('No drivers found in Firestore.');
+          // console.log('No drivers found in Firestore.');
           // Don't use mock data, just set empty array
           setDrivers([]);
         }

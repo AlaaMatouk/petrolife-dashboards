@@ -8,7 +8,7 @@ import { db, auth, storage } from '../config/firebase';
  */
 export const fetchCompaniesDrivers = async () => {
   try {
-    console.log('Fetching companies-drivers data from Firestore...');
+    // console.log('Fetching companies-drivers data from Firestore...');
     
     const companiesDriversRef = collection(db, 'companies-drivers');
     const q = query(companiesDriversRef);
@@ -23,11 +23,11 @@ export const fetchCompaniesDrivers = async () => {
       });
     });
     
-    console.log('Companies-Drivers Data (All):');
-    console.log('======================');
-    console.log(`Total documents: ${companiesDriversData.length}`);
-    console.log('Data:', companiesDriversData);
-    console.table(companiesDriversData);
+    // console.log('Companies-Drivers Data (All):');
+    // console.log('======================');
+    // console.log(`Total documents: ${companiesDriversData.length}`);
+    // console.log('Data:', companiesDriversData);
+    // console.table(companiesDriversData);
     
     // Get current user
     const currentUser = auth.currentUser;
@@ -36,10 +36,10 @@ export const fetchCompaniesDrivers = async () => {
       const userEmail = currentUser.email;
       const userId = currentUser.uid;
       
-      console.log('\nCurrent User Info:');
-      console.log('==================');
-      console.log('Email:', userEmail);
-      console.log('UID:', userId);
+      // console.log('\nCurrent User Info:');
+      // console.log('==================');
+      // console.log('Email:', userEmail);
+      // console.log('UID:', userId);
       
       // Filter drivers where createdUserId contains user email OR companyUid equals user id
       const filteredDrivers = companiesDriversData.filter((driver) => {
@@ -54,15 +54,15 @@ export const fetchCompaniesDrivers = async () => {
         return createdUserIdMatch || companyUidMatch;
       });
       
-      console.log('\nFiltered Companies-Drivers Data:');
-      console.log('=================================');
-      console.log(`Total filtered documents: ${filteredDrivers.length}`);
-      console.log('Filtered Data:', filteredDrivers);
-      console.table(filteredDrivers);
+      // console.log('\nFiltered Companies-Drivers Data:');
+      // console.log('=================================');
+      // console.log(`Total filtered documents: ${filteredDrivers.length}`);
+      // console.log('Filtered Data:', filteredDrivers);
+      // console.table(filteredDrivers);
       
       return filteredDrivers;
     } else {
-      console.log('\nNo user is currently logged in. Returning all data.');
+      // console.log('\nNo user is currently logged in. Returning all data.');
       return companiesDriversData;
     }
   } catch (error) {
@@ -78,7 +78,7 @@ export const fetchCompaniesDrivers = async () => {
  */
 export const fetchCollection = async (collectionName: string) => {
   try {
-    console.log(`Fetching data from collection: ${collectionName}...`);
+    // console.log(`Fetching data from collection: ${collectionName}...`);
     
     const collectionRef = collection(db, collectionName);
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(collectionRef);
@@ -92,11 +92,238 @@ export const fetchCollection = async (collectionName: string) => {
       });
     });
     
-    console.log(`${collectionName} Data:`, data);
+    // console.log(`${collectionName} Data:`, data);
     
     return data;
   } catch (error) {
     console.error(`Error fetching ${collectionName} data:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch companies-drivers-transfer data from Firestore
+ * Filtered by current user's company email (createdUser.email)
+ * @returns Promise with the companies-drivers-transfer data filtered by current company
+ */
+export const fetchCompaniesDriversTransfer = async () => {
+  try {
+    // console.log('\n🔄 ========================================');
+    // console.log('📊 FETCHING COMPANIES-DRIVERS-TRANSFER DATA');
+    // console.log('========================================');
+    // console.log('Fetching data from companies-drivers-transfer collection...\n');
+    
+    const companiesDriversTransferRef = collection(db, 'companies-drivers-transfer');
+    const q = query(companiesDriversTransferRef);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    const allTransferData: any[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      allTransferData.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    // console.log('✅ DATA FETCHED SUCCESSFULLY!');
+    // console.log('========================================');
+    // console.log(`📌 Total Documents Found: ${allTransferData.length}`);
+    // console.log('========================================\n');
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      // console.log('⚠️ No user is currently logged in. Returning all data.');
+      return allTransferData;
+    }
+    
+    const userEmail = currentUser.email;
+    const userId = currentUser.uid;
+    
+    // console.log('ℹ️ CURRENT USER INFO:');
+    // console.log('========================================');
+    // console.log('Email:', userEmail);
+    // console.log('UID:', userId);
+    // console.log('========================================\n');
+    
+    // if (allTransferData.length > 0) {
+    //   console.log('📋 SAMPLE DOCUMENT STRUCTURE:');
+    //   console.log('========================================');
+    //   console.dir(allTransferData[0], { depth: null, colors: true });
+    //   console.log('========================================\n');
+    //   
+    //   console.log('📊 ALL DOCUMENTS - CREATED USER EMAILS:');
+    //   console.log('========================================');
+    //   console.table(allTransferData.map(doc => ({
+    //     id: doc.id,
+    //     'createdUser.email': doc.createdUser?.email || 'N/A',
+    //     'createdUser.brandName': doc.createdUser?.brandName || 'N/A',
+    //   })));
+    //   console.log('========================================\n');
+    // }
+    
+    // Filter transfers where createdUser.email matches current user's email
+    const filteredTransfers = allTransferData.filter((transfer) => {
+      const createdUserEmail = transfer.createdUser?.email;
+      
+      // Check if createdUser.email matches current user's email
+      const emailMatch = createdUserEmail && 
+        userEmail && 
+        createdUserEmail.toLowerCase() === userEmail.toLowerCase();
+      
+      return emailMatch;
+    });
+    
+    // console.log('✅ FILTERED COMPANIES-DRIVERS-TRANSFER DATA:');
+    // console.log('========================================');
+    // console.log(`📌 Total Transfers for ${userEmail}:`, filteredTransfers.length);
+    // console.log('========================================\n');
+    
+    // if (filteredTransfers.length === 0) {
+    //   console.log('⚠️ NO MATCHING TRANSFERS FOUND!');
+    //   console.log('========================================');
+    //   console.log('Debugging Info:');
+    //   console.log('- Looking for createdUser.email =', userEmail);
+    //   console.log('\n📋 All createdUser.email values in collection:');
+    //   const uniqueEmails = [...new Set(allTransferData.map(t => t.createdUser?.email).filter(Boolean))];
+    //   console.log(uniqueEmails);
+    //   console.log('========================================\n');
+    // } else {
+    //   console.log('📋 FILTERED TRANSFER DATA:');
+    //   console.log('========================================');
+    //   console.dir(filteredTransfers, { depth: null, colors: true });
+    //   console.log('\n📊 FILTERED TABLE VIEW:');
+    //   console.table(filteredTransfers.map(doc => ({
+    //     id: doc.id,
+    //     'createdUser.email': doc.createdUser?.email,
+    //     'createdUser.brandName': doc.createdUser?.brandName,
+    //     'createdUser.balance': doc.createdUser?.balance,
+    //   })));
+    //   console.log('========================================\n');
+    // }
+    
+    return filteredTransfers;
+  } catch (error) {
+    console.error('❌ Error fetching companies-drivers-transfer data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch orders data from Firestore orders collection
+ * Filtered by companyUid matching current user's UID or email
+ * Enriched with driver data from companies-drivers collection
+ * @returns Promise with filtered and enriched orders data
+ */
+export const fetchOrders = async () => {
+  try {
+    console.log('\n🔄 ========================================');
+    console.log('📊 FETCHING ORDERS DATA');
+    console.log('========================================');
+    
+    const ordersRef = collection(db, 'orders');
+    const q = query(ordersRef);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    const allOrdersData: any[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      allOrdersData.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    console.log('✅ DATA FETCHED SUCCESSFULLY!');
+    console.log(`📌 Total Documents Found: ${allOrdersData.length}`);
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      console.log('⚠️ No user is currently logged in. Returning all data.');
+      return allOrdersData;
+    }
+    
+    const userEmail = currentUser.email;
+    const userId = currentUser.uid;
+    
+    console.log('ℹ️ CURRENT USER INFO:');
+    console.log('Email:', userEmail);
+    console.log('UID:', userId);
+    
+    // Filter orders where companyUid matches current user's UID or email
+    const filteredOrders = allOrdersData.filter((order) => {
+      const companyUid = order.companyUid;
+      
+      // Check if companyUid matches UID
+      const uidMatch = companyUid && 
+        userId && 
+        companyUid === userId;
+      
+      // Check if companyUid matches email
+      const emailMatch = companyUid && 
+        userEmail && 
+        companyUid.toLowerCase() === userEmail.toLowerCase();
+      
+      return uidMatch || emailMatch;
+    });
+    
+    console.log('✅ FILTERED ORDERS DATA:');
+    console.log(`📌 Total Orders for ${userEmail}:`, filteredOrders.length);
+    
+    if (filteredOrders.length > 0) {
+      console.log('\n📋 Sample Filtered Order:');
+      console.log('Address Check:');
+      console.log('- city:', filteredOrders[0].city);
+      console.log('- city.name:', filteredOrders[0].city?.name);
+      console.log('- city.name.ar:', filteredOrders[0].city?.name?.ar);
+      console.log('- city.name.en:', filteredOrders[0].city?.name?.en);
+      console.log('- address field:', filteredOrders[0].address);
+    }
+    
+    // Enrich orders with driver data
+    const enrichedOrders = await Promise.all(
+      filteredOrders.map(async (order) => {
+        let driverPhone = '-';
+        let driverName = '-';
+        
+        // Get driver email from assignedDriver
+        const driverEmail = order.assignedDriver?.email;
+        
+        if (driverEmail) {
+          try {
+            // Fetch driver data from companies-drivers by email
+            const driversRef = collection(db, 'companies-drivers');
+            const driverQuery = query(driversRef, where('email', '==', driverEmail));
+            const driverSnapshot = await getDocs(driverQuery);
+            
+            if (!driverSnapshot.empty) {
+              const driverData = driverSnapshot.docs[0].data();
+              driverPhone = driverData.phoneNumber || driverData.phone || '-';
+              driverName = driverData.name || '-';
+            }
+          } catch (err) {
+            console.error('Error fetching driver data for order:', order.id, err);
+          }
+        }
+        
+        return {
+          ...order,
+          enrichedDriverPhone: driverPhone,
+          enrichedDriverName: driverName,
+        };
+      })
+    );
+    
+    // console.log('✅ ENRICHED ORDERS DATA:');
+    // console.log('📊 Total enriched orders:', enrichedOrders.length);
+    
+    return enrichedOrders;
+  } catch (error) {
+    console.error('❌ Error fetching orders data:', error);
     throw error;
   }
 };
@@ -110,16 +337,16 @@ export const fetchCurrentCompany = async () => {
     const currentUser = auth.currentUser;
 
     if (!currentUser) {
-      console.log('No user is currently logged in.');
+      // console.log('No user is currently logged in.');
       return null;
     }
 
-    console.log('\n🏢 ========================================');
-    console.log('📊 FETCHING CURRENT COMPANY DATA');
-    console.log('========================================');
-    console.log('👤 Current User Email:', currentUser.email);
-    console.log('🆔 Current User UID:', currentUser.uid);
-    console.log('========================================\n');
+    // console.log('\n🏢 ========================================');
+    // console.log('📊 FETCHING CURRENT COMPANY DATA');
+    // console.log('========================================');
+    // console.log('👤 Current User Email:', currentUser.email);
+    // console.log('🆔 Current User UID:', currentUser.uid);
+    // console.log('========================================\n');
 
     const companiesRef = collection(db, 'companies');
     
@@ -129,20 +356,20 @@ export const fetchCurrentCompany = async () => {
     
     // If not found by UID, try by email
     if (querySnapshot.empty && currentUser.email) {
-      console.log('No company found by UID, trying email...');
+      // console.log('No company found by UID, trying email...');
       const qByEmail = query(companiesRef, where('email', '==', currentUser.email));
       querySnapshot = await getDocs(qByEmail);
     }
     
     // If still not found, try by createdUserId
     if (querySnapshot.empty && currentUser.email) {
-      console.log('No company found by email, trying createdUserId...');
+      // console.log('No company found by email, trying createdUserId...');
       const qByCreatedUserId = query(companiesRef, where('createdUserId', '==', currentUser.email));
       querySnapshot = await getDocs(qByCreatedUserId);
     }
 
     if (querySnapshot.empty) {
-      console.log('❌ No company document found for this user.');
+      // console.log('❌ No company document found for this user.');
       return null;
     }
 
@@ -153,73 +380,73 @@ export const fetchCurrentCompany = async () => {
       ...companyDoc.data()
     };
 
-    console.log('\n✅ CURRENT COMPANY DATA FOUND:');
-    console.log('========================================');
-    console.log('🏢 Company ID:', companyData.id);
-    console.log('📧 Email:', companyData.email);
-    console.log('🏭 Brand Name:', companyData.brandName || companyData.name);
-    console.log('📞 Phone:', companyData.phoneNumber);
-    console.log('💰 Balance:', companyData.balance);
-    console.log('✅ Active:', companyData.isActive);
-    console.log('========================================');
+    // console.log('\n✅ CURRENT COMPANY DATA FOUND:');
+    // console.log('========================================');
+    // console.log('🏢 Company ID:', companyData.id);
+    // console.log('📧 Email:', companyData.email);
+    // console.log('🏭 Brand Name:', companyData.brandName || companyData.name);
+    // console.log('📞 Phone:', companyData.phoneNumber);
+    // console.log('💰 Balance:', companyData.balance);
+    // console.log('✅ Active:', companyData.isActive);
+    // console.log('========================================');
     
-    console.log('\n📋 COMPLETE COMPANY DATA (All Fields):');
-    console.log('========================================');
-    console.dir(companyData, { depth: null, colors: true });
-    console.log('========================================\n');
+    // console.log('\n📋 COMPLETE COMPANY DATA (All Fields):');
+    // console.log('========================================');
+    // console.dir(companyData, { depth: null, colors: true });
+    // console.log('========================================\n');
 
     // Print specific important fields
-    console.log('🔑 KEY COMPANY INFORMATION:');
-    console.log('========================================');
-    console.log('Name:', companyData.name);
-    console.log('Brand Name:', companyData.brandName);
-    console.log('Email:', companyData.email);
-    console.log('Phone Number:', companyData.phoneNumber);
-    console.log('Balance:', companyData.balance);
-    console.log('Address:', companyData.address);
-    console.log('Location:', companyData.location);
-    console.log('Commercial Registration Number:', companyData.commercialRegistrationNumber);
-    console.log('VAT Number:', companyData.vatNumber);
-    console.log('Is Active:', companyData.isActive);
-    console.log('Status:', companyData.status);
-    console.log('========================================\n');
+    // console.log('🔑 KEY COMPANY INFORMATION:');
+    // console.log('========================================');
+    // console.log('Name:', companyData.name);
+    // console.log('Brand Name:', companyData.brandName);
+    // console.log('Email:', companyData.email);
+    // console.log('Phone Number:', companyData.phoneNumber);
+    // console.log('Balance:', companyData.balance);
+    // console.log('Address:', companyData.address);
+    // console.log('Location:', companyData.location);
+    // console.log('Commercial Registration Number:', companyData.commercialRegistrationNumber);
+    // console.log('VAT Number:', companyData.vatNumber);
+    // console.log('Is Active:', companyData.isActive);
+    // console.log('Status:', companyData.status);
+    // console.log('========================================\n');
 
     // Print nested objects separately for clarity
-    if (companyData.formattedLocation) {
-      console.log('📍 FORMATTED LOCATION:');
-      console.log('========================================');
-      console.dir(companyData.formattedLocation, { depth: null, colors: true });
-      console.log('========================================\n');
-    }
+    // if (companyData.formattedLocation) {
+    //   console.log('📍 FORMATTED LOCATION:');
+    //   console.log('========================================');
+    //   console.dir(companyData.formattedLocation, { depth: null, colors: true });
+    //   console.log('========================================\n');
+    // }
 
-    if (companyData.selectedSubscription) {
-      console.log('📦 SELECTED SUBSCRIPTION:');
-      console.log('========================================');
-      console.dir(companyData.selectedSubscription, { depth: null, colors: true });
-      console.log('========================================\n');
-    }
+    // if (companyData.selectedSubscription) {
+    //   console.log('📦 SELECTED SUBSCRIPTION:');
+    //   console.log('========================================');
+    //   console.dir(companyData.selectedSubscription, { depth: null, colors: true });
+    //   console.log('========================================\n');
+    // }
 
-    if (companyData.tokens && companyData.tokens.length > 0) {
-      console.log('🔐 DEVICE TOKENS:');
-      console.log('========================================');
-      console.log('Total Tokens:', companyData.tokens.length);
-      companyData.tokens.forEach((token: any, index: number) => {
-        console.log(`\nToken ${index + 1}:`);
-        console.log('  Device Type:', token.deviceType);
-        console.log('  App Version:', token.appVersion);
-        console.log('  Last Updated:', token.lastUpdated);
-      });
-      console.log('========================================\n');
-    }
+    // if (companyData.tokens && companyData.tokens.length > 0) {
+    //   console.log('🔐 DEVICE TOKENS:');
+    //   console.log('========================================');
+    //   console.log('Total Tokens:', companyData.tokens.length);
+    //   companyData.tokens.forEach((token: any, index: number) => {
+    //     console.log(`\nToken ${index + 1}:`);
+    //     console.log('  Device Type:', token.deviceType);
+    //     console.log('  App Version:', token.appVersion);
+    //     console.log('  Last Updated:', token.lastUpdated);
+    //   });
+    //   console.log('========================================\n');
+    // }
 
     // Print file URLs
-    console.log('📎 COMPANY FILES & DOCUMENTS:');
-    console.log('========================================');
-    console.log('Logo:', companyData.logo);
-    console.log('Address File:', companyData.addressFile);
-    console.log('Commercial Registration:', companyData.commercialRegistration);
-    console.log('Tax Certificate:', companyData.taxCertificate);
-    console.log('========================================\n');
+    // console.log('📎 COMPANY FILES & DOCUMENTS:');
+    // console.log('========================================');
+    // console.log('Logo:', companyData.logo);
+    // console.log('Address File:', companyData.addressFile);
+    // console.log('Commercial Registration:', companyData.commercialRegistration);
+    // console.log('Tax Certificate:', companyData.taxCertificate);
+    // console.log('========================================\n');
 
     return companyData;
   } catch (error) {
@@ -354,9 +581,9 @@ export const addCompanyDriver = async (driverData: AddDriverData) => {
       throw new Error('No user is currently logged in');
     }
 
-    console.log('Adding new driver to Firestore...');
-    console.log('Current user:', currentUser.email, currentUser.uid);
-    console.log('Driver data:', driverData);
+    // console.log('Adding new driver to Firestore...');
+    // console.log('Current user:', currentUser.email, currentUser.uid);
+    // console.log('Driver data:', driverData);
 
     // Upload files to Firebase Storage if they are File objects
     let imageUrl = '';
@@ -366,14 +593,14 @@ export const addCompanyDriver = async (driverData: AddDriverData) => {
       const timestamp = Date.now();
       const imagePath = `companies-drivers/${timestamp}${driverData.driverImage.name}`;
       imageUrl = await uploadFileToStorage(driverData.driverImage, imagePath);
-      console.log('Driver image uploaded:', imageUrl);
+      // console.log('Driver image uploaded:', imageUrl);
     }
 
     if (driverData.driverLicense && driverData.driverLicense instanceof File) {
       const timestamp = Date.now();
       const licensePath = `companies-drivers/${timestamp}${driverData.driverLicense.name}`;
       licenseUrl = await uploadFileToStorage(driverData.driverLicense, licensePath);
-      console.log('Driver license uploaded:', licenseUrl);
+      // console.log('Driver license uploaded:', licenseUrl);
     }
 
     // Prepare the driver document
@@ -427,13 +654,13 @@ export const addCompanyDriver = async (driverData: AddDriverData) => {
       vehicleStatus: driverData.vehicleStatus,
     };
 
-    console.log('Prepared driver document:', driverDocument);
+    // console.log('Prepared driver document:', driverDocument);
 
     // Add to Firestore
     const companiesDriversRef = collection(db, 'companies-drivers');
     const docRef = await addDoc(companiesDriversRef, driverDocument);
 
-    console.log('Driver added successfully with ID:', docRef.id);
+    // console.log('Driver added successfully with ID:', docRef.id);
 
     return {
       id: docRef.id,
@@ -452,7 +679,7 @@ export const addCompanyDriver = async (driverData: AddDriverData) => {
  */
 export const fetchDriverById = async (driverId: string) => {
   try {
-    console.log('Fetching driver by ID:', driverId);
+    // console.log('Fetching driver by ID:', driverId);
     
     const driverDocRef = doc(db, 'companies-drivers', driverId);
     const driverDoc = await getDoc(driverDocRef);
@@ -466,7 +693,7 @@ export const fetchDriverById = async (driverId: string) => {
       ...driverDoc.data()
     };
     
-    console.log('Driver data fetched:', driverData);
+    // console.log('Driver data fetched:', driverData);
     
     return driverData;
   } catch (error) {
@@ -483,11 +710,11 @@ export const fetchDriverById = async (driverId: string) => {
 export const fetchDriversByIds = async (driverIds: string[]) => {
   try {
     if (!driverIds || driverIds.length === 0) {
-      console.log('No driver IDs provided');
+      // console.log('No driver IDs provided');
       return [];
     }
 
-    console.log('Fetching drivers by IDs:', driverIds);
+    // console.log('Fetching drivers by IDs:', driverIds);
     
     const driverPromises = driverIds.map(id => fetchDriverById(id).catch(err => {
       console.error(`Error fetching driver ${id}:`, err);
@@ -498,7 +725,7 @@ export const fetchDriversByIds = async (driverIds: string[]) => {
     // Filter out null values (failed fetches)
     const validDrivers = drivers.filter(driver => driver !== null);
     
-    console.log('Fetched drivers:', validDrivers);
+    // console.log('Fetched drivers:', validDrivers);
     
     return validDrivers;
   } catch (error) {
@@ -522,17 +749,17 @@ export const addDriverToCar = async (driverId: string, carId: string, carData: a
       throw new Error('No user is currently logged in');
     }
 
-    console.log('Adding driver to car...');
-    console.log('Driver ID:', driverId);
-    console.log('Car ID:', carId);
-    console.log('Car data:', carData);
+    // console.log('Adding driver to car...');
+    // console.log('Driver ID:', driverId);
+    // console.log('Car ID:', carId);
+    // console.log('Car data:', carData);
 
     // Update the car document - add driver ID to driverIds array
     const carDocRef = doc(db, 'companies-cars', carId);
     await updateDoc(carDocRef, {
       driverIds: arrayUnion(driverId)
     });
-    console.log('Car updated: Added driver to driverIds array');
+    // console.log('Car updated: Added driver to driverIds array');
 
     // Update the driver document - add car data
     const driverDocRef = doc(db, 'companies-drivers', driverId);
@@ -547,7 +774,7 @@ export const addDriverToCar = async (driverId: string, carId: string, carData: a
         size: carData.size || carData.plan?.carSize || '',
       }
     });
-    console.log('Driver updated: Added car data to driver document');
+    // console.log('Driver updated: Added car data to driver document');
 
     return {
       success: true,
@@ -588,9 +815,9 @@ export const addCompanyCar = async (carData: AddCarData) => {
       throw new Error('No user is currently logged in');
     }
 
-    console.log('Adding new car to Firestore...');
-    console.log('Current user:', currentUser.email, currentUser.uid);
-    console.log('Car data:', carData);
+    // console.log('Adding new car to Firestore...');
+    // console.log('Current user:', currentUser.email, currentUser.uid);
+    // console.log('Car data:', carData);
 
     // Convert fuel type to code
     const fuelTypeMap: { [key: string]: string } = {
@@ -671,13 +898,13 @@ export const addCompanyCar = async (carData: AddCarData) => {
       balance: 0,
     };
 
-    console.log('Prepared car document:', carDocument);
+    // console.log('Prepared car document:', carDocument);
 
     // Add to Firestore
     const companiesCarsRef = collection(db, 'companies-cars');
     const docRef = await addDoc(companiesCarsRef, carDocument);
 
-    console.log('Car added successfully with ID:', docRef.id);
+    // console.log('Car added successfully with ID:', docRef.id);
 
     return {
       id: docRef.id,
@@ -696,7 +923,7 @@ export const addCompanyCar = async (carData: AddCarData) => {
  */
 export const fetchCarById = async (carId: string) => {
   try {
-    console.log('Fetching car by ID:', carId);
+    // console.log('Fetching car by ID:', carId);
     
     const carDocRef = doc(db, 'companies-cars', carId);
     const carDoc = await getDoc(carDocRef);
@@ -710,7 +937,7 @@ export const fetchCarById = async (carId: string) => {
       ...carDoc.data()
     };
     
-    console.log('Car data fetched:', carData);
+    // console.log('Car data fetched:', carData);
     
     return carData;
   } catch (error) {
@@ -725,7 +952,7 @@ export const fetchCarById = async (carId: string) => {
  */
 export const fetchCompaniesCars = async () => {
   try {
-    console.log('Fetching companies-cars data from Firestore...');
+    // console.log('Fetching companies-cars data from Firestore...');
     
     const companiesCarsRef = collection(db, 'companies-cars');
     const q = query(companiesCarsRef);
@@ -740,11 +967,11 @@ export const fetchCompaniesCars = async () => {
       });
     });
     
-    console.log('Companies-Cars Data (All):');
-    console.log('======================');
-    console.log(`Total documents: ${companiesCarsData.length}`);
-    console.log('Data:', companiesCarsData);
-    console.table(companiesCarsData);
+    // console.log('Companies-Cars Data (All):');
+    // console.log('======================');
+    // console.log(`Total documents: ${companiesCarsData.length}`);
+    // console.log('Data:', companiesCarsData);
+    // console.table(companiesCarsData);
     
     // Get current user
     const currentUser = auth.currentUser;
@@ -753,10 +980,10 @@ export const fetchCompaniesCars = async () => {
       const userEmail = currentUser.email;
       const userId = currentUser.uid;
       
-      console.log('\nCurrent User Info:');
-      console.log('==================');
-      console.log('Email:', userEmail);
-      console.log('UID:', userId);
+      // console.log('\nCurrent User Info:');
+      // console.log('==================');
+      // console.log('Email:', userEmail);
+      // console.log('UID:', userId);
       
       // Filter cars where createdUserId contains user email OR companyUid equals user id
       const filteredCars = companiesCarsData.filter((car) => {
@@ -771,15 +998,15 @@ export const fetchCompaniesCars = async () => {
         return createdUserIdMatch || companyUidMatch;
       });
       
-      console.log('\nFiltered Companies-Cars Data:');
-      console.log('=================================');
-      console.log(`Total filtered documents: ${filteredCars.length}`);
-      console.log('Filtered Data:', filteredCars);
-      console.table(filteredCars);
+      // console.log('\nFiltered Companies-Cars Data:');
+      // console.log('=================================');
+      // console.log(`Total filtered documents: ${filteredCars.length}`);
+      // console.log('Filtered Data:', filteredCars);
+      // console.table(filteredCars);
       
       return filteredCars;
     } else {
-      console.log('\nNo user is currently logged in. Returning all data.');
+      // console.log('\nNo user is currently logged in. Returning all data.');
       return companiesCarsData;
     }
   } catch (error) {

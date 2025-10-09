@@ -432,16 +432,16 @@ export const CarListSection = (): JSX.Element => {
       setError(null);
       
       try {
-        console.log('Loading companies-cars data from Firestore...');
+        // console.log('Loading companies-cars data from Firestore...');
         const firestoreCars = await fetchCompaniesCars();
         
         if (firestoreCars && firestoreCars.length > 0) {
-          console.log('Converting Firestore data to Cars format...');
+          // console.log('Converting Firestore data to Cars format...');
           const convertedCars = convertFirestoreToCars(firestoreCars);
-          console.log('Converted cars:', convertedCars);
+          // console.log('Converted cars:', convertedCars);
           setCars(convertedCars);
         } else {
-          console.log('No cars found in Firestore.');
+          // console.log('No cars found in Firestore.');
           setCars([]);
         }
       } catch (err) {
