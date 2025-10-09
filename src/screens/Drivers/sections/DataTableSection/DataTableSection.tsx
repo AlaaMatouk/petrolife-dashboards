@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
+import { LoadingSpinner } from "../../../../components/shared/Spinner";
 import { useDrivers } from "../../../../hooks/useGlobalState";
 import { driversData as mockDriversData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
@@ -430,38 +431,34 @@ export const DataTableSection = (): JSX.Element => {
   // Fetch companies-drivers data from Firestore on component mount
   useEffect(() => {
     const loadDriversData = async () => {
-      if (drivers.length === 0) {
-        setIsLoading(true);
-        setError(null);
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        console.log('Loading companies-drivers data from Firestore...');
+        const firestoreDrivers = await fetchCompaniesDrivers();
         
-        try {
-          console.log('Loading companies-drivers data from Firestore...');
-          const firestoreDrivers = await fetchCompaniesDrivers();
-          
-          if (firestoreDrivers && firestoreDrivers.length > 0) {
-            console.log('Converting Firestore data to Driver format...');
-            const convertedDrivers = convertFirestoreToDrivers(firestoreDrivers);
-            console.log('Converted drivers:', convertedDrivers);
-            setDrivers(convertedDrivers);
-          } else {
-            console.log('No drivers found in Firestore, using mock data...');
-            const convertedDrivers = convertMockDataToDrivers(mockDriversData);
-            setDrivers(convertedDrivers);
-          }
-        } catch (err) {
-          console.error('Error loading drivers from Firestore:', err);
-          setError('فشل في تحميل بيانات السائقين. استخدام البيانات التجريبية.');
-          // Fallback to mock data on error
-          const convertedDrivers = convertMockDataToDrivers(mockDriversData);
+        if (firestoreDrivers && firestoreDrivers.length > 0) {
+          console.log('Converting Firestore data to Driver format...');
+          const convertedDrivers = convertFirestoreToDrivers(firestoreDrivers);
+          console.log('Converted drivers:', convertedDrivers);
           setDrivers(convertedDrivers);
-        } finally {
-          setIsLoading(false);
+        } else {
+          console.log('No drivers found in Firestore.');
+          // Don't use mock data, just set empty array
+          setDrivers([]);
         }
+      } catch (err) {
+        console.error('Error loading drivers from Firestore:', err);
+        setError('فشل في تحميل بيانات السائقين.');
+        setDrivers([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadDriversData();
-  }, [drivers.length, setDrivers]);
+  }, [setDrivers]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -608,25 +605,23 @@ export const DataTableSection = (): JSX.Element => {
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center w-full py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">جاري تحميل بيانات السائقين...</p>
-          </div>
-        </div>
-      )}
+      {/* Loading State - Full page spinner */}
+      {isLoading ? (
+        <LoadingSpinner 
+          size="lg" 
+          message="جاري التحميل..." 
+        />
+      ) : (
+        <>
+          {/* Error Message */}
+          {error && (
+            <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-center [direction:rtl]">{error}</p>
+            </div>
+          )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800 text-center [direction:rtl]">{error}</p>
-        </div>
-      )}
-
-      {/* Driver Stats Cards */}
-      <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
+          {/* Driver Stats Cards */}
+          <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <div className="flex items-center justify-end gap-1.5 relative self-stretch w-full flex-[0_0_auto]">
           <h2 className="relative w-[229px] h-5 mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
             توزيع السائقين على السيارات
@@ -722,6 +717,19 @@ export const DataTableSection = (): JSX.Element => {
           />
         </main>
       </div>
+
+          {/* No Data Message */}
+          {!isLoading && !error && drivers.length === 0 && (
+            <div className="flex items-center justify-center w-full py-12 bg-white rounded-lg border border-gray-200">
+              <div className="text-center">
+                <UserRound className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg [direction:rtl]">لا توجد بيانات سائقين</p>
+                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">قم بإضافة سائق جديد للبدء</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 };

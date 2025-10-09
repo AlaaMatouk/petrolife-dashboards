@@ -9,3 +9,4 @@ export * from "./SidebarNav";
 export * from "./Form";
 export * from "./TimeFilter";
 export * from "./ExportButton";
+export * from "./Spinner";

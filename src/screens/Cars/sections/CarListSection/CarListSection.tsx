@@ -1,6 +1,6 @@
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
-import { ExportButton } from "../../../../components/shared";
+import { ExportButton, LoadingSpinner } from "../../../../components/shared";
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
 import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
@@ -441,14 +441,13 @@ export const CarListSection = (): JSX.Element => {
           console.log('Converted cars:', convertedCars);
           setCars(convertedCars);
         } else {
-          console.log('No cars found in Firestore, using mock data...');
-          setCars(carData);
+          console.log('No cars found in Firestore.');
+          setCars([]);
         }
       } catch (err) {
         console.error('Error loading cars from Firestore:', err);
-        setError('فشل في تحميل بيانات السيارات. استخدام البيانات التجريبية.');
-        // Fallback to mock data on error
-        setCars(carData);
+        setError('فشل في تحميل بيانات السيارات.');
+        setCars([]);
       } finally {
         setIsLoading(false);
       }
@@ -470,24 +469,35 @@ export const CarListSection = (): JSX.Element => {
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center w-full py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">جاري تحميل بيانات السيارات...</p>
-          </div>
-        </div>
-      )}
+      {/* Loading State - Full page spinner */}
+      {isLoading ? (
+        <LoadingSpinner 
+          size="lg" 
+          message="جاري التحميل..." 
+        />
+      ) : (
+        <>
+          {/* Error Message */}
+          {error && (
+            <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-center [direction:rtl]">{error}</p>
+            </div>
+          )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800 text-center [direction:rtl]">{error}</p>
-        </div>
-      )}
+          {/* No Data Message */}
+          {!isLoading && !error && cars.length === 0 && (
+            <div className="flex items-center justify-center w-full py-12 bg-white rounded-lg border border-gray-200">
+              <div className="text-center">
+                <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg [direction:rtl]">لا توجد سيارات</p>
+                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">قم بإضافة سيارة جديدة للبدء</p>
+              </div>
+            </div>
+          )}
 
-      <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
+          {/* Data Display - Only show if we have data */}
+          {cars.length > 0 && (
+            <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
             <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
@@ -568,6 +578,9 @@ export const CarListSection = (): JSX.Element => {
           />
         </main>
       </div>
+          )}
+        </>
+      )}
     </section>
   );
 };

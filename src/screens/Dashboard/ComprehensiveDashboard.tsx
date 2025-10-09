@@ -3,6 +3,7 @@ import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
+import { useAuth } from "../../hooks/useGlobalState";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -34,6 +35,16 @@ const BannerSection = () => {
 
 // Stats Cards Section
 const StatsCardsSection = () => {
+  const { company } = useAuth();
+  
+  // Get balance from company data, fallback to 0 if not available
+  const walletBalance = company?.balance || 0;
+  
+  // Format number with thousands separator (English)
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
+  };
+  
   const fuelData = [
     { type: "ديزل", amount: "185 .L", color: "text-color-mode-text-icons-t-orange" },
     { type: "بنزين 95", amount: "548 .L", color: "text-color-mode-text-icons-t-red" },
@@ -56,7 +67,7 @@ const StatsCardsSection = () => {
     },
     {
       title: "رصيد محفظتي",
-      amount: "7,250",
+      amount: formatNumber(walletBalance),
       currency: "ر.س",
       icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "wallet",

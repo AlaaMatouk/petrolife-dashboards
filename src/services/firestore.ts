@@ -1,4 +1,4 @@
-import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../config/firebase';
 
@@ -97,6 +97,133 @@ export const fetchCollection = async (collectionName: string) => {
     return data;
   } catch (error) {
     console.error(`Error fetching ${collectionName} data:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch current company data from Firestore companies collection
+ * @returns Promise with the current company data
+ */
+export const fetchCurrentCompany = async () => {
+  try {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      console.log('No user is currently logged in.');
+      return null;
+    }
+
+    console.log('\n🏢 ========================================');
+    console.log('📊 FETCHING CURRENT COMPANY DATA');
+    console.log('========================================');
+    console.log('👤 Current User Email:', currentUser.email);
+    console.log('🆔 Current User UID:', currentUser.uid);
+    console.log('========================================\n');
+
+    const companiesRef = collection(db, 'companies');
+    
+    // Try to find company by UID first
+    const qByUid = query(companiesRef, where('uid', '==', currentUser.uid));
+    let querySnapshot = await getDocs(qByUid);
+    
+    // If not found by UID, try by email
+    if (querySnapshot.empty && currentUser.email) {
+      console.log('No company found by UID, trying email...');
+      const qByEmail = query(companiesRef, where('email', '==', currentUser.email));
+      querySnapshot = await getDocs(qByEmail);
+    }
+    
+    // If still not found, try by createdUserId
+    if (querySnapshot.empty && currentUser.email) {
+      console.log('No company found by email, trying createdUserId...');
+      const qByCreatedUserId = query(companiesRef, where('createdUserId', '==', currentUser.email));
+      querySnapshot = await getDocs(qByCreatedUserId);
+    }
+
+    if (querySnapshot.empty) {
+      console.log('❌ No company document found for this user.');
+      return null;
+    }
+
+    // Get the first matching document
+    const companyDoc = querySnapshot.docs[0];
+    const companyData = {
+      id: companyDoc.id,
+      ...companyDoc.data()
+    };
+
+    console.log('\n✅ CURRENT COMPANY DATA FOUND:');
+    console.log('========================================');
+    console.log('🏢 Company ID:', companyData.id);
+    console.log('📧 Email:', companyData.email);
+    console.log('🏭 Brand Name:', companyData.brandName || companyData.name);
+    console.log('📞 Phone:', companyData.phoneNumber);
+    console.log('💰 Balance:', companyData.balance);
+    console.log('✅ Active:', companyData.isActive);
+    console.log('========================================');
+    
+    console.log('\n📋 COMPLETE COMPANY DATA (All Fields):');
+    console.log('========================================');
+    console.dir(companyData, { depth: null, colors: true });
+    console.log('========================================\n');
+
+    // Print specific important fields
+    console.log('🔑 KEY COMPANY INFORMATION:');
+    console.log('========================================');
+    console.log('Name:', companyData.name);
+    console.log('Brand Name:', companyData.brandName);
+    console.log('Email:', companyData.email);
+    console.log('Phone Number:', companyData.phoneNumber);
+    console.log('Balance:', companyData.balance);
+    console.log('Address:', companyData.address);
+    console.log('Location:', companyData.location);
+    console.log('Commercial Registration Number:', companyData.commercialRegistrationNumber);
+    console.log('VAT Number:', companyData.vatNumber);
+    console.log('Is Active:', companyData.isActive);
+    console.log('Status:', companyData.status);
+    console.log('========================================\n');
+
+    // Print nested objects separately for clarity
+    if (companyData.formattedLocation) {
+      console.log('📍 FORMATTED LOCATION:');
+      console.log('========================================');
+      console.dir(companyData.formattedLocation, { depth: null, colors: true });
+      console.log('========================================\n');
+    }
+
+    if (companyData.selectedSubscription) {
+      console.log('📦 SELECTED SUBSCRIPTION:');
+      console.log('========================================');
+      console.dir(companyData.selectedSubscription, { depth: null, colors: true });
+      console.log('========================================\n');
+    }
+
+    if (companyData.tokens && companyData.tokens.length > 0) {
+      console.log('🔐 DEVICE TOKENS:');
+      console.log('========================================');
+      console.log('Total Tokens:', companyData.tokens.length);
+      companyData.tokens.forEach((token: any, index: number) => {
+        console.log(`\nToken ${index + 1}:`);
+        console.log('  Device Type:', token.deviceType);
+        console.log('  App Version:', token.appVersion);
+        console.log('  Last Updated:', token.lastUpdated);
+      });
+      console.log('========================================\n');
+    }
+
+    // Print file URLs
+    console.log('📎 COMPANY FILES & DOCUMENTS:');
+    console.log('========================================');
+    console.log('Logo:', companyData.logo);
+    console.log('Address File:', companyData.addressFile);
+    console.log('Commercial Registration:', companyData.commercialRegistration);
+    console.log('Tax Certificate:', companyData.taxCertificate);
+    console.log('========================================\n');
+
+    return companyData;
+  } catch (error) {
+    console.error('❌ Error fetching current company:', error);
     throw error;
   }
 };

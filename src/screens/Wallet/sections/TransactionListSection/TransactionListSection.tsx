@@ -6,11 +6,21 @@ import {
   fuelData,
 } from "../../../../constants/data";
 import { CirclePlus, WalletMinimal } from "lucide-react";
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 export const TransactionListSection = (): JSX.Element => {
   const navigate = useNavigate();
+  const { company } = useAuth();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(3);
+  
+  // Get balance from company data, fallback to 0 if not available
+  const walletBalance = company?.balance || 0;
+  
+  // Format number with thousands separator (English)
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
+  };
 
   // Define table columns for transactions
   const transactionColumns = [
@@ -122,7 +132,7 @@ export const TransactionListSection = (): JSX.Element => {
           <div className="flex flex-col items-end text-right relative z-10">
           <h3 className="text-lg mb-2">رصيــــــــد محفظتي</h3>
           <p className="text-4xl font-bold mb-4">
-               <span className="text-base">ر.س</span> 7,250
+               <span className="text-base">ر.س</span> {formatNumber(walletBalance)}
           </p>
           <div className="flex gap-4">
                <button 
