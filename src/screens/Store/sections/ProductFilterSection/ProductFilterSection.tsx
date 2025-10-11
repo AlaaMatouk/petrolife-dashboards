@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Star, Heart, Share2, ShoppingCart, DollarSign, Store } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Star, ShoppingCart, Store } from "lucide-react";
+import { fetchProducts } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared";
 
 const filterCategories = [
   { id: "accessories", label: "اكسسوارات" },
@@ -11,197 +13,51 @@ const filterCategories = [
   { id: "all", label: "كل المنتجات" },
 ];
 
-const products = [
-  {
-    id: 1,
-    image: "/img/image-10.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-3.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 2,
-    image: "/img/image-7-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-3.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 3,
-    image: "/img/image-9-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-3.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 4,
-    image: "/img/image-6-2.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-3.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 5,
-    image: "/img/image-9-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-7.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 6,
-    image: "/img/image-6-2.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-7.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 7,
-    image: "/img/image-11-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-7.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 8,
-    image: "/img/image-8-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-7.svg",
-    starIcon: "/img/side-icons-15.svg",
-    heartIcon: "/img/vector-7.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 9,
-    image: "/img/image-6-2.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-11.svg",
-    starIcon: "/img/side-icons-23.svg",
-    heartIcon: "/img/vector-11.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 10,
-    image: "/img/image-11-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-11.svg",
-    starIcon: "/img/side-icons-23.svg",
-    heartIcon: "/img/vector-11.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 11,
-    image: "/img/image-8-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-11.svg",
-    starIcon: "/img/side-icons-23.svg",
-    heartIcon: "/img/vector-11.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-  {
-    id: 12,
-    image: "/img/image-7-1.png",
-    category: "فلاتر",
-    title: "دعم ظهر كرسي السيارة",
-    description:
-      "دعم ظهر مميز مصنوع بخامات عالية الجودة بحيث تتحمل القدرة على المقاومة والحفاظ على حالته لأطول فترة ممكنة.",
-    rating: 4.5,
-    reviews: 12,
-    likes: 40,
-    cartIcon: "/img/component-1-11.svg",
-    starIcon: "/img/side-icons-23.svg",
-    heartIcon: "/img/vector-11.svg",
-    shareIcon: "/img/side-icons-24.svg",
-  },
-];
+const ProductCard = ({ product }: { product: any }) => {
+  // Extract product details with proper handling of nested objects
+  // Based on Firestore structure: title.ar/en, desc.ar/en, image (string), price (number)
+  const getTitleText = (prod: any): string => {
+    if (prod.title?.ar) return prod.title.ar;
+    if (prod.title?.en) return prod.title.en;
+    if (typeof prod.title === 'string') return prod.title;
+    if (prod.name?.ar) return prod.name.ar;
+    if (prod.name?.en) return prod.name.en;
+    if (typeof prod.name === 'string') return prod.name;
+    return "منتج";
+  };
 
-const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
+  const getDescriptionText = (prod: any): string => {
+    if (prod.desc?.ar) return prod.desc.ar;
+    if (prod.desc?.en) return prod.desc.en;
+    if (typeof prod.desc === 'string') return prod.desc;
+    if (prod.description?.ar) return prod.description.ar;
+    if (prod.description?.en) return prod.description.en;
+    if (typeof prod.description === 'string') return prod.description;
+    return "";
+  };
+
+  const getCategoryText = (prod: any): string => {
+    if (prod.category?.ar) return prod.category.ar;
+    if (prod.category?.en) return prod.category.en;
+    if (typeof prod.category === 'string') return prod.category;
+    return "منتجات";
+  };
+
+  const title = getTitleText(product);
+  const description = getDescriptionText(product);
+  const category = getCategoryText(product);
+  const image = product.image || product.imageUrl || product.img || "/img/image-10.png";
+  const rating = product.rating || 4.5;
+  const reviews = product.reviews || product.reviewsCount || 0;
+  const price = product.price || product.salePrice || 0;
+
   return (
     <article className="flex flex-col items-start gap-2.5 p-2.5 relative w-full bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-medium)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
       <div className="flex flex-col w-full items-start gap-3 relative">
         <div className="relative self-stretch w-full h-[148px] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
           <div
             className="relative top-[calc(50.00%_-_78px)] left-[calc(50.00%_-_78px)] w-[156px] h-[156px] bg-cover bg-[50%_50%]"
-            style={{ backgroundImage: `url(${product.image})` }}
+            style={{ backgroundImage: `url(${image})` }}
           />
         </div>
 
@@ -210,18 +66,20 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
             <div className="flex-col items-end gap-[var(--corner-radius-small)] self-stretch w-full flex relative flex-[0_0_auto]">
               <div className="flex items-center justify-end gap-1 relative self-stretch w-full flex-[0_0_auto]">
                 <div className="flex-1 h-[19px] mt-[-1.00px] font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-orange text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] relative font-subtitle-subtitle-3 [font-style:var(--subtitle-subtitle-3-font-style)]">
-                  {product.category}
+                  {category}
                 </div>
                 <div className="relative w-1.5 h-1.5 bg-color-mode-text-icons-t-orange rounded-[3px]" />
               </div>
 
               <div className="flex flex-col items-start gap-1 relative self-stretch w-full flex-[0_0_auto]">
                 <h3 className="self-stretch mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 [font-style:var(--subtitle-subtitle-2-font-style)]">
-                  {product.title}
+                  {title}
                 </h3>
-                <p className="self-stretch font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] relative font-caption-caption-1 [font-style:var(--caption-caption-1-font-style)]">
-                  {product.description}
-                </p>
+                {description && (
+                  <p className="self-stretch font-[number:var(--caption-caption-1-font-weight)] text-color-mode-text-icons-t-primary-gray text-[length:var(--caption-caption-1-font-size)] tracking-[var(--caption-caption-1-letter-spacing)] leading-[var(--caption-caption-1-line-height)] [direction:rtl] relative font-caption-caption-1 [font-style:var(--caption-caption-1-font-style)]">
+                    {description}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -229,10 +87,10 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
               <div className="inline-flex items-center gap-[5px] relative flex-[0_0_auto]">
                 <p className="w-[97px] h-[18px] mt-[-1.00px] font-normal text-color-mode-text-icons-t-sec text-base text-left leading-4 whitespace-nowrap [direction:rtl] relative [font-family:'Tajawal',Helvetica]">
                   <span className="font-[number:var(--subtitle-subtitle-2-font-weight)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] font-subtitle-subtitle-2 [font-style:var(--subtitle-subtitle-2-font-style)] text-[length:var(--subtitle-subtitle-2-font-size)]">
-                    {product.rating}{" "}
+                    {rating}{" "}
                   </span>
                   <span className="text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] font-body-body-2 [font-style:var(--body-body-2-font-style)] font-[number:var(--body-body-2-font-weight)]">
-                    ({product.reviews} مراجعة)
+                    ({reviews} مراجعة)
                   </span>
                 </p>
                 <Star className="relative w-[18px] h-[18px] text-orange-500" />
@@ -241,7 +99,7 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
               <div className="inline-flex items-center gap-[5px] relative flex-[0_0_auto]">
                 <span className="text-blue-500 font-subtitle-subtitle-2 text-[length:var(--subtitle-subtitle-2-font-size)]">ر.س</span>
                 <div className="relative w-[19px] h-[18px] mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                  {product.likes}
+                  {price}
                 </div>
               </div>
             </div>
@@ -268,10 +126,47 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
 
 export const ProductFilterSection = (): JSX.Element => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const firestoreProducts = await fetchProducts();
+        setProducts(firestoreProducts);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('فشل في تحميل المنتجات.');
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
 
   const handleFilterClick = (filterId: string) => {
     setActiveFilter(filterId);
   };
+
+  // Helper function to safely extract category text
+  const getCategoryText = (prod: any): string => {
+    if (prod.category?.ar) return prod.category.ar;
+    if (prod.category?.en) return prod.category.en;
+    if (typeof prod.category === 'string') return prod.category;
+    return "";
+  };
+
+  // Filter products based on active category
+  const filteredProducts = activeFilter === "all" 
+    ? products 
+    : products.filter(product => {
+        const category = getCategoryText(product);
+        return category === activeFilter;
+      });
 
   return (
     <section className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
@@ -363,11 +258,23 @@ export const ProductFilterSection = (): JSX.Element => {
       </nav>
 
       {/* Products Grid with Flex Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {isLoading ? (
+        <LoadingSpinner size="lg" message="جاري تحميل المنتجات..." />
+      ) : error ? (
+        <div className="flex items-center justify-center w-full py-8">
+          <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="flex items-center justify-center w-full py-8">
+          <p className="text-gray-500 text-center [direction:rtl]">لا توجد منتجات</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

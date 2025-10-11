@@ -396,6 +396,30 @@ export const createDeliveryOrder = async (orderData: {
 };
 
 /**
+ * Fetch all products from Firestore
+ * @returns Promise with products data
+ */
+export const fetchProducts = async (): Promise<any[]> => {
+  try {
+    // console.log('Fetching products from Firestore...');
+    
+    const productsCollection = collection(db, 'products');
+    const productsSnapshot = await getDocs(productsCollection);
+    
+    const products = productsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // console.log('Fetched products:', products.length);
+    return products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch companies-wallets-requests data from Firestore
  * Filtered by requestedUser.email matching current user's email
  * Uses requestedUser.balance as old balance
