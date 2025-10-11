@@ -396,6 +396,69 @@ export const createDeliveryOrder = async (orderData: {
 };
 
 /**
+ * Fetch companies-wallets-requests data from Firestore
+ * Filtered by requestedUser.email matching current user's email
+ * Uses requestedUser.balance as old balance
+ * @returns Promise with filtered wallet requests data
+ */
+export const fetchWalletChargeRequests = async () => {
+  try {
+    // console.log('\n🔄 Fetching companies-wallets-requests...');
+    
+    const requestsRef = collection(db, 'companies-wallets-requests');
+    const q = query(requestsRef);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    const allRequestsData: any[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      allRequestsData.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    // console.log('✅ Total requests found:', allRequestsData.length);
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      // console.log('⚠️ No user logged in. Returning all data.');
+      return allRequestsData;
+    }
+    
+    const userEmail = currentUser.email;
+    
+    // Filter requests where requestedUser.email matches current user's email
+    const filteredRequests = allRequestsData.filter((request) => {
+      const requestedUserEmail = request.requestedUser?.email;
+      
+      const emailMatch = requestedUserEmail && 
+        userEmail && 
+        requestedUserEmail.toLowerCase() === userEmail.toLowerCase();
+      
+      return emailMatch;
+    });
+    
+    // console.log('✅ Filtered requests:', filteredRequests.length);
+    
+    // Add oldBalance from requestedUser.balance
+    const enrichedRequests = filteredRequests.map((request) => ({
+      ...request,
+      oldBalance: request.requestedUser?.balance || 0,
+    }));
+    
+    // console.log('✅ Requests with balance:', enrichedRequests.length);
+    
+    return enrichedRequests;
+  } catch (error) {
+    console.error('❌ Error fetching wallet charge requests:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */

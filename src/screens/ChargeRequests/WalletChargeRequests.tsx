@@ -17,7 +17,7 @@ export const WalletChargeRequests = (): JSX.Element => {
         showSearch: false,
         searchProps: {
           placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
+          onSearch: (query) => {}, // console.log("Search:", query)
         },
       }}
       sidebarProps={{
