@@ -9,6 +9,7 @@ const getStatusText = (status: string): { text: string; type: string } => {
     'done': { text: 'مكتمل', type: 'completed' },
     'completed': { text: 'مكتمل', type: 'completed' },
     'pending': { text: 'بانتظار التوصيل', type: 'pending' },
+    'in progress': { text: 'قيد المعالجة', type: 'reviewing' },
     'reviewing': { text: 'جاري المراجعة', type: 'reviewing' },
     'rejected': { text: 'مرفوض', type: 'rejected' },
     'approved': { text: 'موافق عليه', type: 'completed' },
@@ -92,18 +93,60 @@ const getQuantity = (order: any): string => {
   return '-';
 };
 
+// Helper function to extract address
+const getAddress = (order: any): string => {
+  // If location exists and is a string, use it
+  if (order.location && typeof order.location === 'string') {
+    return order.location;
+  }
+  
+  // If location is an object, try to extract address from it
+  if (order.location && typeof order.location === 'object') {
+    if (order.location.address) return order.location.address;
+    if (order.location.description) return order.location.description;
+    if (order.location.name) return order.location.name;
+  }
+  
+  // Fallback to city.name
+  if (order.city?.name?.ar) return order.city.name.ar;
+  if (order.city?.name?.en) return order.city.name.en;
+  
+  // Fallback to address field
+  if (order.address && typeof order.address === 'string') return order.address;
+  
+  return '-';
+};
+
 // Convert Firestore data to table format
 const convertOrdersToTableData = (orders: any[]): any[] => {
   return orders.map((order) => ({
+    // Order code: refId or document ID
     id: order.refId || order.id || '-',
+    
+    // Order date
     date: formatDate(order.orderDate || order.createdDate),
+    
+    // Product name
     product: getProductName(order),
+    
+    // Quantity
     quantity: getQuantity(order),
+    
+    // Total value
     totalValue: order.totalPrice ? `${formatNumber(order.totalPrice)} ر.س` : '-',
-    recipient: order.enrichedDriverName || order.assignedDriver?.name || '-',
-    phone: order.enrichedDriverPhone || order.assignedDriver?.phoneNumber || '-',
-    address: order.city?.name?.ar || order.city?.name?.en || order.address || '-',
+    
+    // Recipient name: order.recipientName first, then enriched driver name
+    recipient: order.recipientName || order.enrichedDriverName || order.assignedDriver?.name || '-',
+    
+    // Phone: order.phone first, then enriched driver phone
+    phone: order.phone || order.enrichedDriverPhone || order.assignedDriver?.phoneNumber || '-',
+    
+    // Address/Location: extract properly to avoid object rendering
+    address: getAddress(order),
+    
+    // Status
     status: getStatusText(order.status),
+    
     _raw: order,
   }));
 };

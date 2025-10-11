@@ -329,6 +329,73 @@ export const fetchOrders = async () => {
 };
 
 /**
+ * Create a new delivery order in Firestore
+ * @param orderData - Order form data
+ * @returns Promise with the created order document
+ */
+export const createDeliveryOrder = async (orderData: {
+  location?: string | null;
+  recipientName?: string | null;
+  phone?: string | null;
+  fuelType: string;
+  quantity: number;
+  fuelCost: number;
+  deliveryFees: number;
+  totalCost: number;
+}) => {
+  try {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      throw new Error('No user is currently logged in');
+    }
+
+    // Prepare the order document - save exactly as submitted, even if null
+    const orderDocument = {
+      // Form fields - save as-is, even if null
+      location: orderData.location || null,
+      recipientName: orderData.recipientName || null,
+      phone: orderData.phone || null,
+      
+      // Fuel details
+      fuelType: orderData.fuelType,
+      totalLitre: orderData.quantity,
+      
+      // Costs
+      fuelCost: orderData.fuelCost,
+      deliveryFees: orderData.deliveryFees,
+      totalPrice: orderData.totalCost,
+      
+      // Status - always "in progress" for new orders
+      status: 'in progress',
+      
+      // Company info
+      companyUid: currentUser.uid,
+      createdUserId: currentUser.uid,
+      
+      // Timestamps
+      orderDate: serverTimestamp(),
+      createdDate: serverTimestamp(),
+      
+      // Reference ID
+      refId: Date.now().toString(),
+    };
+
+    // Add to Firestore
+    const ordersRef = collection(db, 'orders');
+    const docRef = await addDoc(ordersRef, orderDocument);
+
+    return {
+      id: docRef.id,
+      ...orderDocument
+    };
+  } catch (error) {
+    console.error('Error creating delivery order:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */

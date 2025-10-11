@@ -1,18 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Pagination, TimeFilter, ExportButton } from "../../../../components/shared";
+import { Table, Pagination, TimeFilter, ExportButton, LoadingSpinner } from "../../../../components/shared";
 import {
-  transactionData,
   fuelData,
 } from "../../../../constants/data";
 import { CirclePlus, WalletMinimal } from "lucide-react";
 import { useAuth } from "../../../../hooks/useGlobalState";
+import { fetchOrders } from "../../../../services/firestore";
+
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return '-';
+  
+  try {
+    if (date.toDate && typeof date.toDate === 'function') {
+      return new Date(date.toDate()).toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return new Date(date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to get service title
+const getServiceTitle = (order: any): string => {
+  if (order.service?.title?.ar) return order.service.title.ar;
+  if (order.service?.title?.en) return order.service.title.en;
+  if (order.selectedOption?.title?.ar) return order.selectedOption.title.ar;
+  if (order.selectedOption?.title?.en) return order.selectedOption.title.en;
+  return 'وقود';
+};
+
+// Convert orders to transactions format
+const convertOrdersToTransactions = (orders: any[]): any[] => {
+  // Sort by date descending (newest first)
+  const sortedOrders = [...orders].sort((a, b) => {
+    const dateA = a.orderDate?.toDate ? a.orderDate.toDate() : new Date(a.orderDate || 0);
+    const dateB = b.orderDate?.toDate ? b.orderDate.toDate() : new Date(b.orderDate || 0);
+    return dateB - dateA;
+  });
+  
+  // Calculate cumulative totals
+  let cumulative = 0;
+  return sortedOrders.map((order) => {
+    cumulative += order.totalPrice || 0;
+    
+    return {
+      id: order.refId || order.id || '-',
+      type: getServiceTitle(order),
+      driver: order.enrichedDriverName || order.assignedDriver?.name || '-',
+      date: formatDate(order.orderDate || order.createdDate),
+      amount: order.totalPrice || 0,
+      cumulative: cumulative,
+    };
+  });
+};
 
 export const TransactionListSection = (): JSX.Element => {
   const navigate = useNavigate();
   const { company } = useAuth();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Get balance from company data, fallback to 0 if not available
   const walletBalance = company?.balance || 0;
@@ -21,6 +92,25 @@ export const TransactionListSection = (): JSX.Element => {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
   };
+  
+  // Fetch orders and convert to transactions
+  useEffect(() => {
+    const loadTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const orders = await fetchOrders();
+        const transactionsList = convertOrdersToTransactions(orders);
+        setTransactions(transactionsList);
+      } catch (err) {
+        console.error('Error loading transactions:', err);
+        setTransactions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadTransactions();
+  }, []);
 
   // Define table columns for transactions
   const transactionColumns = [
@@ -190,19 +280,29 @@ export const TransactionListSection = (): JSX.Element => {
         </header>
 
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
-          <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-        <Table
-          columns={transactionColumns}
-          data={transactionData}
-              className="relative self-stretch w-full flex-[0_0_auto]"
-        />
-          </div>
+          {isLoading ? (
+            <LoadingSpinner size="lg" message="جاري التحميل..." />
+          ) : transactions.length === 0 ? (
+            <div className="w-full text-center text-gray-500 py-12">
+              <p className="text-lg [direction:rtl]">لا توجد معاملات مالية</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
+                <Table
+                  columns={transactionColumns}
+                  data={transactions}
+                  className="relative self-stretch w-full flex-[0_0_auto]"
+                />
+              </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={20}
-          onPageChange={setCurrentPage}
-        />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(transactions.length / 10) || 1}
+                onPageChange={setCurrentPage}
+              />
+            </>
+          )}
         </main>
       </div>
     </section>
