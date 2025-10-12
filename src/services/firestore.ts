@@ -884,6 +884,93 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
 };
 
 /**
+ * Fetch subscriptions for current user and calculate expiry dates
+ * @returns Promise with subscription data including expiry dates
+ */
+export const fetchUserSubscriptions = async (): Promise<any[]> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user');
+      return [];
+    }
+
+    console.log('\n📋 Fetching User Subscriptions');
+    console.log('==============================');
+    console.log('Current User UID:', user.uid);
+
+    // Fetch subscriptions where createdUserId == currentUser.uid
+    const subscriptionsCollection = collection(db, 'subscriptions');
+    const q = query(subscriptionsCollection, where('createdUserId', '==', user.uid));
+    const subscriptionsSnapshot = await getDocs(q);
+
+    console.log('Subscriptions found:', subscriptionsSnapshot.docs.length);
+
+    // Transform each subscription
+    const subscriptions = subscriptionsSnapshot.docs.map((doc, index) => {
+      const data = doc.data();
+
+      // Extract fields
+      const planName = data.planName || data.title?.ar || data.title?.en || 'N/A';
+      const price = data.price || 0;
+      const createdDate = data.createdDate;
+      const periodValueInDays = data.periodValueInDays || 30;
+
+      // Calculate expiry date
+      let expiryDate = null;
+      if (createdDate) {
+        const createdDateObj = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+        expiryDate = new Date(createdDateObj);
+        expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
+      }
+
+      // Format dates as DD/MM/YYYY
+      const formatDate = (date: Date | null): string => {
+        if (!date) return 'N/A';
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
+
+      const createdDateFormatted = createdDate 
+        ? formatDate(createdDate.toDate ? createdDate.toDate() : new Date(createdDate))
+        : 'N/A';
+      
+      const expiryDateFormatted = expiryDate ? formatDate(expiryDate) : 'N/A';
+
+      if (index < 3) {
+        console.log(`\n--- Subscription ${index + 1} ---`);
+        console.log('Plan Name:', planName);
+        console.log('Price:', price);
+        console.log('Created Date:', createdDateFormatted);
+        console.log('Period (days):', periodValueInDays);
+        console.log('Expiry Date:', expiryDateFormatted);
+      }
+
+      return {
+        id: doc.id,
+        planName,
+        price,
+        createdDate: createdDateFormatted,
+        expiryDate: expiryDateFormatted,
+        periodValueInDays,
+        // Keep original data for reference
+        originalData: data
+      };
+    });
+
+    console.log('\n✅ Subscriptions processed:', subscriptions.length);
+    console.log('==============================\n');
+
+    return subscriptions;
+  } catch (error) {
+    console.error('Error fetching user subscriptions:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch all products from Firestore
  * @returns Promise with products data
  */

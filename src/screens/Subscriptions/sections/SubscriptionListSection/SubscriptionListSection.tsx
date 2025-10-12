@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Star, FileText } from "lucide-react";
 import { Table, Pagination, ExportButton } from "../../../../components/shared";
+import { fetchUserSubscriptions } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
 
 const currentSubscriptionData = {
   price: "150",
@@ -118,7 +120,29 @@ const paginationData = [
 ];
 
 export const SubscriptionListSection = (): JSX.Element => {
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch subscriptions on mount
+  useEffect(() => {
+    const loadSubscriptions = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchUserSubscriptions();
+        setSubscriptions(data);
+      } catch (err) {
+        console.error('Error loading subscriptions:', err);
+        setError('فشل في تحميل بيانات الاشتراكات');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSubscriptions();
+  }, []);
 
   const tableColumns = [
     {
@@ -158,6 +182,17 @@ export const SubscriptionListSection = (): JSX.Element => {
     setCurrentPage(page);
     console.log(`Navigate to page ${page}`);
   };
+
+  // Transform subscriptions for table display
+  const transformedTableData = subscriptions.map(sub => ({
+    id: sub.id,
+    packageCode: sub.id.substring(0, 6).toUpperCase(),
+    packageName: sub.planName,
+    subscriptionDate: sub.createdDate,
+    expiryDate: sub.expiryDate,
+    operationType: 'نشط', // Active status
+    subscriptionCost: String(sub.price),
+  }));
 
   return (
     <section className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4" role="main" aria-label="قسم قائمة الاشتراكات">
@@ -288,20 +323,36 @@ export const SubscriptionListSection = (): JSX.Element => {
 </div>
 </div>
 <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-<Table
-  columns={tableColumns}
-  data={historyTableData}
-  className="w-full"
-  headerClassName="bg-color-mode-surface-bg-icon-gray"
-  rowClassName="hover:bg-gray-50"
-  cellClassName="text-right [direction:rtl] whitespace-nowrap"
-/>
-<Pagination
-  currentPage={currentPage}
-  totalPages={20}
-  onPageChange={handlePageChange}
-  className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-/>
+{isLoading ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <LoadingSpinner message="جاري تحميل الاشتراكات..." />
+  </div>
+) : error ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+  </div>
+) : transformedTableData.length === 0 ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <p className="text-gray-500 text-center [direction:rtl]">لا توجد اشتراكات سابقة</p>
+  </div>
+) : (
+  <>
+    <Table
+      columns={tableColumns}
+      data={transformedTableData}
+      className="w-full"
+      headerClassName="bg-color-mode-surface-bg-icon-gray"
+      rowClassName="hover:bg-gray-50"
+      cellClassName="text-right [direction:rtl] whitespace-nowrap"
+    />
+    <Pagination
+      currentPage={currentPage}
+      totalPages={Math.ceil(transformedTableData.length / 10)}
+      onPageChange={handlePageChange}
+      className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+    />
+  </>
+)}
 </div>
 </article>
 </section>
