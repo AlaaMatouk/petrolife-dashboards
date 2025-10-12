@@ -701,6 +701,81 @@ export const fetchCarWashOrders = async (): Promise<any[]> => {
 };
 
 /**
+ * Fetch car stations and calculate total liters consumed from orders
+ * @returns Promise with car stations data enriched with consumption info
+ */
+export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user');
+      return [];
+    }
+
+    // Step 1: Fetch all car stations
+    const carStationsCollection = collection(db, 'carstations');
+    const carStationsSnapshot = await getDocs(carStationsCollection);
+    
+    const carStations = carStationsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        stationCode: data.id || data.placeId || doc.id,
+        city: data.formattedLocation?.address?.city || data.address?.city || data.city || 'N/A',
+        company: data.name || data.email || 'N/A',
+        status: data.status || data.isActive ? 'active' : 'inactive',
+        email: data.email || '',
+        totalLitersConsumed: 0,
+        ...data
+      };
+    });
+
+    console.log('\n🏢 Car Stations fetched:', carStations.length);
+
+    // Step 2: Fetch orders filtered by current user
+    const orders = await fetchOrders();
+    console.log('📦 Orders fetched for current user:', orders.length);
+
+    // Step 3: Match orders to stations and calculate consumption
+    orders.forEach(order => {
+      const orderStationEmail = order.carStation?.email || order.stationEmail;
+      
+      if (orderStationEmail) {
+        // Find matching station
+        const station = carStations.find(s => s.email === orderStationEmail);
+        
+        if (station) {
+          // Calculate fuel quantity from order
+          const quantity = order.totalLitre || 
+                          order.quantity || 
+                          order.selectedOption?.quantity ||
+                          0;
+          
+          station.totalLitersConsumed += quantity;
+          
+          console.log(`✅ Matched order ${order.refId} to station ${station.company} - Added ${quantity}L`);
+        }
+      }
+    });
+
+    // Log summary
+    console.log('\n📊 Car Stations Summary:');
+    console.log('========================');
+    carStations.forEach(station => {
+      if (station.totalLitersConsumed > 0) {
+        console.log(`${station.company} (${station.city}): ${station.totalLitersConsumed}L`);
+      }
+    });
+    console.log('========================\n');
+
+    return carStations;
+  } catch (error) {
+    console.error('Error fetching car stations with consumption:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch all products from Firestore
  * @returns Promise with products data
  */
