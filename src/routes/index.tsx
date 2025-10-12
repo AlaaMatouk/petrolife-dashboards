@@ -25,6 +25,7 @@ import { ServiceDistributerDashboard } from '../components/ServiceDistributerDas
 import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
+import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
 
 
 // 404 Component
@@ -43,7 +44,10 @@ export const AppRouter = () => {
     <Routes>
       {/* Main Dashboard */}
       <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-      
+
+      {/* Admin Dashboard */}
+      <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
+
       {/* Authentication */}
       <Route path={ROUTES.LOGIN} element={<LoginAndRegister />} />
       

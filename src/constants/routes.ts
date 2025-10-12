@@ -37,6 +37,9 @@ export const ROUTES = {
   SERVICE_DISTRIBUTER_DASHBOARD: '/servicedistributer',
   STATION_WORKERS: '/stationworkers',
   STATIONS: '/stations',
+
+  // Admin Dashboard
+  ADMIN_DASHBOARD: '/admin-dashboard',
   
 } as const;
 
