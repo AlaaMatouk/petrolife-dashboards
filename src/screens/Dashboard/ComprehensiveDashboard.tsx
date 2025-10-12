@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
+import { useAuth } from "../../hooks/useGlobalState";
+import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics } from "../../services/firestore";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -34,11 +36,56 @@ const BannerSection = () => {
 
 // Stats Cards Section
 const StatsCardsSection = () => {
-  const fuelData = [
-    { type: "ديزل", amount: "185 .L", color: "text-color-mode-text-icons-t-orange" },
-    { type: "بنزين 95", amount: "548 .L", color: "text-color-mode-text-icons-t-red" },
-    { type: "بنزين 91", amount: "845 .L", color: "text-color-mode-text-icons-t-green" },
-  ];
+  const { company } = useAuth();
+  const [fuelStats, setFuelStats] = useState<{
+    fuelTypes: Array<{ type: string; totalLitres: number; totalCost: number; color: string }>;
+    totalLitres: number;
+    totalCost: number;
+  }>({ fuelTypes: [], totalLitres: 0, totalCost: 0 });
+  
+  const [carWashStats, setCarWashStats] = useState<{
+    sizes: Array<{ name: string; count: number; totalCost: number }>;
+    totalOrders: number;
+    totalCost: number;
+  }>({ sizes: [], totalOrders: 0, totalCost: 0 });
+  
+  // Get balance from company data, fallback to 0 if not available
+  const walletBalance = company?.balance || 0;
+  
+  // Format number with thousands separator (English)
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
+  };
+
+  // Fetch orders and calculate fuel and car wash statistics
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const orders = await fetchOrders();
+        const fuelData = calculateFuelStatistics(orders);
+        setFuelStats(fuelData);
+        
+        const carWashData = calculateCarWashStatistics(orders);
+        setCarWashStats(carWashData);
+      } catch (error) {
+        console.error('Error loading statistics:', error);
+      }
+    };
+    loadStats();
+  }, []);
+  
+  // Format fuel data for display
+  const fuelData = fuelStats.fuelTypes.length > 0 
+    ? fuelStats.fuelTypes.map(fuel => ({
+        type: fuel.type,
+        amount: `${Math.round(fuel.totalLitres)} .L`,
+        color: fuel.color,
+      }))
+    : [
+        { type: "ديزل", amount: "185 .L", color: "text-color-mode-text-icons-t-orange" },
+        { type: "بنزين 95", amount: "548 .L", color: "text-color-mode-text-icons-t-red" },
+        { type: "بنزين 91", amount: "845 .L", color: "text-color-mode-text-icons-t-green" },
+      ];
 
   const statsData = [
     {
@@ -49,14 +96,14 @@ const StatsCardsSection = () => {
     },
     {
       title: "التكلفة الإجمالية للوقود",
-      amount: "14,254",
+      amount: formatNumber(Math.round(fuelStats.totalCost)),
       currency: "ر.س",
       icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "cost",
     },
     {
       title: "رصيد محفظتي",
-      amount: "7,250",
+      amount: formatNumber(walletBalance),
       currency: "ر.س",
       icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "wallet",
@@ -80,12 +127,17 @@ const StatsCardsSection = () => {
     },
     {
       title: "عمليات غسيل السيارات",
-      categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
-      ],
+      categories: carWashStats.sizes.length > 0 
+        ? carWashStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {

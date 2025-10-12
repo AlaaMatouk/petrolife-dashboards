@@ -9,6 +9,20 @@ export interface User {
   role: 'admin' | 'manager' | 'user';
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  brandName?: string;
+  email: string;
+  phoneNumber: string;
+  balance: number;
+  address?: string;
+  location?: string;
+  logo?: string;
+  isActive: boolean;
+  [key: string]: any; // For other company fields
+}
+
 export interface Driver {
   id: number;
   driverCode: string;
@@ -78,6 +92,7 @@ export interface FilterState {
 export interface GlobalState {
   // User & Authentication
   user: User | null;
+  company: Company | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   
@@ -115,6 +130,7 @@ export interface GlobalState {
 export type GlobalAction =
   // Authentication
   | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_COMPANY'; payload: Company | null }
   | { type: 'SET_AUTHENTICATED'; payload: boolean }
   | { type: 'SET_LOADING'; payload: boolean }
   
@@ -160,6 +176,7 @@ export type GlobalAction =
 const initialState: GlobalState = {
   // User & Authentication
   user: null,
+  company: null,
   isAuthenticated: false,
   isLoading: false,
   
@@ -199,6 +216,8 @@ const globalReducer = (state: GlobalState, action: GlobalAction): GlobalState =>
     // Authentication
     case 'SET_USER':
       return { ...state, user: action.payload };
+    case 'SET_COMPANY':
+      return { ...state, company: action.payload };
     case 'SET_AUTHENTICATED':
       return { ...state, isAuthenticated: action.payload };
     case 'SET_LOADING':

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Filter, SlidersHorizontal } from "lucide-react";
-import { Table, ExportButton } from "../../../../components/shared";
+import { useState, useEffect } from "react";
+import { Wallet } from "lucide-react";
+import { Table, ExportButton, LoadingSpinner } from "../../../../components/shared";
+import { fetchWalletChargeRequests } from "../../../../services/firestore";
 
 interface TableRow {
   id: string;
-  status: "completed" | "rejected";
+  status: "completed" | "rejected" | "pending";
   date: string;
   shippingValue: string;
   oldBalance: string;
@@ -12,107 +13,106 @@ interface TableRow {
   orderNumber: string;
 }
 
-const tableData: TableRow[] = [
-  {
-    id: "1",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "2",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "3",
-    status: "rejected",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "يدوي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "4",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "5",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "6",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "7",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "8",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "9",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-  {
-    id: "10",
-    status: "completed",
-    date: "21 فبراير 2025 - 5:05 ص",
-    shippingValue: "20",
-    oldBalance: "1500",
-    orderType: "آلي",
-    orderNumber: "21A254",
-  },
-];
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return '-';
+  
+  try {
+    if (date.toDate && typeof date.toDate === 'function') {
+      return new Date(date.toDate()).toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return new Date(date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to format number
+const formatNumber = (num: any): string => {
+  if (!num && num !== 0) return '-';
+  return new Intl.NumberFormat('en-US').format(Number(num));
+};
+
+// Helper function to get status
+const getStatus = (status: string): "completed" | "rejected" | "pending" => {
+  const statusLower = status?.toLowerCase();
+  if (statusLower === 'accepted' || statusLower === 'approved' || statusLower === 'completed' || statusLower === 'done') {
+    return 'completed';
+  }
+  if (statusLower === 'rejected' || statusLower === 'cancelled') {
+    return 'rejected';
+  }
+  return 'pending';
+};
+
+// Helper function to get request type
+const getRequestType = (request: any): string => {
+  if (request.type) return request.type;
+  if (request.requestType) return request.requestType;
+  if (request.isAutomatic) return 'آلي';
+  return 'يدوي';
+};
+
+// Convert Firestore data to table format
+const convertRequestsToTableData = (requests: any[]): TableRow[] => {
+  return requests.map((request) => ({
+    orderNumber: request.requestId || request.id || '-',
+    orderType: getRequestType(request),
+    oldBalance: formatNumber(request.oldBalance),
+    shippingValue: formatNumber(request.value || request.amount),
+    date: formatDate(request.requestDate || request.createdDate),
+    status: getStatus(request.status),
+    id: request.id,
+  }));
+};
 
 export const ContentSection = (): JSX.Element => {
-  const [sortField, setSortField] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [requests, setRequests] = useState<TableRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSort = (column: string, direction: "asc" | "desc") => {
-    setSortField(column);
-    setSortDirection(direction);
-  };
+  // Fetch wallet charge requests on mount
+  useEffect(() => {
+    const loadRequests = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const firestoreRequests = await fetchWalletChargeRequests();
+        const convertedRequests = convertRequestsToTableData(firestoreRequests);
+        setRequests(convertedRequests);
+      } catch (err) {
+        console.error('Error loading wallet charge requests:', err);
+        setError('فشل في تحميل طلبات الشحن');
+        setRequests([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadRequests();
+  }, []);
 
   const tableColumns = [
     {
@@ -123,26 +123,38 @@ export const ContentSection = (): JSX.Element => {
     },
     {
       key: "status",
-      label: (
-        <div className="flex items-center justify-center gap-2">
-          <span>حالة الطلب</span>
-          <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-        </div>
-      ),
+      label: "حالة الطلب",
       width: "min-w-[149px]",
       sortable: false,
-      render: (value: string, row: TableRow) => (
+      render: (_value: any, row: TableRow) => (
         <div
-          className={`inline-flex items-center justify-center gap-[var(--corner-radius-extra-small)] pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] ${row.status === "rejected" ? "" : "bg-color-mode-surface-bg-icon-gray"} rounded-[var(--corner-radius-small)]`}
-          style={row.status === "rejected" ? { backgroundColor: "#FFF3F9" } : {}}
+          className={`inline-flex items-center justify-center gap-[var(--corner-radius-extra-small)] pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] ${
+            row.status === "rejected" 
+              ? "bg-[#FFF3F9]" 
+              : row.status === "pending"
+              ? "bg-orange-50"
+              : "bg-color-mode-surface-bg-icon-gray"
+          } rounded-[var(--corner-radius-small)]`}
         >
           <div
-            className={`${row.status === "rejected" ? "w-fit" : "w-[41px] h-4"} mt-[-1.00px] font-[number:var(--subtitle-subtitle-3-font-weight)] ${row.status === "rejected" ? "text-color-mode-text-icons-t-red" : "text-color-mode-text-icons-t-sec"} text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] relative font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]`}
+            className={`w-fit mt-[-1.00px] font-[number:var(--subtitle-subtitle-3-font-weight)] ${
+              row.status === "rejected" 
+                ? "text-color-mode-text-icons-t-red" 
+                : row.status === "pending"
+                ? "text-orange-600"
+                : "text-color-mode-text-icons-t-sec"
+            } text-[length:var(--subtitle-subtitle-3-font-size)] tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] [direction:rtl] relative font-subtitle-subtitle-3 whitespace-nowrap [font-style:var(--subtitle-subtitle-3-font-style)]`}
           >
-            {row.status === "rejected" ? "مرفوض" : "مكتمل"}
+            {row.status === "rejected" ? "مرفوض" : row.status === "pending" ? "قيد المراجعة" : "مكتمل"}
           </div>
           <div
-            className={`relative w-1.5 h-1.5 ${row.status === "rejected" ? "bg-color-mode-text-icons-t-red" : "bg-color-mode-text-icons-t-sec"} rounded-[3px]`}
+            className={`relative w-1.5 h-1.5 ${
+              row.status === "rejected" 
+                ? "bg-color-mode-text-icons-t-red" 
+                : row.status === "pending"
+                ? "bg-orange-500"
+                : "bg-color-mode-text-icons-t-sec"
+            } rounded-[3px]`}
           />
         </div>
       ),
@@ -204,13 +216,38 @@ export const ContentSection = (): JSX.Element => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="w-full py-12">
+        <LoadingSpinner size="lg" message="جاري التحميل..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full bg-red-50 border border-red-200 rounded-lg p-6">
+        <p className="text-red-800 text-center text-lg [direction:rtl]">{error}</p>
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="w-full bg-white rounded-lg border border-gray-200 p-12">
+        <div className="text-center text-gray-500">
+          <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-xl font-semibold [direction:rtl]">لا توجد طلبات شحن</p>
+          <p className="text-sm mt-2 [direction:rtl]">لم يتم العثور على أي طلبات شحن المحفظة</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Table
       columns={tableColumns}
-      data={tableData}
-      onSort={handleSort}
-      sortColumn={sortField}
-      sortDirection={sortDirection}
+      data={requests}
       className="w-full"
     />
   );

@@ -5,7 +5,7 @@ import { DeliveryFormSection } from "./sections/DeliveryFormSection/DeliveryForm
 
 export const CreateDeliveryRequest = (): JSX.Element => {
   const handleLogout = () => {
-    console.log("Logout clicked");
+    // console.log("Logout clicked");
   };
 
   return (

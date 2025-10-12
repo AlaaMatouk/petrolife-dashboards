@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table } from "../../../../components/shared";
 import { ChevronLeft, Check } from "lucide-react";
+import { fetchCarStationsWithConsumption } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
 
 interface StationData {
   id: string;
@@ -10,9 +12,11 @@ interface StationData {
   consumption: string;
   consumptionDetails?: string;
   isAvailable: boolean;
+  totalLitersConsumed?: number;
+  status?: string;
 }
 
-const stationData: StationData[] = [
+const dummyStationData: StationData[] = [
   {
     id: "1",
     code: "21A254",
@@ -124,15 +128,53 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 };
 
 export const ControlPanelSection = (): JSX.Element => {
-  const [stationStates, setStationStates] = useState<Record<string, boolean>>(
-    stationData.reduce(
-      (acc, station) => {
-        acc[station.id] = station.isAvailable;
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    ),
-  );
+  const [stationData, setStationData] = useState<StationData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [stationStates, setStationStates] = useState<Record<string, boolean>>({});
+
+  // Fetch car stations with consumption data
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const stations = await fetchCarStationsWithConsumption();
+        
+        // Transform data to match StationData interface
+        const transformedStations: StationData[] = stations.map(station => ({
+          id: station.id,
+          code: station.stationCode,
+          city: station.city,
+          company: station.company,
+          consumption: `${Math.round(station.totalLitersConsumed)} لتر`,
+          isAvailable: station.status === 'active' || station.isActive === true,
+          totalLitersConsumed: station.totalLitersConsumed,
+          status: station.status,
+        }));
+
+        setStationData(transformedStations);
+        
+        // Initialize station states
+        const initialStates = transformedStations.reduce(
+          (acc, station) => {
+            acc[station.id] = station.isAvailable;
+            return acc;
+          },
+          {} as Record<string, boolean>,
+        );
+        setStationStates(initialStates);
+      } catch (err) {
+        console.error('Error loading stations:', err);
+        setError('فشل في تحميل بيانات المحطات');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStations();
+  }, []);
 
   const handleToggle = (stationId: string) => {
     setStationStates((prev) => ({
@@ -201,6 +243,45 @@ export const ControlPanelSection = (): JSX.Element => {
       </code>
     ),
   }));
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <section
+        className="flex flex-col items-center justify-center gap-4 relative self-stretch w-full flex-[0_0_auto] min-h-[400px]"
+        role="region"
+        aria-label="لوحة التحكم في المحطات"
+      >
+        <LoadingSpinner message="جاري تحميل بيانات المحطات..." />
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section
+        className="flex flex-col items-center justify-center gap-4 relative self-stretch w-full flex-[0_0_auto] min-h-[400px]"
+        role="region"
+        aria-label="لوحة التحكم في المحطات"
+      >
+        <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+      </section>
+    );
+  }
+
+  // Show empty state
+  if (stationData.length === 0) {
+    return (
+      <section
+        className="flex flex-col items-center justify-center gap-4 relative self-stretch w-full flex-[0_0_auto] min-h-[400px]"
+        role="region"
+        aria-label="لوحة التحكم في المحطات"
+      >
+        <p className="text-gray-500 text-center [direction:rtl]">لا توجد محطات متاحة</p>
+      </section>
+    );
+  }
 
   return (
     <section
