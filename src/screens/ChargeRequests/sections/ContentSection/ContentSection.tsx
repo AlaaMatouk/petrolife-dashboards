@@ -87,10 +87,17 @@ const convertRequestsToTableData = (requests: any[]): TableRow[] => {
   }));
 };
 
-export const ContentSection = (): JSX.Element => {
+interface ContentSectionProps {
+  currentPage: number;
+  setTotalPages: (pages: number) => void;
+}
+
+export const ContentSection = ({ currentPage, setTotalPages }: ContentSectionProps): JSX.Element => {
   const [requests, setRequests] = useState<TableRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch wallet charge requests on mount
   useEffect(() => {
@@ -102,6 +109,10 @@ export const ContentSection = (): JSX.Element => {
         const firestoreRequests = await fetchWalletChargeRequests();
         const convertedRequests = convertRequestsToTableData(firestoreRequests);
         setRequests(convertedRequests);
+        
+        // Update total pages
+        const pages = Math.ceil(convertedRequests.length / ITEMS_PER_PAGE);
+        setTotalPages(pages);
       } catch (err) {
         console.error('Error loading wallet charge requests:', err);
         setError('فشل في تحميل طلبات الشحن');
@@ -244,10 +255,16 @@ export const ContentSection = (): JSX.Element => {
     );
   }
 
+  // Calculate pagination
+  const totalPages = Math.ceil(requests.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedRequests = requests.slice(startIndex, endIndex);
+
   return (
     <Table
       columns={tableColumns}
-      data={requests}
+      data={paginatedRequests}
       className="w-full"
     />
   );

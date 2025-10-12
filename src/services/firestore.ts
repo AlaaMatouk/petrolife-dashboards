@@ -176,33 +176,33 @@ export const fetchCompaniesDriversTransfer = async () => {
       return emailMatch;
     });
     
-    // console.log('✅ FILTERED COMPANIES-DRIVERS-TRANSFER DATA:');
-    // console.log('========================================');
-    // console.log(`📌 Total Transfers for ${userEmail}:`, filteredTransfers.length);
-    // console.log('========================================\n');
+    console.log('✅ FILTERED COMPANIES-DRIVERS-TRANSFER DATA:');
+    console.log('========================================');
+    console.log(`📌 Total Transfers for ${userEmail}:`, filteredTransfers.length);
+    console.log('========================================\n');
     
-    // if (filteredTransfers.length === 0) {
-    //   console.log('⚠️ NO MATCHING TRANSFERS FOUND!');
-    //   console.log('========================================');
-    //   console.log('Debugging Info:');
-    //   console.log('- Looking for createdUser.email =', userEmail);
-    //   console.log('\n📋 All createdUser.email values in collection:');
-    //   const uniqueEmails = [...new Set(allTransferData.map(t => t.createdUser?.email).filter(Boolean))];
-    //   console.log(uniqueEmails);
-    //   console.log('========================================\n');
-    // } else {
-    //   console.log('📋 FILTERED TRANSFER DATA:');
-    //   console.log('========================================');
-    //   console.dir(filteredTransfers, { depth: null, colors: true });
-    //   console.log('\n📊 FILTERED TABLE VIEW:');
-    //   console.table(filteredTransfers.map(doc => ({
-    //     id: doc.id,
-    //     'createdUser.email': doc.createdUser?.email,
-    //     'createdUser.brandName': doc.createdUser?.brandName,
-    //     'createdUser.balance': doc.createdUser?.balance,
-    //   })));
-    //   console.log('========================================\n');
-    // }
+    if (filteredTransfers.length === 0) {
+      console.log('⚠️ NO MATCHING TRANSFERS FOUND!');
+      console.log('========================================');
+      console.log('Debugging Info:');
+      console.log('- Looking for createdUser.email =', userEmail);
+      console.log('\n📋 All createdUser.email values in collection:');
+      const uniqueEmails = [...new Set(allTransferData.map(t => t.createdUser?.email).filter(Boolean))];
+      console.log(uniqueEmails);
+      console.log('========================================\n');
+    } else {
+      console.log('📋 FILTERED TRANSFER DATA:');
+      console.log('========================================');
+      console.dir(filteredTransfers, { depth: null, colors: true });
+      console.log('\n📊 FILTERED TABLE VIEW:');
+      console.table(filteredTransfers.map(doc => ({
+        id: doc.id,
+        'createdUser.email': doc.createdUser?.email,
+        'createdUser.brandName': doc.createdUser?.brandName,
+        'createdUser.balance': doc.createdUser?.balance,
+      })));
+      console.log('========================================\n');
+    }
     
     return filteredTransfers;
   } catch (error) {

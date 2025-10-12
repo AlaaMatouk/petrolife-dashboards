@@ -127,12 +127,19 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   );
 };
 
-export const ControlPanelSection = (): JSX.Element => {
+interface ControlPanelSectionProps {
+  currentPage: number;
+  setTotalPages: (pages: number) => void;
+}
+
+export const ControlPanelSection = ({ currentPage, setTotalPages }: ControlPanelSectionProps): JSX.Element => {
   const [stationData, setStationData] = useState<StationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [stationStates, setStationStates] = useState<Record<string, boolean>>({});
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch car stations with consumption data
   useEffect(() => {
@@ -165,6 +172,10 @@ export const ControlPanelSection = (): JSX.Element => {
           {} as Record<string, boolean>,
         );
         setStationStates(initialStates);
+        
+        // Update total pages
+        const pages = Math.ceil(transformedStations.length / ITEMS_PER_PAGE);
+        setTotalPages(pages);
       } catch (err) {
         console.error('Error loading stations:', err);
         setError('فشل في تحميل بيانات المحطات');
@@ -211,7 +222,13 @@ export const ControlPanelSection = (): JSX.Element => {
     },
   ];
 
-  const tableData = stationData.map((station) => ({
+  // Calculate pagination
+  const totalPagesCalc = Math.ceil(stationData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedStations = stationData.slice(startIndex, endIndex);
+
+  const tableData = paginatedStations.map((station) => ({
     ...station,
     status: (
       <span className="w-[98px] h-[19px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">

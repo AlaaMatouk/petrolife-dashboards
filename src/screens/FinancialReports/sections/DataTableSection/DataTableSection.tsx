@@ -256,6 +256,9 @@ export const DataTableSection = (): JSX.Element => {
   const [reportData, setReportData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 10;
   
   const [filters, setFilters] = useState({
     timePeriod: "الكل",
@@ -354,6 +357,13 @@ export const DataTableSection = (): JSX.Element => {
     // اسم العميل = name (or brandName)
     clientName: company?.name || company?.brandName || clientData.clientName,
   };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(transformedTableData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = transformedTableData.slice(startIndex, endIndex);
+
   return (
     <section
       className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4"
@@ -515,16 +525,16 @@ export const DataTableSection = (): JSX.Element => {
               <>
                 <Table
                   columns={tableColumns}
-                  data={transformedTableData}
+                  data={paginatedData}
                   className="w-full"
                   headerClassName="bg-color-mode-surface-bg-icon-gray"
                   rowClassName="hover:bg-gray-50"
                   cellClassName="text-right [direction:rtl] whitespace-nowrap"
                 />
                 <Pagination
-                  currentPage={1}
-                  totalPages={Math.ceil(transformedTableData.length / 10)}
-                  onPageChange={(page) => console.log(`Navigate to page ${page}`)}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
                   className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
                 />
               </>

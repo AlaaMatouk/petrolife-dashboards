@@ -124,6 +124,8 @@ export const SubscriptionListSection = (): JSX.Element => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch subscriptions on mount
   useEffect(() => {
@@ -193,6 +195,12 @@ export const SubscriptionListSection = (): JSX.Element => {
     operationType: 'نشط', // Active status
     subscriptionCost: String(sub.price),
   }));
+
+  // Calculate pagination
+  const totalPages = Math.ceil(transformedTableData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = transformedTableData.slice(startIndex, endIndex);
 
   return (
     <section className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4" role="main" aria-label="قسم قائمة الاشتراكات">
@@ -339,7 +347,7 @@ export const SubscriptionListSection = (): JSX.Element => {
   <>
     <Table
       columns={tableColumns}
-      data={transformedTableData}
+      data={paginatedData}
       className="w-full"
       headerClassName="bg-color-mode-surface-bg-icon-gray"
       rowClassName="hover:bg-gray-50"
@@ -347,7 +355,7 @@ export const SubscriptionListSection = (): JSX.Element => {
     />
     <Pagination
       currentPage={currentPage}
-      totalPages={Math.ceil(transformedTableData.length / 10)}
+      totalPages={totalPages}
       onPageChange={handlePageChange}
       className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
     />

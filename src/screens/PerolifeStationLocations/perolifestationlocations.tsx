@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ControlPanelSection } from "./sections/ControlPanelSection/ControlPanelSection";
 import { DataDisplaySection } from "./sections/DataDisplaySection";
 import { PaginationSection } from "./sections/PaginationSection/PaginationSection";
@@ -12,6 +12,9 @@ import { Map } from "./sections/map/Map";
 import { Fuel, Grid2x2 } from "lucide-react";
 
 export const PerolifeStationLocations = (): JSX.Element => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   return (
     <Layout
       headerProps={{
@@ -36,8 +39,8 @@ export const PerolifeStationLocations = (): JSX.Element => {
         data-model-id="1:13337"
       >
         <DataDisplaySection />
-        <ControlPanelSection />
-        <PaginationSection />
+        <ControlPanelSection currentPage={currentPage} setTotalPages={setTotalPages} />
+        <PaginationSection currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </Layout>
   );

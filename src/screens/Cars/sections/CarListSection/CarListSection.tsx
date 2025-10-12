@@ -424,6 +424,9 @@ export const CarListSection = (): JSX.Element => {
   const [cars, setCars] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch cars data from Firestore on component mount
   useEffect(() => {
@@ -466,6 +469,11 @@ export const CarListSection = (): JSX.Element => {
     setExpandedCards(newExpanded);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(cars.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedCars = cars.slice(startIndex, endIndex);
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
@@ -544,7 +552,7 @@ export const CarListSection = (): JSX.Element => {
             <div className="hidden lg:block w-full">
               <Table
                 columns={carColumns}
-                data={Array.isArray(cars) ? cars : []}
+                data={Array.isArray(paginatedCars) ? paginatedCars : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -553,14 +561,14 @@ export const CarListSection = (): JSX.Element => {
             <div className="hidden md:block lg:hidden w-full">
               <Table
                 columns={carColumns.filter(col => col.priority === 'high' || col.priority === 'medium')}
-                data={Array.isArray(cars) ? cars : []}
+                data={Array.isArray(paginatedCars) ? paginatedCars : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4 w-full">
-              {cars.map((car) => (
+              {paginatedCars.map((car) => (
                 <CarCard
                   key={car.id}
                   car={car}
@@ -572,9 +580,9 @@ export const CarListSection = (): JSX.Element => {
           </div>
 
           <Pagination
-            currentPage={3}
-            totalPages={20}
-            onPageChange={(page) => console.log("Page changed to:", page)}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </main>
       </div>

@@ -1,7 +1,53 @@
 import { userDataColumns } from "../../../../constants/data";
 import { UserRound } from "lucide-react";
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 export const UserDataSection = (): JSX.Element => {
+  const { company } = useAuth();
+
+  // Extract client info from company data
+  const clientInfo = {
+    // المدينة = formattedLocation.address.city
+    city: company?.formattedLocation?.address?.city || "الرياض",
+    
+    // الرقم الضريبي = vatNumber
+    taxNumber: company?.vatNumber || "245863564",
+    
+    // كود العميل = uId
+    clientCode: company?.uId || "21546354",
+    
+    // رقم الهاتف = phoneNumber
+    phone: company?.phoneNumber || "00966254523658",
+    
+    // السجل التجاري = commercialRegistrationNumber
+    commercialRecord: company?.commercialRegistrationNumber || "GDHGD2543",
+    
+    // اسم العميل = name (or brandName)
+    clientName: company?.name || company?.brandName || "الشركة المتحدة العالمية",
+  };
+
+  // Build columns data with real company info
+  const clientDataColumns = [
+    {
+      fields: [
+        { label: "رقم الهاتف", value: clientInfo.phone },
+        { label: "المدينة", value: clientInfo.city },
+      ],
+    },
+    {
+      fields: [
+        { label: "السجل التجاري", value: clientInfo.commercialRecord },
+        { label: "الرقم الضريبي", value: clientInfo.taxNumber },
+      ],
+    },
+    {
+      fields: [
+        { label: "اسم العميل", value: clientInfo.clientName },
+        { label: "كود العميل", value: clientInfo.clientCode },
+      ],
+    },
+  ];
+
   return (
     <section className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
       <div className="flex flex-col items-end gap-[var(--corner-radius-medium)] relative self-stretch w-full flex-[0_0_auto]">
@@ -14,7 +60,7 @@ export const UserDataSection = (): JSX.Element => {
         </header>
 
         <div className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
-          {userDataColumns.map((column, columnIndex) => (
+          {clientDataColumns.map((column, columnIndex) => (
             <div
               key={columnIndex}
               className="flex flex-col items-start justify-center gap-[var(--corner-radius-medium)] relative flex-1 grow"

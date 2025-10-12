@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FileChartColumnIncreasing } from "lucide-react";
-import { Table, TimeFilter, ExportButton } from "../../../../components/shared";
+import { Table, TimeFilter, ExportButton, Pagination } from "../../../../components/shared";
 
 export const RequestHistorySection = (): JSX.Element => {
   const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 10;
 
   const timeFilters = ["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"];
 
@@ -132,7 +134,11 @@ export const RequestHistorySection = (): JSX.Element => {
     },
   ];
 
-  const paginationNumbers = [1, 2, 3, 4, 5, 6, 7, "...", 20];
+  // Calculate pagination
+  const totalPages = Math.ceil(requestData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = requestData.slice(startIndex, endIndex);
 
   const getStatusBadge = (status: string, statusType: string) => {
     const baseClasses =
@@ -212,99 +218,18 @@ export const RequestHistorySection = (): JSX.Element => {
         <div className="w-full">
           <Table
             columns={tableColumns}
-            data={requestData}
+            data={paginatedData}
             className="w-full"
           />
         </div>
       </main>
 
-      <nav
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
         className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-        aria-label="Pagination"
-      >
-        <div className="inline-flex items-start gap-2 relative flex-[0_0_auto]">
-          <button
-            className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-            aria-label="Next page"
-          >
-            <img
-              className="relative w-4 h-4"
-              alt=""
-              src="/img/icon-16-arrow-right.svg"
-            />
-
-            <div className="relative w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-              التالي
-            </div>
-          </button>
-
-          {paginationNumbers.map((pageNum, index) => (
-            <button
-              key={index}
-              onClick={() =>
-                typeof pageNum === "number" && setCurrentPage(pageNum)
-              }
-              disabled={pageNum === "..."}
-              className={`flex flex-col w-8 h-8 items-center justify-center gap-2.5 px-2 py-0 relative rounded overflow-hidden ${
-                pageNum === currentPage
-                  ? "bg-color-mode-surface-primary-blue"
-                  : "bg-color-mode-surface-bg-screen border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-              } ${pageNum === "..." ? "cursor-default" : "cursor-pointer"}`}
-              aria-label={
-                pageNum === "..." ? undefined : `Go to page ${pageNum}`
-              }
-              aria-current={pageNum === currentPage ? "page" : undefined}
-            >
-              <div className="flex flex-col w-[22px] h-[22px] items-center justify-center gap-2.5 p-2.5 relative ml-[-3.00px] mr-[-3.00px] rounded-sm">
-                <div
-                  className={`relative w-fit mt-[-11.00px] mb-[-9.00px] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap ${
-                    pageNum === currentPage
-                      ? "font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-btn-negative font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] [font-style:var(--subtitle-subtitle-3-font-style)]"
-                      : "font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec font-body-body-2 text-[length:var(--body-body-2-font-size)] [font-style:var(--body-body-2-font-style)]"
-                  } ${
-                    pageNum === 20
-                      ? "ml-[-6.50px] mr-[-6.50px]"
-                      : pageNum === "..."
-                        ? "ml-[-5.00px] mr-[-5.00px]"
-                        : pageNum === 7
-                          ? "ml-[-2.00px] mr-[-2.00px]"
-                          : pageNum === 6
-                            ? "ml-[-3.00px] mr-[-3.00px]"
-                            : pageNum === 5
-                              ? "ml-[-3.00px] mr-[-3.00px]"
-                              : pageNum === 4
-                                ? "ml-[-3.00px] mr-[-3.00px]"
-                                : pageNum === 3
-                                  ? "ml-[-2.50px] mr-[-2.50px]"
-                                  : pageNum === 2
-                                    ? "ml-[-2.50px] mr-[-2.50px]"
-                                    : pageNum === 1
-                                      ? "ml-[-2.00px] mr-[-2.00px]"
-                                      : ""
-                  }`}
-                >
-                  {pageNum}
-                </div>
-              </div>
-            </button>
-          ))}
-
-          <button
-            className="flex w-[72px] h-8 items-center justify-center gap-[5px] px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-            aria-label="Previous page"
-          >
-            <div className="relative w-fit ml-[-3.50px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-              السابق
-            </div>
-
-            <img
-              className="mr-[-3.50px] relative w-4 h-4"
-              alt=""
-              src="/img/icon-16-arrow-left.svg"
-            />
-          </button>
-        </div>
-      </nav>
+      />
     </section>
   );
 };
