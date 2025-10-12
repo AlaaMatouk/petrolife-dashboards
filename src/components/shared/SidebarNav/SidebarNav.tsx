@@ -97,7 +97,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {sections.map((section, sectionIndex) => {
           // Check if this section should be a dropdown
           const isDropdownSection = section.title === "المــــــــــــــــــــــــــــــوارد" || 
-                                   section.title === "التقاريــــــــــــــــــــــــــــــر";
+                                   section.title === "التقاريــــــــــــــــــــــــــــــر" ||
+                                   section.title === "موارد المركز";
           
           if (isDropdownSection) {
             return (

@@ -21,7 +21,6 @@ export const ROUTES = {
   // Operations
   FUEL_DELIVERY: '/fuel-delivery',
   CREATE_DELIVERY_REQUEST: '/create-delivery-request',
-  STATIONS: '/stations',
   USED_STATIONS: '/used-stations',
   REFUND_REQUESTS: '/moneyrefundrequests',
   CHARGE_REQUESTS: '/walletchargerequests',
@@ -33,6 +32,12 @@ export const ROUTES = {
   
   // Settings
   SETTINGS: '/settings',
+
+  // Service Distributer Dashboard
+  SERVICE_DISTRIBUTER_DASHBOARD: '/servicedistributer',
+  STATION_WORKERS: '/stationworkers',
+  STATIONS: '/stations',
+  
 } as const;
 
 // Helper function to generate dynamic routes

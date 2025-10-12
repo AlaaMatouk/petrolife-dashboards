@@ -1,4 +1,4 @@
-import { ROUTES } from './routes';
+import { ROUTES } from "./routes";
 
 // Navigation Menu Data
 export const navigationMenuData = {
@@ -9,15 +9,15 @@ export const navigationMenuData = {
       icon: "/img/side-icons-1.svg",
       isActive: false,
       hasBackground: false,
-      href: ROUTES.DASHBOARD,
+      href: ROUTES.DASHBOARD
     },
     {
       id: "wallet",
       label: "محفظــــــــــــتي",
       icon: "/img/side-icons-6.svg",
       hasBackground: false,
-      href: ROUTES.WALLET,
-    },
+      href: ROUTES.WALLET
+    }
   ],
   sections: [
     {
@@ -28,15 +28,15 @@ export const navigationMenuData = {
           label: "الســـــــــــائقين",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
-          href: ROUTES.DRIVERS,
+          href: ROUTES.DRIVERS
         },
         {
           id: "cars",
           label: "السيـــــــــــــارات",
           icon: "/img/side-icons-4.svg",
-          href: ROUTES.CARS,
-        },
-      ],
+          href: ROUTES.CARS
+        }
+      ]
     },
     {
       title: "التقاريــــــــــــــــــــــــــــــر",
@@ -45,15 +45,15 @@ export const navigationMenuData = {
           id: "sales-report",
           label: "تقرير المبيعات",
           icon: "/img/side-icons-5.svg",
-          href: ROUTES.FINANCIAL_REPORTS,
+          href: ROUTES.FINANCIAL_REPORTS
         },
         {
           id: "wallet-report",
           label: "تقرير المحفظة",
           icon: "/img/side-icons-6.svg",
-          href: ROUTES.WALLET_REPORTS,
-        },
-      ],
+          href: ROUTES.WALLET_REPORTS
+        }
+      ]
     },
     {
       title: "المتجر والاشتراكات",
@@ -62,50 +62,116 @@ export const navigationMenuData = {
           id: "store",
           label: "المتجر",
           icon: "/img/side-icons-10.svg",
-          href: ROUTES.STORE,
+          href: ROUTES.STORE
         },
         {
           id: "subscriptions",
           label: "اشتراكاتي",
           icon: "/img/side-icons-11.svg",
-          href: ROUTES.SUBSCRIPTIONS,
-        },
-      ],
-    },
+          href: ROUTES.SUBSCRIPTIONS
+        }
+      ]
+    }
   ],
   bottomItems: [
     {
       id: "fuel-delivery",
       label: "طلبات توصيل الوقود",
       icon: "/img/side-icons-7.svg",
-      href: ROUTES.FUEL_DELIVERY,
+      href: ROUTES.FUEL_DELIVERY
     },
     {
       id: "stations",
       label: "محطات البترول",
       icon: "/img/side-icons-8.svg",
-      href: ROUTES.PEROLIFE_STATION_LOCATIONS,
+      href: ROUTES.PEROLIFE_STATION_LOCATIONS
     },
     {
       id: "refund-requests",
       label: "طلبات الاسترداد",
       icon: "/img/side-icons-10.svg",
-      href: ROUTES.REFUND_REQUESTS,
+      href: ROUTES.REFUND_REQUESTS
     },
     {
       id: "charge-requests",
       label: "طلبات الشحن",
       icon: "/img/side-icons-11.svg",
-      href: ROUTES.CHARGE_REQUESTS,
+      href: ROUTES.CHARGE_REQUESTS
+    }
+  ]
+};
+
+// Service Distributer Navigation Menu Data
+export const serviceDistributerNavigationMenuData = {
+  topItems: [
+    {
+      id: "dashboard",
+      label: "لوحة التحكم",
+      icon: "/img/side-icons-1.svg",
+      isActive: false,
+      hasBackground: false,
+      href: ROUTES.DASHBOARD
+    }
+  ],
+  sections: [
+    {
+      title: "موارد المركز",
+      items: [
+        {
+          id: "workers",
+          label: "عمال المحطـــــات",
+          icon: "/img/side-icons-3.svg",
+          hasBackground: false,
+          href: ROUTES.DRIVERS
+        },
+        {
+          id: "stations",
+          label: "المحطــــــات",
+          icon: "/img/side-icons-7.svg",
+          href: ROUTES.CARS
+        }
+      ]
     },
   ],
+  bottomItems: [
+    {
+      id: "fuel-delivery",
+      label: "طلبات محطـــات الوقود",
+      icon: "/img/side-icons-7.svg",
+      href: ROUTES.FUEL_DELIVERY
+    },
+    {
+      id: "stations",
+      label:"التقارير المالية",
+      icon: "/img/side-icons-8.svg",
+      href: ROUTES.PEROLIFE_STATION_LOCATIONS
+    },
+    {
+      id: "refund-requests",
+      label: "مواقع المحطات",
+      icon: "/img/side-icons-10.svg",
+      href: ROUTES.REFUND_REQUESTS
+    },
+    {
+      id: "charge-requests",
+      label: "الفواتيــــــــــــر",
+      icon: "/img/side-icons-10.svg",
+      href: ROUTES.CHARGE_REQUESTS
+    },
+    {
+      id: "charge-requests",
+      label: "الدعم الفني",
+      icon: "/img/side-icons-11.svg",
+      href: ROUTES.CHARGE_REQUESTS
+    }
+  ]
 };
 
 // User Information
 export const userInfo = {
   name: "الشركة المتحدة العالمية",
   email: "hesham@gmail.com",
-  avatar: "/img/image-2.png",
+  avatar: "/img/image-2.png"
 };
 
 // Transaction Data
@@ -116,7 +182,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 200,
+    cumulative: 200
   },
   {
     id: "21A254",
@@ -124,7 +190,7 @@ export const transactionData = [
     driver: "--",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 180,
+    cumulative: 180
   },
   {
     id: "21A254",
@@ -132,7 +198,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 160,
+    cumulative: 160
   },
   {
     id: "21A254",
@@ -140,7 +206,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 140,
+    cumulative: 140
   },
   {
     id: "21A254",
@@ -148,7 +214,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 120,
+    cumulative: 120
   },
   {
     id: "21A254",
@@ -156,7 +222,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 100,
+    cumulative: 100
   },
   {
     id: "21A254",
@@ -164,7 +230,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 80,
+    cumulative: 80
   },
   {
     id: "21A254",
@@ -172,7 +238,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 60,
+    cumulative: 60
   },
   {
     id: "21A254",
@@ -180,7 +246,7 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 40,
+    cumulative: 40
   },
   {
     id: "21A254",
@@ -188,8 +254,8 @@ export const transactionData = [
     driver: "أحمد محمد",
     date: "21 فبراير 2025 - 5:05 ص",
     amount: 20,
-    cumulative: 20,
-  },
+    cumulative: 20
+  }
 ];
 
 // Wallet Reports Transaction Data
@@ -200,7 +266,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "",
+    debit: ""
   },
   {
     id: "21A254",
@@ -208,7 +274,7 @@ export const walletReportsTransactionData = [
     operationType: "فاتورة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "",
+    debit: ""
   },
   {
     id: "21A254",
@@ -216,7 +282,7 @@ export const walletReportsTransactionData = [
     operationType: "استرداد",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -224,7 +290,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -232,7 +298,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -240,7 +306,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -248,7 +314,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -256,7 +322,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -264,7 +330,7 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
   },
   {
     id: "21A254",
@@ -272,8 +338,236 @@ export const walletReportsTransactionData = [
     operationType: "تغذية محفظة",
     date: "21 فبراير 2025 - 5:05 ص",
     balance: "21536",
-    debit: "20",
+    debit: "20"
+  }
+];
+
+// Workers Data (Station Workers)
+export const workersData = [
+  {
+    id: 1,
+    driverCode: "W21A254",
+    driverName: "أحمد محمد",
+    phone: "00965284358",
+    emailAddress: "ahmed.mohamed@petrolife.com",
+    station: "محطة الرياض المركزية",
+    accountStatus: { active: true, text: "مفعل" }
   },
+  {
+    id: 2,
+    driverCode: "W21A255",
+    driverName: "محمد أحمد",
+    phone: "00965284359",
+    emailAddress: "mohamed.ahmed@petrolife.com",
+    station: "محطة جدة الشمالية",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 3,
+    driverCode: "W21A256",
+    driverName: "علي حسن",
+    phone: "00965284360",
+    emailAddress: "ali.hassan@petrolife.com",
+    station: "محطة الدمام",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 4,
+    driverCode: "W21A257",
+    driverName: "حسن علي",
+    phone: "00965284361",
+    emailAddress: "hassan.ali@petrolife.com",
+    station: "محطة مكة",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 5,
+    driverCode: "W21A258",
+    driverName: "محمود سعد",
+    phone: "00965284362",
+    emailAddress: "mahmoud.saad@petrolife.com",
+    station: "محطة المدينة المنورة",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 6,
+    driverCode: "W21A259",
+    driverName: "سعد محمود",
+    phone: "00965284363",
+    emailAddress: "saad.mahmoud@petrolife.com",
+    station: "محطة الخبر",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 7,
+    driverCode: "W21A260",
+    driverName: "يوسف إبراهيم",
+    phone: "00965284364",
+    emailAddress: "yousef.ibrahim@petrolife.com",
+    station: "محطة الطائف",
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 8,
+    driverCode: "W21A261",
+    driverName: "إبراهيم يوسف",
+    phone: "00965284365",
+    emailAddress: "ibrahim.yousef@petrolife.com",
+    station: "محطة أبها",
+    accountStatus: { active: false, text: "معطل" }
+  },
+  {
+    id: 9,
+    driverCode: "W21A262",
+    driverName: "خالد عبدالله",
+    phone: "00965284366",
+    emailAddress: "khaled.abdullah@petrolife.com",
+    station: "محطة القصيم",
+    accountStatus: { active: false, text: "معطل" }
+  },
+  {
+    id: 10,
+    driverCode: "W21A263",
+    driverName: "عبدالله خالد",
+    phone: "00965284367",
+    emailAddress: "abdullah.khaled@petrolife.com",
+    station: "محطة حائل",
+    accountStatus: { active: false, text: "معطل" }
+  }
+];
+
+// Stations Data
+export const stationsData = [
+  {
+    id: 1,
+    stationCode: "S21A001",
+    stationName: "محطة الرياض المركزية",
+    location: "الرياض، حي العليا",
+    city: "الرياض",
+    phone: "00966112345678",
+    emailAddress: "riyadh.central@petrolife.com",
+    managerName: "عبدالعزيز السعيد",
+    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    workersCount: 12,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 2,
+    stationCode: "S21A002",
+    stationName: "محطة جدة الشمالية",
+    location: "جدة، حي الروضة",
+    city: "جدة",
+    phone: "00966122345678",
+    emailAddress: "jeddah.north@petrolife.com",
+    managerName: "محمد الغامدي",
+    fuelTypes: ["بنزين 91", "بنزين 95"],
+    workersCount: 10,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 3,
+    stationCode: "S21A003",
+    stationName: "محطة الدمام",
+    location: "الدمام، حي الفيصلية",
+    city: "الدمام",
+    phone: "00966132345678",
+    emailAddress: "dammam@petrolife.com",
+    managerName: "فهد الخالدي",
+    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    workersCount: 8,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 4,
+    stationCode: "S21A004",
+    stationName: "محطة مكة",
+    location: "مكة المكرمة، حي العزيزية",
+    city: "مكة",
+    phone: "00966142345678",
+    emailAddress: "makkah@petrolife.com",
+    managerName: "خالد الشريف",
+    fuelTypes: ["بنزين 91", "ديزل"],
+    workersCount: 15,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 5,
+    stationCode: "S21A005",
+    stationName: "محطة المدينة المنورة",
+    location: "المدينة المنورة، حي العيون",
+    city: "المدينة المنورة",
+    phone: "00966152345678",
+    emailAddress: "madinah@petrolife.com",
+    managerName: "سعد الأنصاري",
+    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    workersCount: 11,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 6,
+    stationCode: "S21A006",
+    stationName: "محطة الخبر",
+    location: "الخبر، حي الكورنيش",
+    city: "الخبر",
+    phone: "00966162345678",
+    emailAddress: "khobar@petrolife.com",
+    managerName: "ماجد العتيبي",
+    fuelTypes: ["بنزين 91", "بنزين 95"],
+    workersCount: 9,
+    accountStatus: { active: false, text: "معطل" }
+  },
+  {
+    id: 7,
+    stationCode: "S21A007",
+    stationName: "محطة الطائف",
+    location: "الطائف، حي الشهداء",
+    city: "الطائف",
+    phone: "00966172345678",
+    emailAddress: "taif@petrolife.com",
+    managerName: "يوسف الزهراني",
+    fuelTypes: ["بنزين 91", "ديزل"],
+    workersCount: 7,
+    accountStatus: { active: true, text: "مفعل" }
+  },
+  {
+    id: 8,
+    stationCode: "S21A008",
+    stationName: "محطة أبها",
+    location: "أبها، حي المنسك",
+    city: "أبها",
+    phone: "00966182345678",
+    emailAddress: "abha@petrolife.com",
+    managerName: "إبراهيم عسيري",
+    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    workersCount: 6,
+    accountStatus: { active: false, text: "معطل" }
+  },
+  {
+    id: 9,
+    stationCode: "S21A009",
+    stationName: "محطة القصيم",
+    location: "بريدة، حي الصفراء",
+    city: "القصيم",
+    phone: "00966192345678",
+    emailAddress: "qassim@petrolife.com",
+    managerName: "خالد المطيري",
+    fuelTypes: ["بنزين 91", "بنزين 95"],
+    workersCount: 8,
+    accountStatus: { active: false, text: "معطل" }
+  },
+  {
+    id: 10,
+    stationCode: "S21A010",
+    stationName: "محطة حائل",
+    location: "حائل، حي السمراء",
+    city: "حائل",
+    phone: "00966202345678",
+    emailAddress: "hail@petrolife.com",
+    managerName: "عبدالله الشمري",
+    fuelTypes: ["بنزين 91", "ديزل"],
+    workersCount: 5,
+    accountStatus: { active: true, text: "مفعل" }
+  }
 ];
 
 // Car Data
@@ -289,7 +583,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145224",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 2,
@@ -301,7 +595,7 @@ export const driversData = [
     financialValue: "1600 / 1000",
     carNumber: "2145225",
     carCategory: { text: "كبيرة", icon: "/img/component-4-4.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 3,
@@ -313,7 +607,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145226",
     carCategory: { text: "متوسطة", icon: "/img/component-4-5.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 4,
@@ -325,7 +619,7 @@ export const driversData = [
     financialValue: "-- / 1400",
     carNumber: "2145227",
     carCategory: { text: "VIP", icon: "/img/component-4-6.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 5,
@@ -337,7 +631,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145228",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 6,
@@ -349,7 +643,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "--",
     carCategory: { text: "--", icon: null },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 7,
@@ -361,7 +655,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145229",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: true, text: "مفعل" },
+    accountStatus: { active: true, text: "مفعل" }
   },
   {
     id: 8,
@@ -373,7 +667,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145230",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: false, text: "معطل" },
+    accountStatus: { active: false, text: "معطل" }
   },
   {
     id: 9,
@@ -385,7 +679,7 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145231",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: false, text: "معطل" },
+    accountStatus: { active: false, text: "معطل" }
   },
   {
     id: 10,
@@ -397,8 +691,8 @@ export const driversData = [
     financialValue: "1600 / 1400",
     carNumber: "2145232",
     carCategory: { text: "صغيرة", icon: "/img/component-4-11.svg" },
-    accountStatus: { active: false, text: "معطل" },
-  },
+    accountStatus: { active: false, text: "معطل" }
+  }
 ];
 
 export const carData = [
@@ -415,9 +709,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17.svg",
-        avatar2: "/img/ellipse-18.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18.svg"
+      }
+    ]
   },
   {
     id: 2,
@@ -433,9 +727,9 @@ export const carData = [
         name: "محمد، مراد، عبدالك..",
         avatar1: "/img/ellipse-17-1.svg",
         avatar2: "/img/ellipse-18-1.svg",
-        avatar3: "/img/ellipse-19.svg",
-      },
-    ],
+        avatar3: "/img/ellipse-19.svg"
+      }
+    ]
   },
   {
     id: 3,
@@ -446,7 +740,7 @@ export const carData = [
     year: "2020",
     fuelType: "بنزين 91",
     category: { name: "متوسطة", icon: "/img/component-4-2.svg" },
-    drivers: [{ name: "محمد", avatar1: "/img/ellipse-17-2.svg" }],
+    drivers: [{ name: "محمد", avatar1: "/img/ellipse-17-2.svg" }]
   },
   {
     id: 4,
@@ -461,9 +755,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-3.svg",
-        avatar2: "/img/ellipse-18-2.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-2.svg"
+      }
+    ]
   },
   {
     id: 5,
@@ -478,9 +772,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-4.svg",
-        avatar2: "/img/ellipse-18-3.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-3.svg"
+      }
+    ]
   },
   {
     id: 6,
@@ -495,9 +789,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-5.svg",
-        avatar2: "/img/ellipse-18-4.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-4.svg"
+      }
+    ]
   },
   {
     id: 7,
@@ -512,9 +806,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-6.svg",
-        avatar2: "/img/ellipse-18-5.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-5.svg"
+      }
+    ]
   },
   {
     id: 8,
@@ -529,9 +823,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-7.svg",
-        avatar2: "/img/ellipse-18-6.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-6.svg"
+      }
+    ]
   },
   {
     id: 9,
@@ -546,9 +840,9 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-8.svg",
-        avatar2: "/img/ellipse-18-7.svg",
-      },
-    ],
+        avatar2: "/img/ellipse-18-7.svg"
+      }
+    ]
   },
   {
     id: 10,
@@ -563,10 +857,10 @@ export const carData = [
       {
         name: "محمد، مراد",
         avatar1: "/img/ellipse-17-9.svg",
-        avatar2: "/img/ellipse-18-8.svg",
-      },
-    ],
-  },
+        avatar2: "/img/ellipse-18-8.svg"
+      }
+    ]
+  }
 ];
 
 // Financial Reports Data
@@ -581,7 +875,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -593,7 +887,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -605,7 +899,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -617,7 +911,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -629,7 +923,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -641,7 +935,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -653,7 +947,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -665,7 +959,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -677,7 +971,7 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
+    driverCode: "21A254"
   },
   {
     city: "الرياض",
@@ -689,8 +983,8 @@ export const financialReportsData = [
     productNumber: "21536",
     productType: "وقود",
     driverName: "أحمد محمد",
-    driverCode: "21A254",
-  },
+    driverCode: "21A254"
+  }
 ];
 
 // Client Data
@@ -700,7 +994,7 @@ export const clientData = {
   clientName: "الشركة المتحدة العالمية",
   city: "الرياض",
   taxNumber: "245863564",
-  clientCode: "21546354",
+  clientCode: "21546354"
 };
 
 // User Data for Wallet Reports
@@ -708,35 +1002,35 @@ export const userDataColumns = [
   {
     fields: [
       { label: "رقم الهاتف", value: "00966254523658" },
-      { label: "المدينة", value: "الرياض" },
-    ],
+      { label: "المدينة", value: "الرياض" }
+    ]
   },
   {
     fields: [
       { label: "السجل التجاري", value: "GDHGD2543" },
-      { label: "الرقم الضريبي", value: "245863564" },
-    ],
+      { label: "الرقم الضريبي", value: "245863564" }
+    ]
   },
   {
     fields: [
       { label: "اسم العميل", value: "الشركة المتحدة العالمية" },
-      { label: "كود العميل", value: "21546354" },
-    ],
-  },
+      { label: "كود العميل", value: "21546354" }
+    ]
+  }
 ];
 
 // Filter Options
 export const filterOptions = {
   timePeriod: [{ label: "الكل", value: "all", icon: "/img/side-icons-2.svg" }],
   operationName: [
-    { label: "الكل", value: "all", icon: "/img/side-icons-5.svg" },
+    { label: "الكل", value: "all", icon: "/img/side-icons-5.svg" }
   ],
   operationType: [
-    { label: "الكل", value: "all", icon: "/img/side-icons-4.svg" },
+    { label: "الكل", value: "all", icon: "/img/side-icons-4.svg" }
   ],
   reportType: [
-    { label: "تحليلي", value: "analytical", icon: "/img/side-icons-5.svg" },
-  ],
+    { label: "تحليلي", value: "analytical", icon: "/img/side-icons-5.svg" }
+  ]
 };
 
 // Financial Reports Filter Options
@@ -745,15 +1039,15 @@ export const financialReportsFilterOptions = [
   {
     label: "كود الســـــــــائق",
     value: "الكل",
-    icon: "/img/side-icons-17.svg",
+    icon: "/img/side-icons-17.svg"
   },
   {
     label: "المديــــــــــــنة",
     value: "الكل",
-    icon: "/img/side-icons-18.svg",
+    icon: "/img/side-icons-18.svg"
   },
   { label: "نوع المنتج", value: "الكل", icon: "/img/side-icons-19.svg" },
-  { label: "نوع التقرير", value: "تحليلي", icon: "/img/side-icons-20.svg" },
+  { label: "نوع التقرير", value: "تحليلي", icon: "/img/side-icons-20.svg" }
 ];
 
 // Fuel Data
@@ -761,18 +1055,18 @@ export const fuelData = [
   {
     type: "ديزل",
     amount: "185 .L",
-    color: "text-color-mode-text-icons-t-orange",
+    color: "text-color-mode-text-icons-t-orange"
   },
   {
     type: "بنزين 95",
     amount: "548 .L",
-    color: "text-color-mode-text-icons-t-red",
+    color: "text-color-mode-text-icons-t-red"
   },
   {
     type: "بنزين 91",
     amount: "845 .L",
-    color: "text-color-mode-text-icons-t-green",
-  },
+    color: "text-color-mode-text-icons-t-green"
+  }
 ];
 
 // Time Filters
@@ -780,7 +1074,7 @@ export const timeFilters = [
   "اخر اسبوع",
   "اخر 30 يوم",
   "اخر 6 شهور",
-  "اخر 12 شهر",
+  "اخر 12 شهر"
 ];
 
 // Navigation Icons
@@ -788,12 +1082,12 @@ export const navigationIcons = [
   {
     id: 1,
     src: "/img/component-1.svg",
-    alt: "Component",
+    alt: "Component"
   },
   {
     id: 2,
     src: "/img/component-1-1.svg",
-    alt: "Component",
+    alt: "Component"
   },
   {
     id: 3,
@@ -801,14 +1095,14 @@ export const navigationIcons = [
       {
         src: "/img/vector.svg",
         alt: "Vector",
-        className: "absolute w-2.5 h-2.5 top-1 left-1",
+        className: "absolute w-2.5 h-2.5 top-1 left-1"
       },
       {
         src: "/img/vector-1.svg",
         alt: "Vector",
-        className: "absolute w-[18px] h-[18px] top-0 left-0",
-      },
-    ],
+        className: "absolute w-[18px] h-[18px] top-0 left-0"
+      }
+    ]
   },
-  { id: 4, text: "En" },
+  { id: 4, text: "En" }
 ];
