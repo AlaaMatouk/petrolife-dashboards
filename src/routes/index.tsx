@@ -23,7 +23,8 @@ import { CreateDeliveryRequest } from '../screens/CreateDeliveryRequest';
 import LoginAndRegister from '../screens/Login And Register/LoginAndRegister';
 import { ServiceDistributerDashboard } from '../components/ServiceDistributerDashboard';
 import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
-import { Stations } from '../screens/Stations';
+import { Stations } from '../screens/Stations';import { TestTransfer } from '../screens/TestTransfer';
+
 // 404 Component
 const NotFound = () => (
   <div className="flex items-center justify-center h-screen">
@@ -79,6 +80,9 @@ export const AppRouter = () => {
       <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
       <Route path={ROUTES.STATIONS} element={<Stations     />} />
 
+      
+      {/* Test Route - Companies-Drivers-Transfer */}
+      <Route path="/test-transfer" element={<TestTransfer />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

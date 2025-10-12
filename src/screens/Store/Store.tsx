@@ -6,7 +6,7 @@ import { PaginationSection } from "./sections/PaginationSection/PaginationSectio
 
 export const StoreScreen = (): JSX.Element => {
   const handleLogout = () => {
-    console.log("Logout clicked");
+    // console.log("Logout clicked");
   };
 
   return (
@@ -17,7 +17,9 @@ export const StoreScreen = (): JSX.Element => {
         showSearch: true,
         searchProps: {
           placeholder: "البحث في المنتجات",
-          onSearch: (query) => console.log("Search:", query),
+          onSearch: (query) => {
+            // console.log("Search:", query);
+          },
         },
       }}
       sidebarProps={{

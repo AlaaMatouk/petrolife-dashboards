@@ -2,9 +2,16 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Fuel } from "lucide-react";
 import { Input, RTLSelect } from "../../../../components/shared";
+import { createDeliveryOrder } from "../../../../services/firestore";
+import { useToast } from "../../../../context/ToastContext";
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 export const DeliveryFormSection = (): JSX.Element => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
+  const { company } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     address: "",
     recipientName: "",
@@ -19,7 +26,7 @@ export const DeliveryFormSection = (): JSX.Element => {
     totalCost: 0,
   });
 
-  const walletBalance = 1500;
+  const walletBalance = company?.balance || 0;
 
   const fuelTypeOptions = [
     { value: "بنزين 91", label: "بنزين 91" },
@@ -50,10 +57,54 @@ export const DeliveryFormSection = (): JSX.Element => {
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Handle form submission logic here
+    
+    if (isSubmitting) return;
+    
+    // Validation
+    if (formData.fuelQuantity <= 0) {
+      addToast({
+        title: 'خطأ',
+        message: 'يرجى إدخال كمية الوقود',
+        type: 'error'
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Create order with status "in progress"
+      await createDeliveryOrder({
+        location: formData.address || null,
+        recipientName: formData.recipientName || null,
+        phone: formData.phoneNumber || null,
+        fuelType: formData.fuelType,
+        quantity: formData.fuelQuantity,
+        fuelCost: costs.fuelCost,
+        deliveryFees: costs.deliveryFees,
+        totalCost: costs.totalCost,
+      });
+      
+      addToast({
+        title: 'نجح',
+        message: 'تم إنشاء طلب التوصيل بنجاح',
+        type: 'success'
+      });
+      
+      // Navigate back to fuel delivery page
+      navigate('/fuel-delivery');
+    } catch (error: any) {
+      console.error('Error creating order:', error);
+      addToast({
+        title: 'خطأ',
+        message: 'فشل في إنشاء الطلب',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -210,11 +261,12 @@ export const DeliveryFormSection = (): JSX.Element => {
           <div className="flex items-center justify-start gap-4 relative self-stretch w-full flex-[0_0_auto]">
             <button
               type="submit"
-              className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] bg-[#F5F6F7] hover:bg-[#E8E9EA] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue focus:ring-opacity-50"
+              disabled={isSubmitting}
+              className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] bg-[#F5F6F7] hover:bg-[#E8E9EA] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-color-mode-surface-primary-blue focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
                 <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                  ارسال الطلب
+                  {isSubmitting ? 'جاري الإرسال...' : 'ارسال الطلب'}
                 </span>
               </div>
             </button>

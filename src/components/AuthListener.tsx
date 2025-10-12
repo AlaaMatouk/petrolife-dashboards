@@ -22,12 +22,12 @@ export const AuthListener: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
         dispatch({ type: 'SET_AUTHENTICATED', payload: true });
-        console.log('User authenticated:', user.email);
+        // console.log('User authenticated:', user.email);
       } else {
         // User is signed out
         dispatch({ type: 'SET_USER', payload: null });
         dispatch({ type: 'SET_AUTHENTICATED', payload: false });
-        console.log('User signed out');
+        // console.log('User signed out');
       }
     });
 

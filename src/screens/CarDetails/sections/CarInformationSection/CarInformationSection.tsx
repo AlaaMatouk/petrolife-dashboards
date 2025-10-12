@@ -3,20 +3,54 @@ import { Car, CarFront, Truck, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Select, RadioGroup, CarNumberInput } from '../../../../components/shared/Form';
 
-export const CarInformationSection = (): JSX.Element => {
+interface CarInformationSectionProps {
+  carData: any;
+}
+
+export const CarInformationSection = ({ carData: firestoreData }: CarInformationSectionProps): JSX.Element => {
   const navigate = useNavigate();
   
+  // Helper function to get value or dash
+  const getValueOrDash = (value: any): string => {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+    return String(value);
+  };
+
+  // Helper function to translate car size
+  const getCarSizeArabic = (size: string): string => {
+    const sizeMap: { [key: string]: string } = {
+      'small': 'صغيرة',
+      'medium': 'متوسطة',
+      'large': 'كبيرة',
+      'vip': 'VIP',
+    };
+    return sizeMap[size?.toLowerCase()] || size || '-';
+  };
+
+  // Helper function to translate fuel type
+  const getFuelTypeArabic = (fuelType: string): string => {
+    const fuelMap: { [key: string]: string } = {
+      'fuel91': 'بنزين 91',
+      'fuel95': 'بنزين 95',
+      'diesel': 'ديزل',
+    };
+    return fuelMap[fuelType?.toLowerCase()] || fuelType || '-';
+  };
+
+  // Extract car information from Firestore data
   const carData = {
-    carName: 'سيارة 21A254',
-    carType: 'صغيرة',
-    year: '2020',
-    plateLetters: 'أ ب ج',
-    plateNumbers: '254125',
-    city: 'الرياض',
-    brand: 'تيوتا',
-    model: 'كرولا',
-    carCondition: 'دبلوماسية',
-    fuelType: 'بنزين 91'
+    carName: getValueOrDash(firestoreData.name),
+    carType: getCarSizeArabic(firestoreData.plan?.carSize || firestoreData.size),
+    year: getValueOrDash(firestoreData.carType?.year),
+    plateLetters: getValueOrDash(firestoreData.plateNumber?.ar?.split(' ').slice(1).join(' ') || firestoreData.plateNumber?.en?.split(' ').slice(1).join(' ')),
+    plateNumbers: getValueOrDash(firestoreData.plateNumber?.ar?.split(' ')[0] || firestoreData.plateNumber?.en?.split(' ')[0]),
+    city: getValueOrDash(firestoreData.city?.name?.ar || firestoreData.city?.name?.en),
+    brand: getValueOrDash(firestoreData.carModel?.name?.ar || firestoreData.carModel?.name?.en),
+    model: getValueOrDash(firestoreData.carType?.name?.ar || firestoreData.carType?.name?.en),
+    carCondition: getValueOrDash(firestoreData.vehicleStatus),
+    fuelType: getFuelTypeArabic(firestoreData.fuelType)
   };
 
 
@@ -100,7 +134,7 @@ export const CarInformationSection = (): JSX.Element => {
 
         <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
           <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-            سيارة 21A254
+            {carData.carName}
           </h1>
           <Car className="w-5 h-5 text-gray-500" />
         </div>

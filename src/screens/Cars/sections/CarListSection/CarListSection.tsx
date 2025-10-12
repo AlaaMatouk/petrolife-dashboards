@@ -1,11 +1,12 @@
 import { Table } from "../../../../components/shared/Table/Table";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
-import { ExportButton } from "../../../../components/shared";
+import { ExportButton, LoadingSpinner } from "../../../../components/shared";
 import { carData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
 import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { fetchCompaniesCars } from "../../../../services/firestore";
 
 // Define table columns for cars - original order with responsive design
 const carColumns = [
@@ -358,9 +359,102 @@ const CarCard = ({ car, onToggleDetails, isExpanded }: { car: any, onToggleDetai
   );
 };
 
+// Helper function to safely get value or return "-"
+const getValueOrDash = (value: any): string => {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+  return String(value);
+};
+
+// Helper function to get car size text in Arabic
+const getCarSizeText = (size: string): string => {
+  const sizeMap: { [key: string]: string } = {
+    'small': 'صغيرة',
+    'medium': 'متوسطة',
+    'large': 'كبيرة',
+    'vip': 'VIP',
+  };
+  return sizeMap[size?.toLowerCase()] || getValueOrDash(size);
+};
+
+// Helper function to get fuel type text in Arabic
+const getFuelTypeText = (fuelType: string): string => {
+  const fuelMap: { [key: string]: string } = {
+    'fuel91': 'بنزين 91',
+    'fuel95': 'بنزين 95',
+    'diesel': 'ديزل',
+  };
+  return fuelMap[fuelType?.toLowerCase()] || getValueOrDash(fuelType);
+};
+
+// Convert Firestore companies-cars data to match table format
+const convertFirestoreToCars = (firestoreData: any[]): any[] => {
+  return firestoreData.map((car, index) => ({
+    id: car.id || index + 1,
+    carNumber: getValueOrDash(car.plateNumber?.ar || car.plateNumber?.en),
+    carName: getValueOrDash(car.name),
+    brand: getValueOrDash(car.carModel?.name?.ar || car.carModel?.name?.en),
+    model: getValueOrDash(car.carType?.name?.ar || car.carType?.name?.en),
+    year: getValueOrDash(car.carType?.year),
+    fuelType: getFuelTypeText(car.fuelType),
+    category: {
+      name: getCarSizeText(car.plan?.carSize || car.size),
+      icon: "/img/component-4-8.svg"
+    },
+    drivers: car.driverIds && car.driverIds.length > 0 
+      ? [{
+          name: `${car.driverIds.length} سائق`,
+          avatar1: "/img/ellipse-17.svg",
+          avatar2: car.driverIds.length > 1 ? "/img/ellipse-18.svg" : null,
+          avatar3: car.driverIds.length > 2 ? "/img/ellipse-17.svg" : null,
+        }]
+      : [{
+          name: "لا يوجد سائقين",
+          avatar1: "/img/ellipse-17.svg",
+          avatar2: null,
+          avatar3: null,
+        }],
+  }));
+};
+
 export const CarListSection = (): JSX.Element => {
   const navigate = useNavigate();
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  const [cars, setCars] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch cars data from Firestore on component mount
+  useEffect(() => {
+    const loadCarsData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // console.log('Loading companies-cars data from Firestore...');
+        const firestoreCars = await fetchCompaniesCars();
+        
+        if (firestoreCars && firestoreCars.length > 0) {
+          // console.log('Converting Firestore data to Cars format...');
+          const convertedCars = convertFirestoreToCars(firestoreCars);
+          // console.log('Converted cars:', convertedCars);
+          setCars(convertedCars);
+        } else {
+          // console.log('No cars found in Firestore.');
+          setCars([]);
+        }
+      } catch (err) {
+        console.error('Error loading cars from Firestore:', err);
+        setError('فشل في تحميل بيانات السيارات.');
+        setCars([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCarsData();
+  }, []);
 
   const toggleCardExpansion = (carId: number) => {
     const newExpanded = new Set(expandedCards);
@@ -375,7 +469,35 @@ export const CarListSection = (): JSX.Element => {
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
-      <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
+      {/* Loading State - Full page spinner */}
+      {isLoading ? (
+        <LoadingSpinner 
+          size="lg" 
+          message="جاري التحميل..." 
+        />
+      ) : (
+        <>
+          {/* Error Message */}
+          {error && (
+            <div className="w-full p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-center [direction:rtl]">{error}</p>
+            </div>
+          )}
+
+          {/* No Data Message */}
+          {!isLoading && !error && cars.length === 0 && (
+            <div className="flex items-center justify-center w-full py-12 bg-white rounded-lg border border-gray-200">
+              <div className="text-center">
+                <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg [direction:rtl]">لا توجد سيارات</p>
+                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">قم بإضافة سيارة جديدة للبدء</p>
+              </div>
+            </div>
+          )}
+
+          {/* Data Display - Only show if we have data */}
+          {cars.length > 0 && (
+            <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
             <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
@@ -409,7 +531,7 @@ export const CarListSection = (): JSX.Element => {
 
             <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
               <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                السيــــــــــــــارت (23)
+                السيــــــــــــــارت ({cars.length})
               </h1>
               <Car className="w-5 h-5 text-gray-500" />
             </div>
@@ -422,7 +544,7 @@ export const CarListSection = (): JSX.Element => {
             <div className="hidden lg:block w-full">
               <Table
                 columns={carColumns}
-                data={carData}
+                data={Array.isArray(cars) ? cars : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -431,14 +553,14 @@ export const CarListSection = (): JSX.Element => {
             <div className="hidden md:block lg:hidden w-full">
               <Table
                 columns={carColumns.filter(col => col.priority === 'high' || col.priority === 'medium')}
-                data={carData}
+                data={Array.isArray(cars) ? cars : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4 w-full">
-              {carData.map((car) => (
+              {cars.map((car) => (
                 <CarCard
                   key={car.id}
                   car={car}
@@ -456,6 +578,9 @@ export const CarListSection = (): JSX.Element => {
           />
         </main>
       </div>
+          )}
+        </>
+      )}
     </section>
   );
 };

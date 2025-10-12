@@ -19,13 +19,18 @@ export const useAuth = () => {
   const setLoading = useCallback((loading: boolean) => 
     dispatch({ type: 'SET_LOADING', payload: loading }), [dispatch]);
   
+  const setCompany = useCallback((company: any) => 
+    dispatch({ type: 'SET_COMPANY', payload: company }), [dispatch]);
+  
   return {
     user: state.user,
+    company: state.company,
     isAuthenticated: state.isAuthenticated,
     isLoading: state.isLoading,
     login,
     logout,
     setLoading,
+    setCompany,
   };
 };
 

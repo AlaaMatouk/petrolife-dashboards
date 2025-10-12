@@ -3,27 +3,50 @@ import React from "react";
 import { RadioGroup } from "../../../../components/shared/Form";
 import { useNavigate } from "react-router-dom";
 
-export const DriverInfo = (): JSX.Element => {
+interface DriverInfoProps {
+  driverData: any;
+}
+
+export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
   const navigate = useNavigate();
   
-  // Driver information data
+  // Helper function to get value or dash
+  const getValueOrDash = (value: any): string => {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+    return String(value);
+  };
+
+  // Helper function to translate car size
+  const getCarSizeArabic = (size: string): string => {
+    const sizeMap: { [key: string]: string } = {
+      'small': 'صغيرة',
+      'medium': 'متوسطة',
+      'large': 'كبيرة',
+      'vip': 'VIP',
+    };
+    return sizeMap[size?.toLowerCase()] || size || '-';
+  };
+
+  // Extract driver information from Firestore data
   const driverInfo = {
-    name: "محمد احمد علي",
-    email: "hesham@gmail.com",
-    phone: "+96625458236",
-    address: "12 ش الصالحين ، الرياض",
-    city: "الرياض",
-    driverImage: "hsgndkmmcjhd.jpg",
-    licenseImage: "hsgndkmmcjhd.jpg",
-    carStatus: "دبلوماسية",
-    monetaryValue: "100",
-    plateNumber: "7655",
-    plateLetters: "ح ن ط",
-    carCategory: "صغيرة",
+    name: getValueOrDash(driverData.name),
+    email: getValueOrDash(driverData.email),
+    phone: getValueOrDash(driverData.phone),
+    address: getValueOrDash(driverData.location),
+    city: getValueOrDash(driverData.city?.name?.ar || driverData.city?.name?.en),
+    driverImage: driverData.image ? driverData.image.split('/').pop() || driverData.image : '-',
+    licenseImage: driverData.licenceAttachment ? driverData.licenceAttachment.split('/').pop() || driverData.licenceAttachment : '-',
+    carStatus: getValueOrDash(driverData.vehicleStatus),
+    monetaryValue: getValueOrDash(driverData.plan?.dailyTrans || driverData.balance),
+    plateNumber: getValueOrDash(driverData.plateNumber?.ar?.split(' ')[0] || driverData.plateNumber?.en?.split(' ')[0]),
+    plateLetters: getValueOrDash(driverData.plateNumber?.ar?.split(' ').slice(1).join(' ') || driverData.plateNumber?.en?.split(' ').slice(1).join(' ')),
+    carCategory: getCarSizeArabic(driverData.plan?.carSize || driverData.size),
   };
 
   // Days of the week data - read-only display
-  const selectedDays = ["السبت"]; // Only Saturday is selected
+  const selectedDays = driverData.plan?.exceptionDays?.map((day: any) => day.ar) || ["السبت"];
 
   // Options for radio groups
   const fuelTypes = [
