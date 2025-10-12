@@ -5,7 +5,7 @@ import { ToastProvider, useToast } from './context/ToastContext';
 import { ToastContainer } from './components/shared/Toast';
 import { AuthListener } from './components/AuthListener';
 import { useEffect } from 'react';
-import { fetchCompaniesDrivers, fetchCompaniesCars, fetchCurrentCompany, fetchCompaniesDriversTransfer, fetchOrders } from './services/firestore';
+import { fetchCompaniesDrivers, fetchCompaniesCars, fetchCurrentCompany, fetchCompaniesDriversTransfer, fetchOrders, fetchCarWashOrders } from './services/firestore';
 import { auth } from './config/firebase';
 import { useAuth } from './hooks/useGlobalState';
 import './App.css'
@@ -86,6 +86,12 @@ function AppContent() {
           })
           .catch(error => {
             console.error('❌ Failed to fetch orders:', error);
+          });
+
+        // Fetch car wash orders
+        fetchCarWashOrders()
+          .catch(error => {
+            console.error('❌ Failed to fetch car wash orders:', error);
           });
       } else {
         // console.log('⏳ Waiting for user to login...');

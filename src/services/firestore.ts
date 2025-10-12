@@ -396,6 +396,311 @@ export const createDeliveryOrder = async (orderData: {
 };
 
 /**
+ * Calculate fuel statistics from orders
+ * Groups orders by fuel type and calculates total litres and cost
+ */
+export const calculateFuelStatistics = (orders: any[]): {
+  fuelTypes: Array<{ type: string; totalLitres: number; totalCost: number; color: string }>;
+  totalLitres: number;
+  totalCost: number;
+} => {
+  // Initialize the three fuel types with zero values
+  const fuelTypeMap = new Map<string, { totalLitres: number; totalCost: number }>([
+    ['ديزل', { totalLitres: 0, totalCost: 0 }],
+    ['بنزين 91', { totalLitres: 0, totalCost: 0 }],
+    ['بنزين 95', { totalLitres: 0, totalCost: 0 }],
+  ]);
+
+  // Color mapping for fuel types
+  const colorMap: { [key: string]: string } = {
+    'ديزل': 'text-color-mode-text-icons-t-orange',
+    'بنزين 91': 'text-color-mode-text-icons-t-green',
+    'بنزين 95': 'text-color-mode-text-icons-t-red',
+  };
+
+  orders.forEach((order) => {
+    // Extract fuel type with multiple fallbacks
+    let fuelType = '';
+    
+    if (order.selectedOption?.name?.ar) {
+      fuelType = order.selectedOption.name.ar;
+    } else if (order.selectedOption?.name?.en) {
+      fuelType = order.selectedOption.name.en;
+    } else if (order.selectedOption?.label) {
+      fuelType = order.selectedOption.label;
+    } else if (order.selectedOption?.title?.ar) {
+      fuelType = order.selectedOption.title.ar;
+    } else if (order.selectedOption?.title?.en) {
+      fuelType = order.selectedOption.title.en;
+    } else if (order.service?.title?.ar) {
+      fuelType = order.service.title.ar;
+    } else if (order.service?.title?.en) {
+      fuelType = order.service.title.en;
+    }
+    
+    // Extract litres and cost
+    const litres = order.totalLitre || 0;
+    const cost = order.totalPrice || 0;
+
+    // Map fuel type to one of our three categories
+    let mappedFuelType = '';
+    if (fuelType.includes('ديزل') || fuelType.includes('Diesel') || fuelType.includes('ديزل')) {
+      mappedFuelType = 'ديزل';
+    } else if (fuelType.includes('91') || fuelType.includes('91')) {
+      mappedFuelType = 'بنزين 91';
+    } else if (fuelType.includes('95') || fuelType.includes('95')) {
+      mappedFuelType = 'بنزين 95';
+    }
+
+    // Add to the mapped fuel type
+    if (mappedFuelType && fuelTypeMap.has(mappedFuelType)) {
+      const current = fuelTypeMap.get(mappedFuelType)!;
+      current.totalLitres += litres;
+      current.totalCost += cost;
+    }
+  });
+
+  // Convert map to array - always show all three types
+  const fuelTypes = [
+    {
+      type: 'ديزل',
+      totalLitres: fuelTypeMap.get('ديزل')?.totalLitres || 0,
+      totalCost: fuelTypeMap.get('ديزل')?.totalCost || 0,
+      color: colorMap['ديزل'],
+    },
+    {
+      type: 'بنزين 91',
+      totalLitres: fuelTypeMap.get('بنزين 91')?.totalLitres || 0,
+      totalCost: fuelTypeMap.get('بنزين 91')?.totalCost || 0,
+      color: colorMap['بنزين 91'],
+    },
+    {
+      type: 'بنزين 95',
+      totalLitres: fuelTypeMap.get('بنزين 95')?.totalLitres || 0,
+      totalCost: fuelTypeMap.get('بنزين 95')?.totalCost || 0,
+      color: colorMap['بنزين 95'],
+    },
+  ];
+
+  // Calculate overall totals
+  const totalLitres = fuelTypes.reduce((sum, fuel) => sum + fuel.totalLitres, 0);
+  const totalCost = fuelTypes.reduce((sum, fuel) => sum + fuel.totalCost, 0);
+
+  return { fuelTypes, totalLitres, totalCost };
+};
+
+/**
+ * Calculate car wash statistics grouped by car size
+ * @param orders - Array of orders
+ * @returns Object with car wash totals by size
+ */
+export const calculateCarWashStatistics = (orders: any[]): {
+  sizes: Array<{ name: string; count: number; totalCost: number }>;
+  totalOrders: number;
+  totalCost: number;
+} => {
+  // Initialize size categories in Arabic
+  const sizeMap: { [key: string]: { count: number; totalCost: number } } = {
+    'صغيرة': { count: 0, totalCost: 0 },
+    'متوسطة': { count: 0, totalCost: 0 },
+    'كبيرة': { count: 0, totalCost: 0 },
+    'VIP': { count: 0, totalCost: 0 },
+  };
+
+  // Filter car wash orders
+  const carWashOrders = orders.filter(order => {
+    const checkCategory = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('عمليات غسيل السيارات') || 
+             str.includes('غسيل سيارة') ||
+             str.includes('غسيل خارجي') ||
+             str.includes('غسيل') ||
+             str.includes('Car Wash') ||
+             str.includes('Car wash') ||
+             str.includes('Exterior wash') ||
+             str.includes('washing') ||
+             str.toLowerCase().includes('wash');
+    };
+
+    return checkCategory(order.category?.ar) ||
+           checkCategory(order.category?.en) ||
+           checkCategory(order.service?.category?.ar) ||
+           checkCategory(order.service?.category?.en) ||
+           checkCategory(order.service?.title?.ar) ||
+           checkCategory(order.service?.title?.en) ||
+           checkCategory(order.selectedOption?.category?.name?.ar) ||
+           checkCategory(order.selectedOption?.category?.name?.en) ||
+           checkCategory(order.selectedOption?.category?.ar) ||
+           checkCategory(order.selectedOption?.category?.en) ||
+           checkCategory(order.selectedOption?.title?.ar) ||
+           checkCategory(order.selectedOption?.title?.en) ||
+           checkCategory(order.selectedOption?.label) ||
+           checkCategory(order.type) ||
+           checkCategory(order.orderType);
+  });
+
+  console.log('\n🔍 DEBUG: Car Wash Orders Filtering');
+  console.log('Total orders received:', orders.length);
+  console.log('Car wash orders found:', carWashOrders.length);
+  
+  if (carWashOrders.length > 0) {
+    console.log('\n📋 First car wash order structure:');
+    console.dir(carWashOrders[0], { depth: 3 });
+  }
+
+  // Process each car wash order
+  carWashOrders.forEach((order, index) => {
+    console.log(`\n--- Processing Car Wash Order ${index + 1} ---`);
+    console.log('Order ID:', order.refId || order.id);
+    console.log('Total Price:', order.totalPrice);
+    console.log('Service Title:', order.service?.title);
+    console.log('Selected Option Category:', order.selectedOption?.category?.name);
+    
+    // Get car size from car.size
+    let carSize = order.car?.size;
+
+    console.log('car.size:', carSize);
+
+    // Normalize car size to match our categories
+    if (carSize) {
+      const originalSize = carSize;
+      carSize = String(carSize).toLowerCase().trim();
+      let mappedSize = '';
+      
+      // Check for small (صغيرة)
+      if (carSize === 'small' || carSize === 'صغيرة' || carSize.includes('صغير')) {
+        mappedSize = 'صغيرة';
+      } 
+      // Check for medium/middle (متوسطة)
+      else if (carSize === 'medium' || carSize === 'middle' || carSize === 'متوسطة' || carSize.includes('متوسط')) {
+        mappedSize = 'متوسطة';
+      } 
+      // Check for large/big (كبيرة)
+      else if (carSize === 'large' || carSize === 'big' || carSize === 'كبيرة' || carSize.includes('كبير')) {
+        mappedSize = 'كبيرة';
+      } 
+      // Check for VIP
+      else if (carSize === 'vip' || carSize.toUpperCase() === 'VIP') {
+        mappedSize = 'VIP';
+      }
+
+      if (mappedSize && sizeMap[mappedSize]) {
+        const price = order.totalPrice || 0;
+        sizeMap[mappedSize].count += 1;
+        sizeMap[mappedSize].totalCost += price;
+        console.log(`✅ SUCCESS: Mapped "${originalSize}" → "${mappedSize}" | Price: ${price} ر.س`);
+      } else {
+        console.log(`❌ FAILED: Could not map size "${originalSize}" (normalized: "${carSize}")`);
+      }
+    } else {
+      console.log('⚠️ WARNING: No car.size found for this order');
+    }
+  });
+
+  // Convert to array format
+  const sizes = Object.entries(sizeMap).map(([name, data]) => ({
+    name,
+    count: data.count,
+    totalCost: data.totalCost,
+  }));
+
+  const totalOrders = carWashOrders.length;
+  const totalCost = sizes.reduce((sum, size) => sum + size.totalCost, 0);
+
+  console.log('\n🚗 Car Wash Statistics:');
+  console.log('========================');
+  console.log('Total Orders:', totalOrders);
+  console.log('Total Cost:', totalCost);
+  console.log('By Size:');
+  sizes.forEach(size => {
+    console.log(`  ${size.name}: ${size.count} orders, ${size.totalCost} ر.س`);
+  });
+  console.log('========================\n');
+
+  return { sizes, totalOrders, totalCost };
+};
+
+/**
+ * Fetch and filter orders by car wash category
+ * Prints filtered orders to console in their raw Firestore format
+ */
+export const fetchCarWashOrders = async (): Promise<any[]> => {
+  try {
+    const orders = await fetchOrders();
+    
+    // Filter orders where category contains car wash keywords
+    const carWashOrders = orders.filter(order => {
+      // Check all possible category field paths
+      const checkCategory = (value: any): boolean => {
+        if (!value) return false;
+        const str = typeof value === 'string' ? value : '';
+        return str.includes('عمليات غسيل السيارات') || 
+               str.includes('غسيل سيارة') ||
+               str.includes('غسيل') ||
+               str.includes('Car Wash') ||
+               str.includes('washing') ||
+               str.toLowerCase().includes('wash');
+      };
+
+      return checkCategory(order.category?.ar) ||
+             checkCategory(order.category?.en) ||
+             checkCategory(order.service?.category?.ar) ||
+             checkCategory(order.service?.category?.en) ||
+             checkCategory(order.service?.title?.ar) ||
+             checkCategory(order.service?.title?.en) ||
+             checkCategory(order.selectedOption?.category?.ar) ||
+             checkCategory(order.selectedOption?.category?.en) ||
+             checkCategory(order.selectedOption?.title?.ar) ||
+             checkCategory(order.selectedOption?.title?.en) ||
+             checkCategory(order.selectedOption?.label) ||
+             checkCategory(order.type) ||
+             checkCategory(order.orderType);
+    });
+
+    console.log('\n🚗 ========================================');
+    console.log('CAR WASH ORDERS');
+    console.log('========================================');
+    console.log('Total Car Wash Orders Found:', carWashOrders.length);
+    console.log('========================================\n');
+    
+    if (carWashOrders.length > 0) {
+      console.log('📋 Car Wash Orders Array:');
+      console.log(JSON.stringify(carWashOrders, null, 2));
+      console.log('\n📦 Car Wash Orders (Full Objects):');
+      carWashOrders.forEach((order, index) => {
+        console.log(`\n--- Order ${index + 1} ---`);
+        console.dir(order, { depth: null });
+      });
+    } else {
+      console.log('❌ No car wash orders found in current company orders.');
+      console.log('\n🔍 Debugging - All available categories in orders:');
+      const allCategories = new Set<string>();
+      orders.forEach(order => {
+        if (order.category?.ar) allCategories.add(`category.ar: ${order.category.ar}`);
+        if (order.category?.en) allCategories.add(`category.en: ${order.category.en}`);
+        if (order.service?.category?.ar) allCategories.add(`service.category.ar: ${order.service.category.ar}`);
+        if (order.service?.category?.en) allCategories.add(`service.category.en: ${order.service.category.en}`);
+        if (order.service?.title?.ar) allCategories.add(`service.title.ar: ${order.service.title.ar}`);
+        if (order.service?.title?.en) allCategories.add(`service.title.en: ${order.service.title.en}`);
+        if (order.selectedOption?.category?.ar) allCategories.add(`selectedOption.category.ar: ${order.selectedOption.category.ar}`);
+        if (order.selectedOption?.category?.en) allCategories.add(`selectedOption.category.en: ${order.selectedOption.category.en}`);
+        if (order.selectedOption?.title?.ar) allCategories.add(`selectedOption.title.ar: ${order.selectedOption.title.ar}`);
+        if (order.selectedOption?.title?.en) allCategories.add(`selectedOption.title.en: ${order.selectedOption.title.en}`);
+        if (order.selectedOption?.label) allCategories.add(`selectedOption.label: ${order.selectedOption.label}`);
+      });
+      console.log('Available categories:');
+      Array.from(allCategories).forEach(cat => console.log('  -', cat));
+    }
+
+    return carWashOrders;
+  } catch (error) {
+    console.error('❌ Error fetching car wash orders:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch all products from Firestore
  * @returns Promise with products data
  */

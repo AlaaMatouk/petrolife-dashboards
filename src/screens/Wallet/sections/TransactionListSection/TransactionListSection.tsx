@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, Pagination, TimeFilter, ExportButton, LoadingSpinner } from "../../../../components/shared";
-import {
-  fuelData,
-} from "../../../../constants/data";
 import { CirclePlus, WalletMinimal } from "lucide-react";
 import { useAuth } from "../../../../hooks/useGlobalState";
-import { fetchOrders } from "../../../../services/firestore";
+import { fetchOrders, calculateFuelStatistics } from "../../../../services/firestore";
 
 // Helper function to format date
 const formatDate = (date: any): string => {
@@ -84,6 +81,11 @@ export const TransactionListSection = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fuelStats, setFuelStats] = useState<{
+    fuelTypes: Array<{ type: string; totalLitres: number; totalCost: number; color: string }>;
+    totalLitres: number;
+    totalCost: number;
+  }>({ fuelTypes: [], totalLitres: 0, totalCost: 0 });
   
   // Get balance from company data, fallback to 0 if not available
   const walletBalance = company?.balance || 0;
@@ -93,23 +95,27 @@ export const TransactionListSection = (): JSX.Element => {
     return new Intl.NumberFormat('en-US').format(num);
   };
   
-  // Fetch orders and convert to transactions
+  // Fetch orders, convert to transactions, and calculate fuel statistics
   useEffect(() => {
-    const loadTransactions = async () => {
+    const loadData = async () => {
       setIsLoading(true);
       try {
         const orders = await fetchOrders();
         const transactionsList = convertOrdersToTransactions(orders);
         setTransactions(transactionsList);
+        
+        // Calculate fuel statistics
+        const stats = calculateFuelStatistics(orders);
+        setFuelStats(stats);
       } catch (err) {
-        console.error('Error loading transactions:', err);
+        console.error('Error loading data:', err);
         setTransactions([]);
       } finally {
         setIsLoading(false);
       }
     };
     
-    loadTransactions();
+    loadData();
   }, []);
 
   // Define table columns for transactions
@@ -156,7 +162,7 @@ export const TransactionListSection = (): JSX.Element => {
               />
               </div>
               <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
-                14,254 <span className="text-base">ر.س</span>
+                {formatNumber(Math.round(fuelStats.totalCost))} <span className="text-base">ر.س</span>
               </p>
             </div>
           </div>
@@ -179,15 +185,19 @@ export const TransactionListSection = (): JSX.Element => {
               />
               </div>
               <div className="flex items-center gap-4">
-                {fuelData.map((fuel, index) => (
+                {(fuelStats.fuelTypes.length > 0 ? fuelStats.fuelTypes : [
+                  { type: "ديزل", totalLitres: 185, color: "text-color-mode-text-icons-t-orange" },
+                  { type: "بنزين 95", totalLitres: 548, color: "text-color-mode-text-icons-t-red" },
+                  { type: "بنزين 91", totalLitres: 845, color: "text-color-mode-text-icons-t-green" },
+                ]).map((fuel, index) => (
                   <div key={index} className="flex items-center gap-4">
                     <div className="flex flex-col items-end">
                       <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
-                        {fuel.amount}
+                        {Math.round(fuel.totalLitres)} .L
                       </span>
                       <span className={`${fuel.color} text-xs`}>{fuel.type}</span>
                     </div>
-                    {index < fuelData.length - 1 && (
+                    {index < (fuelStats.fuelTypes.length > 0 ? fuelStats.fuelTypes.length : 3) - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
                     )}
                   </div>
