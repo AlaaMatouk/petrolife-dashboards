@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, Pagination, ExportButton, RTLSelect } from "../../../../components/shared";
 import { UserRound, ChartNoAxesCombined } from "lucide-react";
+import { fetchFinancialReportData } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 const clientData = {
   phone: "00966254523658",
@@ -249,6 +252,11 @@ const tableColumns = [
 ];
 
 export const DataTableSection = (): JSX.Element => {
+  const { company } = useAuth();
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [filters, setFilters] = useState({
     timePeriod: "الكل",
     driverCode: "الكل",
@@ -257,11 +265,94 @@ export const DataTableSection = (): JSX.Element => {
     reportType: "تحليلي",
   });
 
+  // Fetch financial report data
+  useEffect(() => {
+    const loadReportData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchFinancialReportData();
+        setReportData(data);
+      } catch (err) {
+        console.error('Error loading financial report data:', err);
+        setError('فشل في تحميل بيانات التقارير المالية');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReportData();
+  }, []);
+
   const handleFilterChange = (filterKey: string, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterKey]: value
     }));
+  };
+
+  // Format date for display
+  const formatDate = (date: any): string => {
+    if (!date) return 'N/A';
+    
+    try {
+      let dateObj: Date;
+      
+      if (date.toDate && typeof date.toDate === 'function') {
+        // Firestore Timestamp
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        return 'N/A';
+      }
+      
+      // Format in Arabic
+      return dateObj.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return 'N/A';
+    }
+  };
+
+  // Transform report data to table format
+  const transformedTableData = reportData.map(item => ({
+    city: item.city,
+    stationName: item.stationName,
+    date: formatDate(item.date),
+    operationNumber: item.operationNumber,
+    quantity: String(item.quantity),
+    productName: item.productName,
+    productNumber: item.productNumber,
+    productType: item.productType,
+    driverName: item.driverName,
+    driverCode: item.driverCode,
+  }));
+
+  // Extract client info from company data (Step 2)
+  const clientInfo = {
+    // المدينة = formattedLocation.address.city
+    city: company?.formattedLocation?.address?.city || clientData.city,
+    
+    // الرقم الضريبي = vatNumber
+    taxNumber: company?.vatNumber || clientData.taxNumber,
+    
+    // كود العميل = uId
+    clientCode: company?.uId || clientData.clientCode,
+    
+    // رقم الهاتف = phoneNumber
+    phone: company?.phoneNumber || clientData.phone,
+    
+    // السجل التجاري = commercialRegistrationNumber
+    commercialRecord: company?.commercialRegistrationNumber || clientData.commercialRecord,
+    
+    // اسم العميل = name (or brandName)
+    clientName: company?.name || company?.brandName || clientData.clientName,
   };
   return (
     <section
@@ -287,7 +378,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.phone}
+                      {clientInfo.phone}
                     </span>
                   </div>
                 </div>
@@ -300,7 +391,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                      {clientData.city}
+                      {clientInfo.city}
                     </span>
                   </div>
                 </div>
@@ -315,7 +406,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.commercialRecord}
+                      {clientInfo.commercialRecord}
                     </span>
                   </div>
                 </div>
@@ -328,7 +419,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.taxNumber}
+                      {clientInfo.taxNumber}
                     </span>
                   </div>
                 </div>
@@ -343,7 +434,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                      {clientData.clientName}
+                      {clientInfo.clientName}
                     </span>
                   </div>
                 </div>
@@ -356,7 +447,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.clientCode}
+                      {clientInfo.clientCode}
                     </span>
                   </div>
                 </div>
@@ -408,20 +499,36 @@ export const DataTableSection = (): JSX.Element => {
           </div>
 
           <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-            <Table
-              columns={tableColumns}
-              data={tableData}
-              className="w-full"
-              headerClassName="bg-color-mode-surface-bg-icon-gray"
-              rowClassName="hover:bg-gray-50"
-              cellClassName="text-right [direction:rtl] whitespace-nowrap"
-            />
-            <Pagination
-              currentPage={3}
-              totalPages={20}
-              onPageChange={(page) => console.log(`Navigate to page ${page}`)}
-              className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <LoadingSpinner message="جاري تحميل التقارير المالية..." />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+              </div>
+            ) : transformedTableData.length === 0 ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <p className="text-gray-500 text-center [direction:rtl]">لا توجد بيانات متاحة</p>
+              </div>
+            ) : (
+              <>
+                <Table
+                  columns={tableColumns}
+                  data={transformedTableData}
+                  className="w-full"
+                  headerClassName="bg-color-mode-surface-bg-icon-gray"
+                  rowClassName="hover:bg-gray-50"
+                  cellClassName="text-right [direction:rtl] whitespace-nowrap"
+                />
+                <Pagination
+                  currentPage={1}
+                  totalPages={Math.ceil(transformedTableData.length / 10)}
+                  onPageChange={(page) => console.log(`Navigate to page ${page}`)}
+                  className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+                />
+              </>
+            )}
           </div>
         </div>
       </article>

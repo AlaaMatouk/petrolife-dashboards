@@ -776,6 +776,114 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
 };
 
 /**
+ * Fetch orders and transform them for financial reports
+ * @returns Promise with formatted financial report data
+ */
+export const fetchFinancialReportData = async (): Promise<any[]> => {
+  try {
+    const orders = await fetchOrders();
+    
+    console.log('\n📊 Processing Financial Report Data');
+    console.log('===================================');
+    console.log('Total orders:', orders.length);
+    
+    // Transform each order to financial report format
+    const reportData = orders.map((order, index) => {
+      // Extract city from city.name or carStation.city.name
+      const city = order.city?.name ||
+                   order.carStation?.city?.name?.ar || 
+                   order.carStation?.city?.name?.en ||
+                   order.city?.name?.ar ||
+                   order.city?.name?.en ||
+                   'N/A';
+      
+      // Extract station name from carStation.name
+      const stationName = order.carStation?.name || 'N/A';
+      
+      // Extract date from createdDate
+      const date = order.createdDate || order.orderDate || null;
+      
+      // Extract operation number from id
+      const operationNumber = order.id || order.refId || 'N/A';
+      
+      // Extract quantity from cartItems[0].quantity
+      const quantity = order.cartItems?.[0]?.quantity || 
+                      order.totalLitre ||
+                      order.quantity ||
+                      0;
+      
+      // Extract product name from cartItems[0].name.ar
+      const productName = order.cartItems?.[0]?.name?.ar ||
+                         order.cartItems?.[0]?.name?.en ||
+                         order.selectedOption?.name?.ar ||
+                         order.selectedOption?.name?.en ||
+                         order.selectedOption?.title?.ar ||
+                         order.selectedOption?.title?.en ||
+                         'N/A';
+      
+      // Extract product number from cartItems[0].onyxProductId
+      const productNumber = order.cartItems?.[0]?.onyxProductId ||
+                           order.selectedOption?.onyxProductId ||
+                           'N/A';
+      
+      // Extract product type from cartItems[0].category.majorTypeEnum
+      const productType = order.cartItems?.[0]?.category?.majorTypeEnum ||
+                         order.selectedOption?.category?.majorTypeEnum ||
+                         order.service?.category?.majorTypeEnum ||
+                         'N/A';
+      
+      // Extract driver name from assignedDriver.name
+      const driverName = order.assignedDriver?.name ||
+                        order.enrichedDriverName ||
+                        'N/A';
+      
+      // Extract driver code from assignedDriver.id
+      const driverCode = order.assignedDriver?.id ||
+                        order.assignedDriver?.email ||
+                        order.assignedDriver?.uId ||
+                        'N/A';
+      
+      if (index < 3) {
+        console.log(`\n--- Order ${index + 1} ---`);
+        console.log('City:', city);
+        console.log('Station Name:', stationName);
+        console.log('Date:', date);
+        console.log('Operation Number:', operationNumber);
+        console.log('Quantity:', quantity);
+        console.log('Product Name:', productName);
+        console.log('Product Number:', productNumber);
+        console.log('Product Type:', productType);
+        console.log('Driver Name:', driverName);
+        console.log('Driver Code:', driverCode);
+      }
+      
+      return {
+        city,
+        stationName,
+        date,
+        operationNumber,
+        quantity,
+        productName,
+        productNumber,
+        productType,
+        driverName,
+        driverCode,
+        // Keep original order data for reference
+        originalOrder: order
+      };
+    });
+    
+    console.log('\n✅ Financial report data processed:', reportData.length);
+    console.log('===================================\n');
+    
+    return reportData;
+  } catch (error) {
+    console.error('Error fetching financial report data:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch all products from Firestore
  * @returns Promise with products data
  */
