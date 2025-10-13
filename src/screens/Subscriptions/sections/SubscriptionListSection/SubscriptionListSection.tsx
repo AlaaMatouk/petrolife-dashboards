@@ -3,16 +3,7 @@ import { Star, FileText } from "lucide-react";
 import { Table, Pagination, ExportButton } from "../../../../components/shared";
 import { fetchUserSubscriptions } from "../../../../services/firestore";
 import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
-
-const currentSubscriptionData = {
-  price: "150",
-  paymentMethod: "محفظة",
-  vehicleCount: "15",
-  packageType: "سنوى",
-  expiryDate: "12 فبراير 2026",
-  packageName: "الباقة البرونزية",
-  subscriptionDate: "12 فبراير 2025"
-};
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 const historyTableData = [
   {
@@ -120,12 +111,79 @@ const paginationData = [
 ];
 
 export const SubscriptionListSection = (): JSX.Element => {
+  const { company } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const ITEMS_PER_PAGE = 10;
+
+  // Extract current subscription from company data
+  const currentSubscription = company?.selectedSubscription;
+  
+  // Format dates for current subscription
+  const formatDate = (date: any): string => {
+    if (!date) return 'N/A';
+    try {
+      const dateObj = date.toDate ? date.toDate() : new Date(date);
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  // Calculate expiry date from createdDate + periodValueInDays
+  const calculateExpiryDate = (): string => {
+    const createdDate = currentSubscription?.createdDate;
+    const periodValueInDays = currentSubscription?.periodValueInDays;
+    
+    if (!createdDate || !periodValueInDays) return 'N/A';
+    
+    try {
+      const startDate = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+      const expiryDate = new Date(startDate);
+      expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
+      return formatDate(expiryDate);
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const currentSubscriptionData = {
+    packageName: currentSubscription?.title?.ar || currentSubscription?.title?.en || 'N/A',
+    packageType: currentSubscription?.periodName?.ar || 
+                currentSubscription?.periodName?.en || 
+                (typeof currentSubscription?.periodName === 'string' ? currentSubscription?.periodName : 'N/A'),
+    price: String(currentSubscription?.price || 0),
+    vehicleCount: String(company?.maxCarNumber || 
+                        company?.numberOfVehicles || 
+                        company?.vehicleCount || 
+                        company?.carsLimit || 
+                        currentSubscription?.maxCarNumber || 
+                        0),
+    subscriptionDate: formatDate(currentSubscription?.createdDate),
+    expiryDate: calculateExpiryDate(),
+    paymentMethod: company?.paymentMethod || 'محفظة',
+  };
+
+  console.log('\n📋 Current Subscription Data (Subscriptions Screen):');
+  console.log('===================================================');
+  console.log('Company:', company?.name);
+  console.log('Company Data - Checking all possible vehicle count fields:');
+  console.log('  maxCarNumber:', company?.maxCarNumber);
+  console.log('  numberOfVehicles:', company?.numberOfVehicles);
+  console.log('  vehicleCount:', company?.vehicleCount);
+  console.log('  carsLimit:', company?.carsLimit);
+  console.log('  selectedSubscription.maxCarNumber:', currentSubscription?.maxCarNumber);
+  console.log('Period Name:', currentSubscription?.periodName);
+  console.log('Created Date:', currentSubscription?.createdDate);
+  console.log('Period Value in Days:', currentSubscription?.periodValueInDays);
+  console.log('Current Subscription:', currentSubscriptionData);
+  console.log('===================================================\n');
 
   // Fetch subscriptions on mount
   useEffect(() => {

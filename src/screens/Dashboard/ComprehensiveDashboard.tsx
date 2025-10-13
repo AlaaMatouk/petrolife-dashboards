@@ -377,6 +377,69 @@ const StatsCardsSection = () => {
 
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
+  const { company } = useAuth();
+  
+  // Extract current subscription from company data
+  const currentSubscription = company?.selectedSubscription;
+  
+  // Get subscription details using correct field names:
+  // نوع الباقة = periodName (extract Arabic text from object)
+  const packageType = currentSubscription?.periodName?.ar || 
+                     currentSubscription?.periodName?.en || 
+                     (typeof currentSubscription?.periodName === 'string' ? currentSubscription?.periodName : 'N/A');
+  
+  // عدد المركبات = maxCarNumber (with fallbacks)
+  const vehicleCount = company?.maxCarNumber || 
+                      company?.numberOfVehicles || 
+                      company?.vehicleCount || 
+                      company?.carsLimit || 
+                      currentSubscription?.maxCarNumber || 
+                      0;
+  
+  // اسم الباقة
+  const packageName = currentSubscription?.title?.ar || currentSubscription?.title?.en || 'N/A';
+  
+  // Calculate days remaining using createdDate + periodValueInDays
+  const calculateDaysRemaining = () => {
+    const createdDate = currentSubscription?.createdDate;
+    const periodValueInDays = currentSubscription?.periodValueInDays;
+    
+    if (!createdDate || !periodValueInDays) return 0;
+    
+    try {
+      const startDate = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+      const expiryDate = new Date(startDate);
+      expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
+      
+      const now = new Date();
+      const diffTime = expiryDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  const daysRemaining = calculateDaysRemaining();
+
+  console.log('\n📅 Dashboard Subscription Data:');
+  console.log('==============================');
+  console.log('Company:', company?.name);
+  console.log('Company Data - Checking all possible vehicle count fields:');
+  console.log('  maxCarNumber:', company?.maxCarNumber);
+  console.log('  numberOfVehicles:', company?.numberOfVehicles);
+  console.log('  vehicleCount:', company?.vehicleCount);
+  console.log('  carsLimit:', company?.carsLimit);
+  console.log('  selectedSubscription.maxCarNumber:', currentSubscription?.maxCarNumber);
+  console.log('Final Vehicle Count:', vehicleCount);
+  console.log('Period Name:', currentSubscription?.periodName);
+  console.log('Package Type (extracted):', packageType);
+  console.log('Package Name:', packageName);
+  console.log('Created Date:', currentSubscription?.createdDate);
+  console.log('Period Value in Days:', currentSubscription?.periodValueInDays);
+  console.log('Days Remaining:', daysRemaining);
+  console.log('==============================\n');
+
   return (
     <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* Subscription Card */}
@@ -393,13 +456,13 @@ const SubscriptionAndLocationsSection = () => {
           {/* Package Type Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
             <div className="text-lg font-bold text-purple-800 mb-1">نوع الباقة</div>
-            <div className="text-xs text-purple-800">سنوي</div>
+            <div className="text-xs text-purple-800">{packageType}</div>
           </div>
           
           {/* Number of Vehicles Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
             <div className="text-lg font-bold text-purple-800 mb-1">عدد المركبات</div>
-            <div className="text-xs text-purple-800">120</div>
+            <div className="text-xs text-purple-800">{vehicleCount}</div>
           </div>
         </div>
         
@@ -423,14 +486,12 @@ const SubscriptionAndLocationsSection = () => {
           
           {/* Countdown Numbers */}
           <div className="text-2xl font-bold text-orange-500 mb-2 [direction:rtl] text-center">
-            24 : 152 : 245
+            {daysRemaining} يوم
           </div>
           
-          {/* Time Unit Labels */}
-          <div className="flex justify-center gap-6 text-xs text-gray-700 [direction:rtl]">
-            <span>يوم</span>
-            <span>ساعة</span>
-            <span>دقيقة</span>
+          {/* Package Name */}
+          <div className="text-sm text-gray-600 mt-2 [direction:rtl] text-center">
+            {packageName}
           </div>
         </div>
       </div>
@@ -622,11 +683,80 @@ const ConsumptionSection = () => {
 
 // Fuel Delivery Requests Section
 const FuelDeliveryRequestsSection = () => {
+  const [deliveryStats, setDeliveryStats] = useState<{
+    completed: number;
+    cancelled: number;
+    total: number;
+    completionPercentage: number;
+  }>({ completed: 0, cancelled: 0, total: 0, completionPercentage: 0 });
+
+  useEffect(() => {
+    const loadDeliveryStats = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Filter for fuel delivery orders
+        const fuelDeliveryOrders = orders.filter(order => {
+          const titleAr = order.service?.title?.ar || '';
+          const titleEn = order.service?.title?.en || '';
+          const descAr = order.service?.desc?.ar || '';
+          const descEn = order.service?.desc?.en || '';
+
+          return (titleAr === 'توصيل الوقود' || titleEn === 'Fuel Delivery') ||
+                 (descAr === 'عند الطلب وفي أي وقت وفي أي مكان' || descEn === 'On-demand, anytime anywhere.');
+        });
+
+        // Count completed and cancelled
+        let completed = 0;
+        let cancelled = 0;
+
+        fuelDeliveryOrders.forEach(order => {
+          const status = order.status?.toLowerCase().trim() || '';
+          
+          if (status === 'completed' || status === 'done' || status === 'delivered' || 
+              status === 'مكتمل' || status === 'تم التوصيل') {
+            completed++;
+          } else if (status === 'cancelled' || status === 'canceled' || status === 'rejected' || 
+                     status === 'ملغي' || status === 'مرفوض') {
+            cancelled++;
+          }
+        });
+
+        const total = fuelDeliveryOrders.length;
+        const completionPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        console.log('\n⛽ Fuel Delivery Requests Stats:');
+        console.log('========================');
+        console.log('Total Fuel Delivery Orders:', total);
+        console.log('Completed:', completed);
+        console.log('Cancelled:', cancelled);
+        console.log('Completion Rate:', completionPercentage + '%');
+        console.log('========================\n');
+
+        setDeliveryStats({
+          completed,
+          cancelled,
+          total,
+          completionPercentage,
+        });
+      } catch (error) {
+        console.error('Error loading delivery stats:', error);
+      }
+    };
+
+    loadDeliveryStats();
+  }, []);
+
+  // Calculate stroke-dasharray for the progress circle
+  // Circle circumference = 2 * π * r = 2 * 3.14159 * 45 ≈ 283
+  const circumference = 283;
+  const progressLength = (deliveryStats.completionPercentage / 100) * circumference;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          المكتملة 20 / الملغية 22
+          المكتملة {deliveryStats.completed} / الملغية {deliveryStats.cancelled}
         </div>
         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
           طلبات توصيل الوقود
@@ -654,7 +784,7 @@ const FuelDeliveryRequestsSection = () => {
               fill="none"
               stroke="#5A66C1"
               strokeWidth="6"
-              strokeDasharray={`${49 * 2.83} 283`}
+              strokeDasharray={`${progressLength} ${circumference}`}
               strokeLinecap="round"
             />
           </svg>
@@ -662,7 +792,7 @@ const FuelDeliveryRequestsSection = () => {
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-base text-gray-500 mb-1 [direction:rtl]">الطلبات المكتملة</div>
-            <div className="text-4xl font-bold text-gray-900">49%</div>
+            <div className="text-4xl font-bold text-gray-900">{deliveryStats.completionPercentage}%</div>
           </div>
         </div>
       </div>
@@ -672,18 +802,73 @@ const FuelDeliveryRequestsSection = () => {
 
 // My Cars Section
 const MyCarsSection = () => {
-  const carCategories = [
-    { name: "سيارات صغيرة", count: 20, total: 85 },
-    { name: "سيارات متوسطة", count: 25, total: 85 },
-    { name: "سيارات كبيرة", count: 30, total: 85 },
-    { name: "سيارات VIP", count: 10, total: 85 },
-  ];
+  const [carsData, setCarsData] = useState<{
+    total: number;
+    categories: Array<{ name: string; count: number }>;
+  }>({ total: 0, categories: [] });
+
+  useEffect(() => {
+    const loadCarsData = async () => {
+      try {
+        const carStats = await calculateCarStatistics();
+        
+        console.log('\n🚗 My Cars Section Data:');
+        console.log('========================');
+        console.log('Total Cars:', carStats.total);
+        console.log('By Size:', carStats.sizes);
+        console.log('========================\n');
+
+        // Map size names to full names for display
+        const categories = carStats.sizes.map(size => {
+          let fullName = '';
+          switch (size.name) {
+            case 'صغيرة':
+              fullName = 'سيارات صغيرة';
+              break;
+            case 'متوسطة':
+              fullName = 'سيارات متوسطة';
+              break;
+            case 'كبيرة':
+              fullName = 'سيارات كبيرة';
+              break;
+            case 'VIP':
+              fullName = 'سيارات VIP';
+              break;
+            default:
+              fullName = `سيارات ${size.name}`;
+          }
+          return {
+            name: fullName,
+            count: size.count,
+          };
+        });
+
+        setCarsData({
+          total: carStats.total,
+          categories: categories,
+        });
+      } catch (error) {
+        console.error('Error loading cars data:', error);
+      }
+    };
+
+    loadCarsData();
+  }, []);
+
+  const carCategories = carsData.categories.length > 0 
+    ? carsData.categories 
+    : [
+        { name: "سيارات صغيرة", count: 0 },
+        { name: "سيارات متوسطة", count: 0 },
+        { name: "سيارات كبيرة", count: 0 },
+        { name: "سيارات VIP", count: 0 },
+      ];
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          اجمالي السيارات 85
+          اجمالي السيارات {carsData.total}
         </div>
         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
           سياراتي
@@ -693,11 +878,11 @@ const MyCarsSection = () => {
       {/* Car Categories */}
       <div className="space-y-6">
         {carCategories.map((category, index) => {
-          const percentage = (category.count / category.total) * 100;
+          const percentage = carsData.total > 0 ? (category.count / carsData.total) * 100 : 0;
           return (
             <div key={index} className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{category.total}/{category.count}</span>
+                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{carsData.total}/{category.count}</span>
                 <span className="text-sm font-medium text-gray-900 [direction:rtl]">{category.name}</span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 flex justify-end">

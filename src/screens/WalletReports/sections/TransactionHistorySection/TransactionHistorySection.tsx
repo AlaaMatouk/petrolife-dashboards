@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Table, Pagination, ExportButton, RTLSelect, LoadingSpinner } from "../../../../components/shared";
 import { walletReportsTransactionData } from "../../../../constants/data";
 import { Wallet } from "lucide-react";
-import { fetchCompaniesDriversTransfer } from "../../../../services/firestore";
+import { fetchCompaniesDriversTransfer, fetchWalletChargeRequests } from "../../../../services/firestore";
 
 interface TransactionData {
   id: string;
@@ -11,6 +11,8 @@ interface TransactionData {
   date: string;
   balance: string;
   debit: string;
+  sourceType?: 'driver-transfer' | 'wallet-charge';
+  rawDate?: any; // Store raw date for sorting
 }
 
 
@@ -103,7 +105,7 @@ const formatNumber = (num: any): string => {
   return new Intl.NumberFormat('en-US').format(Number(num));
 };
 
-// Convert transfer data to transaction format
+// Convert driver transfer data to transaction format
 const convertTransfersToTransactions = (transfers: any[]): TransactionData[] => {
   return transfers.map((transfer) => ({
     // رقم العملية = id
@@ -112,8 +114,8 @@ const convertTransfersToTransactions = (transfers: any[]): TransactionData[] => 
     // اسم العملية = car.name.ar (car name in Arabic)
     operationName: transfer.car?.name?.ar || transfer.car?.name?.en || transfer.car?.name || '-',
     
-    // نوع العملية = fuelType (if available, otherwise use periodName)
-    operationType: transfer.fuelType || transfer.periodName || '-',
+    // نوع العملية = "فاتورة" for driver transfers
+    operationType: 'فاتورة',
     
     // التاريخ = createdDate
     date: formatDate(transfer.createdDate),
@@ -123,7 +125,56 @@ const convertTransfersToTransactions = (transfers: any[]): TransactionData[] => 
     
     // مدين = value
     debit: formatNumber(transfer.value),
+    
+    // Store source type for filtering
+    sourceType: 'driver-transfer' as const,
+    
+    // Store raw date for sorting
+    rawDate: transfer.createdDate,
   }));
+};
+
+// Convert wallet charge requests to transaction format
+const convertWalletChargeToTransactions = (requests: any[]): TransactionData[] => {
+  // Debug: Check first request structure
+  if (requests.length > 0) {
+    console.log('\n📄 First Wallet Charge Request:');
+    console.log('Available fields:', Object.keys(requests[0]));
+    console.log('requestDate:', requests[0].requestDate);
+    console.log('createdDate:', requests[0].createdDate);
+    console.log('date:', requests[0].date);
+    console.log('Full request:', requests[0]);
+  }
+  
+  return requests.map((request) => {
+    const rawDate = request.requestDate || request.createdDate || request.date;
+    
+    return {
+      // رقم العملية = id
+      id: request.id || '-',
+      
+      // اسم العملية = "طلب شحن محفظة" or request type
+      operationName: request.type || 'طلب شحن محفظة',
+      
+      // نوع العملية = "تغذية محفظة" for wallet charges
+      operationType: 'تغذية محفظة',
+      
+      // التاريخ = requestDate (try multiple date fields)
+      date: formatDate(rawDate),
+      
+      // الرصيد = requestedUser.balance (old balance)
+      balance: formatNumber(request.requestedUser?.balance || request.oldBalance),
+      
+      // مدين = value or amount
+      debit: formatNumber(request.value || request.amount),
+      
+      // Store source type for filtering
+      sourceType: 'wallet-charge' as const,
+      
+      // Store raw date for sorting
+      rawDate: rawDate,
+    };
+  });
 };
 
 const dummyTransactionData: TransactionData[] = [
@@ -259,16 +310,45 @@ export const TransactionHistorySection = (): JSX.Element => {
   
   const ITEMS_PER_PAGE = 10;
 
-  // Fetch companies-drivers-transfer data on mount
+  // Fetch both driver transfers and wallet charge requests
   useEffect(() => {
     const loadTransactions = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
-        const transfers = await fetchCompaniesDriversTransfer();
-        const convertedTransactions = convertTransfersToTransactions(transfers);
-        setTransactions(convertedTransactions);
+        // Fetch both data sources
+        const [transfers, walletCharges] = await Promise.all([
+          fetchCompaniesDriversTransfer(),
+          fetchWalletChargeRequests()
+        ]);
+        
+        // Convert both to transaction format
+        const transferTransactions = convertTransfersToTransactions(transfers);
+        const chargeTransactions = convertWalletChargeToTransactions(walletCharges);
+        
+        // Combine both arrays
+        const allTransactions = [...transferTransactions, ...chargeTransactions];
+        
+        // Sort by raw date (newest first) - descending order
+        allTransactions.sort((a, b) => {
+          try {
+            const dateA = a.rawDate?.toDate ? a.rawDate.toDate() : new Date(a.rawDate || 0);
+            const dateB = b.rawDate?.toDate ? b.rawDate.toDate() : new Date(b.rawDate || 0);
+            return dateB.getTime() - dateA.getTime();
+          } catch (error) {
+            return 0;
+          }
+        });
+        
+        console.log('\n💰 Wallet Reports Data Loaded:');
+        console.log('================================');
+        console.log('Driver Transfers:', transferTransactions.length);
+        console.log('Wallet Charges:', chargeTransactions.length);
+        console.log('Total Transactions:', allTransactions.length);
+        console.log('================================\n');
+        
+        setTransactions(allTransactions);
       } catch (err) {
         console.error('Error loading wallet transactions:', err);
         setError('فشل في تحميل المعاملات');
@@ -286,17 +366,70 @@ export const TransactionHistorySection = (): JSX.Element => {
       ...prev,
       [filterKey]: value
     }));
+    // Reset to page 1 when filter changes
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  // Apply filters
+  const filteredTransactions = transactions.filter(transaction => {
+    // Filter by time period (الفترة الزمنية)
+    if (filters.timePeriod !== 'الكل') {
+      const now = new Date();
+      const transactionDate = transaction.rawDate?.toDate 
+        ? transaction.rawDate.toDate() 
+        : new Date(transaction.rawDate || 0);
+      
+      let startDate = new Date();
+      
+      switch (filters.timePeriod) {
+        case 'اخر اسبوع':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'اخر 30 يوم':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case 'اخر 6 شهور':
+          startDate.setMonth(now.getMonth() - 6);
+          break;
+        case 'اخر 12 شهر':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+        default:
+          startDate = new Date(0); // Show all
+      }
+      
+      if (transactionDate < startDate) {
+        return false;
+      }
+    }
+    
+    // Filter by operation type (نوع العملية)
+    if (filters.operationType !== 'الكل') {
+      if (transaction.operationType !== filters.operationType) {
+        return false;
+      }
+    }
+    
+    // Filter by operation name (اسم العملية)
+    if (filters.operationName !== 'الكل') {
+      // Check if operation name contains the filter value
+      if (!transaction.operationName.includes(filters.operationName)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
   // Calculate pagination
-  const totalPages = Math.ceil(transactions.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTransactions = transactions.slice(startIndex, endIndex);
+  const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
 
   return (
     <section
@@ -355,9 +488,13 @@ export const TransactionHistorySection = (): JSX.Element => {
             <div className="flex items-center justify-center w-full min-h-[400px]">
               <p className="text-red-500 text-center [direction:rtl]">{error}</p>
             </div>
-          ) : transactions.length === 0 ? (
+          ) : filteredTransactions.length === 0 ? (
             <div className="flex items-center justify-center w-full min-h-[400px]">
-              <p className="text-gray-500 text-center [direction:rtl]">لا توجد معاملات متاحة</p>
+              <p className="text-gray-500 text-center [direction:rtl]">
+                {filters.operationType !== 'الكل' 
+                  ? `لا توجد معاملات من نوع "${filters.operationType}"` 
+                  : 'لا توجد معاملات متاحة'}
+              </p>
             </div>
           ) : (
             <>
