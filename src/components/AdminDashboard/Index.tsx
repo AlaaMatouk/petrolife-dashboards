@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
-import { navigationMenuData, userInfo } from "../../constants/data";
+import { adminNavigationMenuData, navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
 import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics } from "../../services/firestore";
@@ -1008,9 +1008,10 @@ export const Index = (): JSX.Element => {
         },
       }}
       sidebarProps={{
-        sections: navigationMenuData.sections,
-        topItems: navigationMenuData.topItems,
-        bottomItems: navigationMenuData.bottomItems,
+        sections: adminNavigationMenuData.sections,
+        topItems: adminNavigationMenuData.topItems,
+        bottomItems: adminNavigationMenuData.bottomItems,
+        anotherSections: adminNavigationMenuData.anotherSections,
         userInfo: userInfo,
       }}
     >
