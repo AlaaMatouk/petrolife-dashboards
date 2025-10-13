@@ -1,196 +1,176 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
-import { adminNavigationMenuData, navigationMenuData, userInfo } from "../../constants/data";
-import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
-import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics } from "../../services/firestore";
+import { adminNavigationMenuData, userInfo } from "../../constants/data";
+import {
+  MapPin,
+  Fuel,
+  Wallet,
+  Car,
+  Users,
+  FileText,
+  Download,
+  DollarSign,
+} from "lucide-react";
 import sideIcons1 from "../../../static/img/side-icons-1.svg";
-
-// Banner Section Component
-const BannerSection = () => {
-  return (
-    <section className="w-full mb-8">
-      <div className="relative w-full h-48 rounded-2xl overflow-hidden" style={{ backgroundColor: '#311159' }}>
-        {/* Content */}
-        <div className="relative z-10 flex items-center h-full pl-0 pr-8">
-          {/* Left Side - Image */}
-          <div className="flex-shrink-0 mr-8 h-full flex items-center">
-            <img 
-              src="/img/123.png" 
-              alt="Dashboard illustration" 
-              className="h-48 w-auto object-contain"
-            />
-          </div>
-          
-          {/* Right Side - Text Content */}
-          <div className="flex-1 text-white">
-            <p className="text-xl font-normal leading-relaxed text-right [direction:rtl] max-w-2xl">
-              كل ما تحتاجه في مكان واحد. قم بإدارة كافة أعمال الوقود الخاص بنشاطك التجاري من مكان واحد. ما عليك إلا شحن المحفظة وتسجيل السائقين والسيارات واستمتع بإحصائيات كاملة حول وقودك المستهلك.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
+import { RocketLaunchIcon } from "@heroicons/react/24/outline";
 
 // Stats Cards Section
 const StatsCardsSection = () => {
-  const { company } = useAuth();
-  const [fuelStats, setFuelStats] = useState<{
-    fuelTypes: Array<{ type: string; totalLitres: number; totalCost: number; color: string }>;
-    totalLitres: number;
-    totalCost: number;
-  }>({ fuelTypes: [], totalLitres: 0, totalCost: 0 });
-  
-  const [carWashStats, setCarWashStats] = useState<{
-    sizes: Array<{ name: string; count: number; totalCost: number }>;
-    totalOrders: number;
-    totalCost: number;
-  }>({ sizes: [], totalOrders: 0, totalCost: 0 });
-  
-  // Get balance from company data, fallback to 0 if not available
-  const walletBalance = company?.balance || 0;
-  
+  const [selectedOptions, setSelectedOptions] = useState<{[key: number]: number}>({3: 1, 9: 1,10:1,11:1});
+
+  // Static wallet balance data for testing
+  const walletBalance = 720250;
+
   // Format number with thousands separator (English)
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat("en-US").format(num);
   };
-
-  // Fetch orders and calculate fuel and car wash statistics
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const orders = await fetchOrders();
-        const fuelData = calculateFuelStatistics(orders);
-        setFuelStats(fuelData);
-        
-        const carWashData = calculateCarWashStatistics(orders);
-        setCarWashStats(carWashData);
-      } catch (error) {
-        console.error('Error loading statistics:', error);
-      }
-    };
-    loadStats();
-  }, []);
-  
-  // Format fuel data for display
-  const fuelData = fuelStats.fuelTypes.length > 0 
-    ? fuelStats.fuelTypes.map(fuel => ({
-        type: fuel.type,
-        amount: `${Math.round(fuel.totalLitres)} .L`,
-        color: fuel.color,
-      }))
-    : [
-        { type: "ديزل", amount: "185 .L", color: "text-color-mode-text-icons-t-orange" },
-        { type: "بنزين 95", amount: "548 .L", color: "text-color-mode-text-icons-t-red" },
-        { type: "بنزين 91", amount: "845 .L", color: "text-color-mode-text-icons-t-green" },
-      ];
 
   const statsData = [
     {
-      title: "اجمالي اللترات المستهلكة",
-      content: fuelData,
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
-      type: "fuel",
-    },
-    {
-      title: "التكلفة الإجمالية للوقود",
-      amount: formatNumber(Math.round(fuelStats.totalCost)),
-      currency: "ر.س",
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
-      type: "cost",
-    },
-    {
-      title: "رصيد محفظتي",
-      amount: formatNumber(walletBalance),
-      currency: "ر.س",
-      icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
-      type: "wallet",
-    },
-    {
-      title: "تغييرات الزيوت",
-      amount: "250",
-      unit: "لتر",
-      icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
-      type: "oil",
-    },
-    {
-      title: "عمليات تغيير الإطارات",
+      title: "السائقين",
       categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
+        { name: "سائقو الشركات", count: 3500 },
+        { name: "سائقونا بتوصيل الوقود", count: 220 },
       ],
-      icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
+      total: { name: "الاجمالي", count: 3720 },
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
-      title: "عمليات غسيل السيارات",
-      categories: carWashStats.sizes.length > 0 
-        ? carWashStats.sizes.map(size => ({
-            name: size.name,
-            count: size.count,
-          }))
-        : [
-            { name: "صغيرة", count: 0 },
-            { name: "متوسطة", count: 0 },
-            { name: "كبيرة", count: 0 },
-            { name: "VIP", count: 0 },
-          ],
-      icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
-    },
-    {
-      title: "استبدال البطاريات",
-      cost: "14,210",
-      currency: "ر.س",
-      replaced: "250",
-      requested: "845",
-      icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
-    },
-    {
-      title: "عمليات تغيير البطاريات",
+      title: "الشركات",
       categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
+        { name: "حسابات بواسطة المناديب", count: 520 },
+        { name: "حسابات مباشرة", count: 1000 },
       ],
-      icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
+      total: { name: "الاجمالي", count: 1520 },
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
+    },
+    {
+      title: "المستخدمين",
+      categories: [
+        { name: "مزودي الخدمة", count: 84 },
+        { name: "افراد", count: 4256 },
+        { name: "شركات", count: 1520 },
+        { name: "مشرفين", count: 254 },
+      ],
+      icon: <Users className="w-5 h-5" style={{ color: "#E76500" }} />,
+    },
+    {
+      title: "الاشتراكات",
+      categories: [
+        { name: "الاشتراكات المنتهية", count: 14 },
+        { name: "Premium", count: 125 },
+        { name: "Classic", count: 524 },
+        { name: "Basic", count: 254 },
+      ],
+      options: [ "الافراد","الشركات",],
+      icon: <RocketLaunchIcon className="w-5 h-5" style={{ color: "#E76500" }} />,
+    },
+    {
+      title: "السيارات المشتركة",
+      categories: [
+        { name: "VIP", count: 200 },
+        { name: "كبيرة", count: 2000 },
+        { name: "متوسطة", count: 2500 },
+        { name: "صغيرة", count: 1000 },
+      ],
+      total: { name: "الاجمالي", count: 5700 },
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
+    },
+    {
+      title: "اجمالي السيارات",
+      categories: [
+        { name: "VIP", count: 425 },
+        { name: "كبيرة", count: 4536 },
+        { name: "متوسطة", count: 3250 },
+        { name: "صغيرة", count: 1250 },
+      ],
+      total: { name: "الاجمالي", count: 9461 },
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "اجمالي تكلفة الوقود",
-      total: "الاجمالي 13700",
       breakdown: [
-        { type: "ديزل", amount: "6500", color: "text-color-mode-text-icons-t-orange" },
-        { type: "بنزين 95", amount: "5000", color: "text-color-mode-text-icons-t-red" },
-        { type: "بنزين 91", amount: "2200", color: "text-color-mode-text-icons-t-green" },
+        {
+          type: "ديزل",
+          amount: "6500",
+          color: "text-color-mode-text-icons-t-orange",
+        },
+        {
+          type: "بنزين 95",
+          amount: "5000",
+          color: "text-color-mode-text-icons-t-red",
+        },
+        {
+          type: "بنزين 91",
+          amount: "2200",
+          color: "text-color-mode-text-icons-t-green",
+        },
       ],
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
+      total: { name: "الاجمالي", count: 13700 },
+      icon: <DollarSign className="w-5 h-5" style={{ color: "#E76500"}} />,
     },
     {
-      title: "الطلبات المكتملة / الملغية",
-      completed: 12,
-      cancelled: 10,
-      icon: <FileText className="w-5 h-5" style={{ color: '#E76500' }} />,
+      title: "اجمالي اللترات",
+      breakdown: [
+        {
+          type: "ديزل",
+          amount: "185 .L",
+          color: "text-color-mode-text-icons-t-orange",
+        },
+        {
+          type: "بنزين 95",
+          amount: "548 .L",
+          color: "text-color-mode-text-icons-t-red",
+        },
+        {
+          type: "بنزين 91",
+          amount: "845 .L",
+          color: "text-color-mode-text-icons-t-green",
+        },
+      ],
+      total: { name: "الاجمالي", count: 2238 },
+      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500"}} />,
     },
     {
-      title: "السيارات",
-      total: 85,
+      title: "رصيد محافظ العملاء",
+      amount: formatNumber(walletBalance),
+      icon: <Wallet className="w-5 h-5" style={{ color: "#E76500" }} />,
+      type: "wallet",
+    },
+    {
+      title: "عمليات تغيير الاطارات",
       categories: [
-        { name: "صغيرة", count: 10 },
-        { name: "متوسطة", count: 30 },
-        { name: "كبيرة", count: 25 },
-        { name: "VIP", count: 20 },
+        { name: "VIP", count: 425 },
+        { name: "كبيرة", count: 4536 },
+        { name: "متوسطة", count: 3250 },
+        { name: "صغيرة", count: 1250 },
       ],
-      icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
+      options: [ "الافراد","الشركات",],
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
-      title: "السائقين النشطين / المعطلين",
-      active: 54,
-      inactive: 14,
-      icon: <Users className="w-5 h-5" style={{ color: '#E76500' }} />,
+      title: "عمليات غسيل السيارات",
+      categories: [
+        { name: "VIP", count: 425 },
+        { name: "كبيرة", count: 4536 },
+        { name: "متوسطة", count: 3250 },
+        { name: "صغيرة", count: 1250 },
+      ],
+      options: [ "الافراد","الشركات",],
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
+    },
+    {
+      title: "عمليات تغيير الزيوت",
+      categories: [
+        { name: "VIP", count: 425 },
+        { name: "كبيرة", count: 4536 },
+        { name: "متوسطة", count: 3250 },
+        { name: "صغيرة", count: 1250 },
+      ],
+      options: [ "الافراد","الشركات",],
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
   ];
 
@@ -199,46 +179,83 @@ const StatsCardsSection = () => {
       {statsData.map((stat, index) => (
         <div
           key={index}
-          className="relative w-full h-[120px] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder p-6 flex flex-col justify-between"
+          className="relative w-full bg-color-mode-surface-bg-screen rounded-[16px] rounded-bl-[28px] border-[0.2px] border-solid border-[#A9B4BE] p-6 flex flex-col justify-between"
         >
           {/* Upper row - title */}
-          <div className="flex justify-end mb-4">
-            <span className="text-base text-color-mode-text-icons-t-sec">
-              {stat.title}
-            </span>
-          </div>
-          
+          {!stat.total && !stat.options ? (
+            <div className="flex justify-end mb-4">
+              <span className="text-base text-color-mode-text-icons-t-sec">
+                {stat.title}
+              </span>
+            </div>
+          ) : stat.options ? (
+            <div className="flex justify-between mb-4">
+              {/* Options buttons */}
+              <div className="flex gap-2">
+                {stat.options.map((option, optionIndex) => {
+                  const isSelected = selectedOptions[index] === optionIndex;
+                  return (
+                    <button
+                      key={optionIndex}
+                      onClick={() => setSelectedOptions(prev => ({
+                        ...prev,
+                        [index]: optionIndex
+                      }))}
+                      className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
+                      style={{
+                        backgroundColor: isSelected ? "#F9F3FF" : "rgba(245, 246, 247, 0.4)",
+                        color: isSelected ? "#223548" : "#A9B4BE",
+                        fontSize: "12px",
+                        fontWeight: "400",
+                        border: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Title with enhanced styling */}
+              <span className="text-base text-color-mode-text-icons-t-sec">
+                {stat.title}
+              </span>
+            </div>
+          ) : (
+            <div className="flex justify-between mb-4">
+              <span className="text-base text-color-mode-text-icons-t-sec">
+                {typeof stat.total === "object" &&
+                stat.total !== null &&
+                "name" in stat.total
+                  ? `${stat.total.name} ${stat.total.count}`
+                  : ""}
+              </span>
+              <span className="text-base text-color-mode-text-icons-t-sec">
+                {stat.title}
+              </span>
+            </div>
+          )}
+
           {/* Lower row - value and icon */}
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFF3F9' }}>
+          <div className="flex  items-center justify-end">
+            <div
+              className="w-10 h-10 absolute bottom-[8px] left-[8px] rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "#FFF3F9" }}
+            >
               {stat.icon}
             </div>
-            
-            {stat.type === "fuel" ? (
-              <div className="flex items-center gap-4">
-                {stat.content?.map((fuel, fuelIndex) => (
-                  <div key={fuelIndex} className="flex items-center gap-4">
-                    <div className="flex flex-col items-end">
-                      <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
-                        {fuel.amount}
-                      </span>
-                      <span className={`${fuel.color} text-xs`}>{fuel.type}</span>
-                    </div>
-                    {fuelIndex < (stat.content?.length || 0) - 1 && (
-                      <div className="w-px h-8 bg-gray-300"></div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : stat.categories ? (
-              <div className="flex items-center gap-4">
+
+            {stat.categories ? (
+              <div className="flex items-center  gap-[10px]">
                 {stat.categories.map((category, catIndex) => (
                   <div key={catIndex} className="flex items-center gap-4">
                     <div className="flex flex-col items-end">
-                      <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
+                      <span className="text-lg font-bold text-[#5B738B]">
                         {category.count}
                       </span>
-                      <span className="text-xs text-color-mode-text-icons-t-sec">{category.name}</span>
+                      <span className="text-xs text-color-mode-text-icons-t-sec text-right">
+                        {category.name}
+                      </span>
                     </div>
                     {catIndex < stat.categories.length - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
@@ -251,10 +268,12 @@ const StatsCardsSection = () => {
                 {stat.breakdown.map((fuel, fuelIndex) => (
                   <div key={fuelIndex} className="flex items-center gap-4">
                     <div className="flex flex-col items-end">
-                      <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
+                      <span className="text-lg font-bold text-[#5B738B]">
                         {fuel.amount}
                       </span>
-                      <span className={`${fuel.color} text-xs`}>{fuel.type}</span>
+                      <span className={`${fuel.color} text-xs font-bold`}>
+                        {fuel.type}
+                      </span>
                     </div>
                     {fuelIndex < stat.breakdown.length - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
@@ -262,44 +281,9 @@ const StatsCardsSection = () => {
                   </div>
                 ))}
               </div>
-            ) : stat.cost ? (
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col items-end">
-                  <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
-                    {stat.cost}
-                  </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">التكلفة</span>
-                </div>
-                <div className="w-px h-8 bg-gray-300"></div>
-                <div className="flex flex-col items-end">
-                  <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
-                    {stat.replaced}
-                  </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">مستبدلة</span>
-                </div>
-                <div className="w-px h-8 bg-gray-300"></div>
-                <div className="flex flex-col items-end">
-                  <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
-                    {stat.requested}
-                  </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">طلب</span>
-                </div>
-              </div>
-            ) : stat.completed ? (
-              <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
-                <span className="text-red-500">{stat.cancelled}</span>
-                <span className="text-gray-400 mx-1">/</span>
-                <span className="text-blue-600">{stat.completed}</span>
-              </p>
-            ) : stat.active ? (
-              <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
-                <span className="text-red-500">{stat.inactive}</span>
-                <span className="text-gray-400 mx-1">/</span>
-                <span className="text-blue-600">{stat.active}</span>
-              </p>
             ) : (
-              <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
-                {stat.amount} <span className="text-base">{stat.currency || stat.unit}</span>
+              <p className="text-xl text-[#5B738B] font-bold">
+                {stat.amount}
               </p>
             )}
           </div>
@@ -308,7 +292,6 @@ const StatsCardsSection = () => {
     </section>
   );
 };
-
 
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
@@ -322,22 +305,26 @@ const SubscriptionAndLocationsSection = () => {
             اشتراكي الحالي
           </h3>
         </div>
-        
+
         {/* Two Information Boxes */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Package Type Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">نوع الباقة</div>
+            <div className="text-lg font-bold text-purple-800 mb-1">
+              نوع الباقة
+            </div>
             <div className="text-xs text-purple-800">سنوي</div>
           </div>
-          
+
           {/* Number of Vehicles Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">عدد المركبات</div>
+            <div className="text-lg font-bold text-purple-800 mb-1">
+              عدد المركبات
+            </div>
             <div className="text-xs text-purple-800">120</div>
           </div>
         </div>
-        
+
         {/* Explanatory Text */}
         <div className="flex items-center justify-center mb-6">
           <div className="flex items-center gap-2 text-orange-500">
@@ -349,18 +336,18 @@ const SubscriptionAndLocationsSection = () => {
             </span>
           </div>
         </div>
-        
+
         {/* Remaining Days Section */}
         <div className="text-center">
           <div className="text-sm text-purple-800 mb-3 [direction:rtl] text-center">
             الأيام المتبقية من الاشتراك
           </div>
-          
+
           {/* Countdown Numbers */}
           <div className="text-2xl font-bold text-orange-500 mb-2 [direction:rtl] text-center">
             24 : 152 : 245
           </div>
-          
+
           {/* Time Unit Labels */}
           <div className="flex justify-center gap-6 text-xs text-gray-700 [direction:rtl]">
             <span>يوم</span>
@@ -380,14 +367,14 @@ const SubscriptionAndLocationsSection = () => {
             <MapPin className="w-5 h-5 text-gray-500" />
           </div>
         </div>
-        
+
         <div className="h-48 rounded-lg overflow-hidden relative">
           <img
             src="/img/vector-map.svg"
             alt="World map with Petrolife station locations"
             className="w-full h-full object-cover"
           />
-          
+
           {/* Map Markers */}
           <div className="absolute top-[83.20%] left-[86.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
           <div className="absolute top-[86.89%] left-[93.55%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
@@ -407,7 +394,7 @@ const SubscriptionAndLocationsSection = () => {
 // Consumption Section
 const ConsumptionSection = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("12 شهر");
-  
+
   const months = [
     "Feb",
     "Mar",
@@ -508,10 +495,14 @@ const ConsumptionSection = () => {
                   onClick={() => setSelectedPeriod(option.value)}
                   className="px-4 py-2 text-sm rounded-lg transition-all"
                   style={{
-                    backgroundColor: 'white',
-                    color: selectedPeriod === option.value ? '#5A66C1' : '#6B7280',
-                    border: selectedPeriod === option.value ? '2px solid #5A66C1' : '2px solid #9CA3AF',
-                    borderRadius: '8px'
+                    backgroundColor: "white",
+                    color:
+                      selectedPeriod === option.value ? "#5A66C1" : "#6B7280",
+                    border:
+                      selectedPeriod === option.value
+                        ? "2px solid #5A66C1"
+                        : "2px solid #9CA3AF",
+                    borderRadius: "8px",
                   }}
                 >
                   {option.label}
@@ -521,7 +512,9 @@ const ConsumptionSection = () => {
 
             {/* Title */}
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">المبيعات</h2>
+              <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">
+                المبيعات
+              </h2>
               <Fuel className="w-5 h-5 text-gray-500" />
             </div>
           </div>
@@ -567,7 +560,7 @@ const FuelDeliveryRequestsSection = () => {
           طلبات توصيل الوقود
         </h3>
       </div>
-      
+
       {/* Donut Chart */}
       <div className="flex justify-center items-center">
         <div className="relative w-48 h-48">
@@ -593,10 +586,12 @@ const FuelDeliveryRequestsSection = () => {
               strokeLinecap="round"
             />
           </svg>
-          
+
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-base text-gray-500 mb-1 [direction:rtl]">الطلبات المكتملة</div>
+            <div className="text-base text-gray-500 mb-1 [direction:rtl]">
+              الطلبات المكتملة
+            </div>
             <div className="text-4xl font-bold text-gray-900">49%</div>
           </div>
         </div>
@@ -624,7 +619,7 @@ const MyCarsSection = () => {
           سياراتي
         </h3>
       </div>
-      
+
       {/* Car Categories */}
       <div className="space-y-6">
         {carCategories.map((category, index) => {
@@ -632,15 +627,19 @@ const MyCarsSection = () => {
           return (
             <div key={index} className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{category.total}/{category.count}</span>
-                <span className="text-sm font-medium text-gray-900 [direction:rtl]">{category.name}</span>
+                <span className="text-sm font-medium text-gray-700 [direction:rtl]">
+                  {category.total}/{category.count}
+                </span>
+                <span className="text-sm font-medium text-gray-900 [direction:rtl]">
+                  {category.name}
+                </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 flex justify-end">
                 <div
                   className="h-3 rounded-full transition-all duration-500"
-                  style={{ 
+                  style={{
                     width: `${percentage}%`,
-                    backgroundColor: '#5A66C1'
+                    backgroundColor: "#5A66C1",
                   }}
                 ></div>
               </div>
@@ -670,7 +669,9 @@ const FuelConsumptionByCitiesSection = () => {
     { name: "الرياض", consumption: 95 },
   ];
 
-  const maxConsumption = Math.max(...citiesData.map(city => city.consumption));
+  const maxConsumption = Math.max(
+    ...citiesData.map((city) => city.consumption)
+  );
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -689,7 +690,7 @@ const FuelConsumptionByCitiesSection = () => {
           استهلاك الوقود للمدن
         </h3>
       </div>
-      
+
       {/* Bar Chart */}
       <div className="h-80 flex items-end justify-between gap-1">
         {citiesData.map((city, index) => {
@@ -698,16 +699,19 @@ const FuelConsumptionByCitiesSection = () => {
             <div key={index} className="flex flex-col items-center flex-1">
               {/* Bar */}
               <div className="relative w-6 mb-3">
-                <div className="w-full bg-gray-100 rounded-full" style={{ height: '240px' }}>
-                    <div
-                      className="w-full rounded-full transition-all duration-700"
-                      style={{ 
-                        height: `${height}%`,
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: '#5A66C1'
-                      }}
-                    ></div>
+                <div
+                  className="w-full bg-gray-100 rounded-full"
+                  style={{ height: "240px" }}
+                >
+                  <div
+                    className="w-full rounded-full transition-all duration-700"
+                    style={{
+                      height: `${height}%`,
+                      position: "absolute",
+                      bottom: 0,
+                      backgroundColor: "#5A66C1",
+                    }}
+                  ></div>
                 </div>
               </div>
               {/* City Name */}
@@ -724,23 +728,85 @@ const FuelConsumptionByCitiesSection = () => {
 
 // Most Used Stations and Drivers Section
 const MostUsedSection = () => {
-  const [selectedStationsFilter, setSelectedStationsFilter] = useState("اخر 12 شهر");
-  const [selectedDriversFilter, setSelectedDriversFilter] = useState("اخر 12 شهر");
+  const [selectedStationsFilter, setSelectedStationsFilter] =
+    useState("اخر 12 شهر");
+  const [selectedDriversFilter, setSelectedDriversFilter] =
+    useState("اخر 12 شهر");
 
   const stationsData = [
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
+    {
+      name: "محطة الصالح",
+      address: "15 ش الرياض، الرياض",
+      price: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محطة الصالح",
+      address: "15 ش الرياض، الرياض",
+      price: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محطة الصالح",
+      address: "15 ش الرياض، الرياض",
+      price: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محطة الصالح",
+      address: "15 ش الرياض، الرياض",
+      price: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محطة الصالح",
+      address: "15 ش الرياض، الرياض",
+      price: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
   ];
 
   const driversData = [
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
+    {
+      name: "محمد أحمد",
+      phone: "00965284358",
+      cost: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محمد أحمد",
+      phone: "00965284358",
+      cost: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محمد أحمد",
+      phone: "00965284358",
+      cost: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محمد أحمد",
+      phone: "00965284358",
+      cost: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
+    {
+      name: "محمد أحمد",
+      phone: "00965284358",
+      cost: 2543,
+      fuel: "542",
+      type: "بنزين 91",
+    },
   ];
 
   // Table columns for stations
@@ -749,10 +815,12 @@ const MostUsedSection = () => {
       key: "fuel",
       label: "الوقود",
       width: "min-w-[100px]",
-      render: (value: any, station: any) => (
+      render: (_: any, station: any) => (
         <div className="text-right">
-          <div className="font-medium text-orange-500">{station?.fuel || 'N/A'}</div>
-          <div className="text-gray-500">{station?.type || 'N/A'}</div>
+          <div className="font-medium text-orange-500">
+            {station?.fuel || "N/A"}
+          </div>
+          <div className="text-gray-500">{station?.type || "N/A"}</div>
         </div>
       ),
     },
@@ -760,9 +828,11 @@ const MostUsedSection = () => {
       key: "price",
       label: "السعر",
       width: "min-w-[100px]",
-      render: (value: any, station: any) => (
+      render: (_: any, station: any) => (
         <div className="text-right">
-          <div className="font-medium text-blue-600">{station?.price || 'N/A'}</div>
+          <div className="font-medium text-blue-600">
+            {station?.price || "N/A"}
+          </div>
           <div className="text-gray-500">ر.س</div>
         </div>
       ),
@@ -771,14 +841,14 @@ const MostUsedSection = () => {
       key: "station",
       label: "المحطة",
       width: "min-w-[200px]",
-      render: (value: any, station: any) => (
+      render: (_: any, station: any) => (
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {station?.name || 'N/A'}
+              {station?.name || "N/A"}
             </div>
             <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {station?.address || 'N/A'}
+              {station?.address || "N/A"}
             </div>
           </div>
           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -795,10 +865,12 @@ const MostUsedSection = () => {
       key: "fuel",
       label: "الوقود",
       width: "min-w-[100px]",
-      render: (value: any, driver: any) => (
+      render: (_: any, driver: any) => (
         <div className="text-right">
-          <div className="font-medium text-orange-500">{driver?.fuel || 'N/A'}</div>
-          <div className="text-gray-500">{driver?.type || 'N/A'}</div>
+          <div className="font-medium text-orange-500">
+            {driver?.fuel || "N/A"}
+          </div>
+          <div className="text-gray-500">{driver?.type || "N/A"}</div>
         </div>
       ),
     },
@@ -806,9 +878,11 @@ const MostUsedSection = () => {
       key: "cost",
       label: "التكلفة",
       width: "min-w-[100px]",
-      render: (value: any, driver: any) => (
+      render: (_: any, driver: any) => (
         <div className="text-right">
-          <div className="font-medium text-blue-600">{driver?.cost || 'N/A'}</div>
+          <div className="font-medium text-blue-600">
+            {driver?.cost || "N/A"}
+          </div>
           <div className="text-gray-500">ر.س</div>
         </div>
       ),
@@ -817,14 +891,14 @@ const MostUsedSection = () => {
       key: "driver",
       label: "السائق",
       width: "min-w-[200px]",
-      render: (value: any, driver: any) => (
+      render: (_: any, driver: any) => (
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {driver?.name || 'N/A'}
+              {driver?.name || "N/A"}
             </div>
             <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {driver?.phone || 'N/A'}
+              {driver?.phone || "N/A"}
             </div>
           </div>
           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -856,12 +930,7 @@ const MostUsedSection = () => {
           </div>
         </div>
 
-        <Table
-          columns={stationsColumns}
-          data={stationsData}
-          className="mb-4"
-        />
-        
+        <Table columns={stationsColumns} data={stationsData} className="mb-4" />
       </div>
 
       {/* Most Consuming Drivers */}
@@ -883,12 +952,7 @@ const MostUsedSection = () => {
           </div>
         </div>
 
-        <Table
-          columns={driversColumns}
-          data={driversData}
-          className="mb-4"
-        />
-        
+        <Table columns={driversColumns} data={driversData} className="mb-4" />
       </div>
     </section>
   );
@@ -896,14 +960,47 @@ const MostUsedSection = () => {
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
-  const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
-
   const ordersData = [
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "200" },
-    { code: "21A254", type: "منتج", driver: "--", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "180" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "160" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "140" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "120" },
+    {
+      code: "21A254",
+      type: "وقود 91",
+      driver: "احمد محمد",
+      date: "21 فبراير 2025 - 5:05 ص",
+      value: "20",
+      cumulative: "200",
+    },
+    {
+      code: "21A254",
+      type: "منتج",
+      driver: "--",
+      date: "21 فبراير 2025 - 5:05 ص",
+      value: "20",
+      cumulative: "180",
+    },
+    {
+      code: "21A254",
+      type: "وقود 91",
+      driver: "احمد محمد",
+      date: "21 فبراير 2025 - 5:05 ص",
+      value: "20",
+      cumulative: "160",
+    },
+    {
+      code: "21A254",
+      type: "وقود 91",
+      driver: "احمد محمد",
+      date: "21 فبراير 2025 - 5:05 ص",
+      value: "20",
+      cumulative: "140",
+    },
+    {
+      code: "21A254",
+      type: "وقود 91",
+      driver: "احمد محمد",
+      date: "21 فبراير 2025 - 5:05 ص",
+      value: "20",
+      cumulative: "120",
+    },
   ];
 
   // Table columns for orders
@@ -912,9 +1009,9 @@ const LatestOrdersSection = () => {
       key: "cumulative",
       label: "تراكمي العمليات (ر.س)",
       width: "min-w-[150px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.cumulative || 'N/A'}
+          {order?.cumulative || "N/A"}
         </div>
       ),
     },
@@ -922,9 +1019,9 @@ const LatestOrdersSection = () => {
       key: "value",
       label: "قيمة العملية",
       width: "min-w-[100px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.value || 'N/A'}
+          {order?.value || "N/A"}
         </div>
       ),
     },
@@ -932,9 +1029,9 @@ const LatestOrdersSection = () => {
       key: "date",
       label: "تاريخ العملية",
       width: "min-w-[150px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.date || 'N/A'}
+          {order?.date || "N/A"}
         </div>
       ),
     },
@@ -942,9 +1039,9 @@ const LatestOrdersSection = () => {
       key: "driver",
       label: "اسم السائق",
       width: "min-w-[120px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.driver || 'N/A'}
+          {order?.driver || "N/A"}
         </div>
       ),
     },
@@ -952,9 +1049,9 @@ const LatestOrdersSection = () => {
       key: "type",
       label: "نوع العملية",
       width: "min-w-[120px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.type || 'N/A'}
+          {order?.type || "N/A"}
         </div>
       ),
     },
@@ -962,9 +1059,9 @@ const LatestOrdersSection = () => {
       key: "code",
       label: "كود العملية",
       width: "min-w-[120px]",
-      render: (value: any, order: any) => (
+      render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.code || 'N/A'}
+          {order?.code || "N/A"}
         </div>
       ),
     },
@@ -974,7 +1071,9 @@ const LatestOrdersSection = () => {
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <button className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          <span className="text-sm font-medium [direction:rtl]">عرض المزيد</span>
+          <span className="text-sm font-medium [direction:rtl]">
+            عرض المزيد
+          </span>
         </button>
         <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
           <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
@@ -984,11 +1083,7 @@ const LatestOrdersSection = () => {
         </div>
       </div>
 
-      <Table
-        columns={ordersColumns}
-        data={ordersData}
-        className="mb-4"
-      />
+      <Table columns={ordersColumns} data={ordersData} className="mb-4" />
     </section>
   );
 };
@@ -1016,9 +1111,6 @@ export const Index = (): JSX.Element => {
       }}
     >
       <div className="space-y-8">
-        {/* Banner Section */}
-        <BannerSection />
-
         {/* All Cards - 4 rows of 3 cards each */}
         <StatsCardsSection />
 
