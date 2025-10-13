@@ -5,6 +5,16 @@ import { auth } from "../../../config/firebase";
 import { signOutUser } from "../../../services/auth";
 import { useGlobalState } from "../../../context/GlobalStateContext";
 
+// Breadcrumb route mapping
+const breadcrumbRoutes: Record<string, string> = {
+  "لوحة التحكم": "/dashboard",
+  "التقــــــــــــــــارير": "/financialreports",
+  "محفظــــــــــــــتي": "/wallet",
+  "السيــــــــــــــارات": "/cars",
+  "الســـــــــــــــائقين": "/drivers",
+  "الاشتراكـــــــــــات": "/subscriptions",
+};
+
 interface SearchBarProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
@@ -149,6 +159,47 @@ const ProfileDropdown: React.FC = () => {
   );
 };
 
+// Breadcrumb Component
+const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({ title, titleIconSrc }) => {
+  const navigate = useNavigate();
+  
+  // Split title by "/" to create breadcrumbs
+  const parts = title.split("/").map(part => part.trim());
+  
+  const handleBreadcrumbClick = (part: string, index: number) => {
+    // First part (index 0) is the parent (clickable)
+    // Last part is the current page (not clickable)
+    if (index < parts.length - 1) {
+      const route = breadcrumbRoutes[part];
+      if (route) {
+        navigate(route);
+      }
+    }
+  };
+  
+  return (
+    <div className="flex items-center gap-2" dir="rtl">
+      {titleIconSrc && <span>{titleIconSrc}</span>}
+      {parts.map((part, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="text-[#5B738B]">/</span>}
+          <button
+            onClick={() => handleBreadcrumbClick(part, index)}
+            className={`text-lg font-normal ${
+              index === parts.length - 1
+                ? "text-[#5B738B] cursor-default"
+                : "text-[#5B738B] hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+            }`}
+            disabled={index === parts.length - 1}
+          >
+            {part}
+          </button>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
 export const Header: React.FC<HeaderProps> = ({
   title,
   titleIconSrc,
@@ -198,11 +249,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Title + Icon */}
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-normal text-[#5B738B]">{title}</h1>
-            {titleIconSrc && <span>{titleIconSrc}</span>}
-          </div>
+          {/* Breadcrumb Title + Icon */}
+          <Breadcrumb title={title} titleIconSrc={titleIconSrc} />
 
           {/* Extra Content */}
           {extraContent && (

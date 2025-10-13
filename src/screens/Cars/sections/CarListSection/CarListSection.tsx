@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { fetchCompaniesCars } from "../../../../services/firestore";
+import { fetchCompaniesCars, normalizeCarSize } from "../../../../services/firestore";
 
 // Define table columns for cars - original order with responsive design
 const carColumns = [
@@ -367,15 +367,10 @@ const getValueOrDash = (value: any): string => {
   return String(value);
 };
 
-// Helper function to get car size text in Arabic
+// Helper function to get car size text in Arabic (using normalized function)
 const getCarSizeText = (size: string): string => {
-  const sizeMap: { [key: string]: string } = {
-    'small': 'صغيرة',
-    'medium': 'متوسطة',
-    'large': 'كبيرة',
-    'vip': 'VIP',
-  };
-  return sizeMap[size?.toLowerCase()] || getValueOrDash(size);
+  const normalized = normalizeCarSize(size);
+  return normalized === '-' ? getValueOrDash(size) : normalized;
 };
 
 // Helper function to get fuel type text in Arabic

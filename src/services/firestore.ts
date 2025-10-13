@@ -3,6 +3,41 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../config/firebase';
 
 /**
+ * Normalize car size to standard Arabic format
+ * Converts English (small/middle/big) and Arabic variations to standard Arabic
+ * @param size - Car size in any format
+ * @returns Normalized Arabic car size
+ */
+export const normalizeCarSize = (size: any): string => {
+  if (!size) return '-';
+  
+  const sizeStr = String(size).toLowerCase().trim();
+  
+  // Small (صغيرة)
+  if (sizeStr === 'small' || sizeStr === 'صغيرة' || sizeStr.includes('صغير')) {
+    return 'صغيرة';
+  }
+  
+  // Medium/Middle (متوسطة)
+  if (sizeStr === 'medium' || sizeStr === 'middle' || sizeStr === 'متوسطة' || sizeStr.includes('متوسط')) {
+    return 'متوسطة';
+  }
+  
+  // Large/Big (كبيرة)
+  if (sizeStr === 'large' || sizeStr === 'big' || sizeStr === 'كبيرة' || sizeStr.includes('كبير')) {
+    return 'كبيرة';
+  }
+  
+  // VIP
+  if (sizeStr === 'vip' || sizeStr.includes('vip')) {
+    return 'VIP';
+  }
+  
+  // Return original if no match
+  return size;
+};
+
+/**
  * Fetch companies-drivers data from Firestore
  * @returns Promise with the companies-drivers data
  */
@@ -780,22 +815,13 @@ export const calculateBatteryChangeStatistics = (orders: any[]): {
     if (carSize) {
       console.log(`Processing order - Raw car size: "${carSize}"`);
       
-      // Normalize the size to match our standard categories
-      const normalizedSize = carSize.toString().toLowerCase().trim();
+      // Use normalizeCarSize helper function
+      const normalizedSize = normalizeCarSize(carSize);
       
-      // Map various size representations to standard Arabic names
-      if (normalizedSize.includes('small') || normalizedSize.includes('صغير') || normalizedSize === 'صغيرة') {
-        sizeMap['صغيرة']++;
-        console.log('  → Mapped to: صغيرة');
-      } else if (normalizedSize.includes('medium') || normalizedSize.includes('متوسط') || normalizedSize === 'متوسطة') {
-        sizeMap['متوسطة']++;
-        console.log('  → Mapped to: متوسطة');
-      } else if (normalizedSize.includes('large') || normalizedSize.includes('big') || normalizedSize.includes('كبير') || normalizedSize === 'كبيرة') {
-        sizeMap['كبيرة']++;
-        console.log('  → Mapped to: كبيرة');
-      } else if (normalizedSize.includes('vip') || normalizedSize === 'vip') {
-        sizeMap['VIP']++;
-        console.log('  → Mapped to: VIP');
+      // Increment count for normalized size
+      if (sizeMap.hasOwnProperty(normalizedSize)) {
+        sizeMap[normalizedSize]++;
+        console.log('  → Mapped to:', normalizedSize);
       } else {
         console.log(`  ⚠️ Unknown size format: "${carSize}"`);
       }
@@ -925,22 +951,13 @@ export const calculateCarStatistics = async (): Promise<{
           console.log('  Raw Size:', carSize);
         }
         
-        // Normalize the size to match our standard categories
-        const normalizedSize = carSize.toString().toLowerCase().trim();
+        // Use normalizeCarSize helper function
+        const normalizedSize = normalizeCarSize(carSize);
         
-        // Map various size representations to standard Arabic names
-        if (normalizedSize.includes('small') || normalizedSize.includes('صغير') || normalizedSize === 'صغيرة') {
-          sizeMap['صغيرة']++;
-          if (index < 3) console.log('  → Mapped to: صغيرة');
-        } else if (normalizedSize.includes('medium') || normalizedSize.includes('متوسط') || normalizedSize === 'متوسطة') {
-          sizeMap['متوسطة']++;
-          if (index < 3) console.log('  → Mapped to: متوسطة');
-        } else if (normalizedSize.includes('large') || normalizedSize.includes('big') || normalizedSize.includes('كبير') || normalizedSize === 'كبيرة') {
-          sizeMap['كبيرة']++;
-          if (index < 3) console.log('  → Mapped to: كبيرة');
-        } else if (normalizedSize.includes('vip') || normalizedSize === 'vip') {
-          sizeMap['VIP']++;
-          if (index < 3) console.log('  → Mapped to: VIP');
+        // Increment count for normalized size
+        if (sizeMap.hasOwnProperty(normalizedSize)) {
+          sizeMap[normalizedSize]++;
+          if (index < 3) console.log('  → Mapped to:', normalizedSize);
         } else {
           if (index < 3) console.log(`  ⚠️ Unknown size format: "${carSize}"`);
         }
@@ -1210,22 +1227,17 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
     
     // Transform each order to financial report format
     const reportData = orders.map((order, index) => {
-      // Extract city from city.name or carStation.city.name
-      const city = order.city?.name ||
-                   order.carStation?.city?.name?.ar || 
-                   order.carStation?.city?.name?.en ||
-                   order.city?.name?.ar ||
-                   order.city?.name?.en ||
-                   'N/A';
+      // Extract city from city.name
+      const city = order.city?.name || '-';
       
       // Extract station name from carStation.name
-      const stationName = order.carStation?.name || 'N/A';
+      const stationName = order.carStation?.name || '-';
       
       // Extract date from createdDate
       const date = order.createdDate || order.orderDate || null;
       
       // Extract operation number from id
-      const operationNumber = order.id || order.refId || 'N/A';
+      const operationNumber = order.id || order.refId || '-';
       
       // Extract quantity from cartItems[0].quantity
       const quantity = order.cartItems?.[0]?.quantity || 
@@ -1240,29 +1252,32 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
                          order.selectedOption?.name?.en ||
                          order.selectedOption?.title?.ar ||
                          order.selectedOption?.title?.en ||
-                         'N/A';
+                         '-';
       
       // Extract product number from cartItems[0].onyxProductId
       const productNumber = order.cartItems?.[0]?.onyxProductId ||
                            order.selectedOption?.onyxProductId ||
-                           'N/A';
+                           '-';
       
-      // Extract product type from cartItems[0].category.majorTypeEnum
-      const productType = order.cartItems?.[0]?.category?.majorTypeEnum ||
+      // Extract product type from service name (نوع المنتج)
+      const productType = order.service?.title?.ar ||
+                         order.service?.title?.en ||
+                         order.service?.name?.ar ||
+                         order.service?.name?.en ||
+                         order.cartItems?.[0]?.category?.majorTypeEnum ||
                          order.selectedOption?.category?.majorTypeEnum ||
-                         order.service?.category?.majorTypeEnum ||
-                         'N/A';
+                         '-';
       
       // Extract driver name from assignedDriver.name
       const driverName = order.assignedDriver?.name ||
                         order.enrichedDriverName ||
-                        'N/A';
+                        '-';
       
       // Extract driver code from assignedDriver.id
       const driverCode = order.assignedDriver?.id ||
                         order.assignedDriver?.email ||
                         order.assignedDriver?.uId ||
-                        'N/A';
+                        '-';
       
       if (index < 3) {
         console.log(`\n--- Order ${index + 1} ---`);

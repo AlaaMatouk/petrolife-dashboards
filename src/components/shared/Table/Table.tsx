@@ -47,13 +47,16 @@ export const Table = <T extends Record<string, any>>({
     );
   }
 
+  // Reverse columns for RTL layout
+  const reversedColumns = [...columns].reverse();
+
   return (
     <div className={`w-full ${className}`}>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" dir="rtl">
         <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
           <thead>
             <tr>
-              {columns.map((column) => (
+              {reversedColumns.map((column) => (
                 <th
                   key={column.key}
                   className={`px-4 py-3 text-center bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
@@ -80,7 +83,7 @@ export const Table = <T extends Record<string, any>>({
                   borderBottomColor: 'var(--border-light, #e5e7eb)'
                 }}
               >
-                {columns.map((column) => (
+                {reversedColumns.map((column) => (
                   <td
                     key={column.key}
                     className={`px-4 py-3 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}

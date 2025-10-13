@@ -296,7 +296,7 @@ export const DataTableSection = (): JSX.Element => {
 
   // Format date for display
   const formatDate = (date: any): string => {
-    if (!date) return 'N/A';
+    if (!date) return '-';
     
     try {
       let dateObj: Date;
@@ -307,7 +307,7 @@ export const DataTableSection = (): JSX.Element => {
       } else if (date instanceof Date) {
         dateObj = date;
       } else {
-        return 'N/A';
+        return '-';
       }
       
       // Format in Arabic
@@ -319,7 +319,7 @@ export const DataTableSection = (): JSX.Element => {
         minute: '2-digit'
       });
     } catch (e) {
-      return 'N/A';
+      return '-';
     }
   };
 
