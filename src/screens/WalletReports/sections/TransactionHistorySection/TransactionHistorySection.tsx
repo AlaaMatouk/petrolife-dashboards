@@ -3,6 +3,7 @@ import { Table, Pagination, ExportButton, RTLSelect, LoadingSpinner } from "../.
 import { walletReportsTransactionData } from "../../../../constants/data";
 import { Wallet } from "lucide-react";
 import { fetchCompaniesDriversTransfer, fetchWalletChargeRequests } from "../../../../services/firestore";
+import { exportWalletReport, getFilteredTransactions, ExportFilters } from "../../../../services/exportService";
 
 interface TransactionData {
   id: string;
@@ -307,6 +308,7 @@ export const TransactionHistorySection = (): JSX.Element => {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   
   const ITEMS_PER_PAGE = 10;
 
@@ -374,6 +376,25 @@ export const TransactionHistorySection = (): JSX.Element => {
     setCurrentPage(page);
   };
 
+  // Handle export functionality
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    try {
+      setIsExporting(true);
+      
+      // Get filtered transactions for export
+      const filteredData = getFilteredTransactions(transactions, filters);
+      
+      // Export the data
+      await exportWalletReport(filteredData, filters, format);
+      
+    } catch (error) {
+      console.error('Export failed:', error);
+      // You could add a toast notification here
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Apply filters
   const filteredTransactions = transactions.filter(transaction => {
     // Filter by time period (الفترة الزمنية)
@@ -439,7 +460,13 @@ export const TransactionHistorySection = (): JSX.Element => {
     >
       <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
         <div className="items-center justify-between self-stretch w-full flex-[0_0_auto] flex relative">
-          <ExportButton />
+          <ExportButton 
+            onExport={handleExport}
+            showExcel={true}
+            showPDF={true}
+            showCSV={false}
+            buttonText={isExporting ? "جاري التصدير..." : "تصدير"}
+          />
 
           <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
             <h1
