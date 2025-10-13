@@ -4,7 +4,7 @@ import { Table, TimeFilter } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics } from "../../services/firestore";
+import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics } from "../../services/firestore";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -49,15 +49,44 @@ const StatsCardsSection = () => {
     totalCost: number;
   }>({ sizes: [], totalOrders: 0, totalCost: 0 });
   
-  // Get balance from company data, fallback to 0 if not available
-  const walletBalance = company?.balance || 0;
+  const [oilStats, setOilStats] = useState<{
+    totalLitres: number;
+  }>({ totalLitres: 0 });
+  
+  const [batteryStats, setBatteryStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    totalOrders: number;
+  }>({ sizes: [], totalOrders: 0 });
+  
+  const [driverStats, setDriverStats] = useState<{
+    active: number;
+    inactive: number;
+    total: number;
+  }>({ active: 0, inactive: 0, total: 0 });
+  
+  const [carStats, setCarStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    total: number;
+  }>({ sizes: [], total: 0 });
+  
+  const [orderStats, setOrderStats] = useState<{
+    completed: number;
+    cancelled: number;
+    total: number;
+  }>({ completed: 0, cancelled: 0, total: 0 });
+  
+  // Get balance from company data
+  // If company is null, we're still loading
+  // If company.balance is undefined, default to 0
+  const walletBalance = company ? (company.balance ?? 0) : null;
+  const isLoadingBalance = walletBalance === null;
   
   // Format number with thousands separator (English)
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  // Fetch orders and calculate fuel and car wash statistics
+  // Fetch orders and calculate fuel, car wash, oil, battery, driver, car, and order statistics
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -67,6 +96,21 @@ const StatsCardsSection = () => {
         
         const carWashData = calculateCarWashStatistics(orders);
         setCarWashStats(carWashData);
+        
+        const oilData = calculateOilChangeStatistics(orders);
+        setOilStats(oilData);
+        
+        const batteryData = calculateBatteryChangeStatistics(orders);
+        setBatteryStats(batteryData);
+        
+        const orderData = calculateOrderStatistics(orders);
+        setOrderStats(orderData);
+        
+        const driverData = await calculateDriverStatistics();
+        setDriverStats(driverData);
+        
+        const carData = await calculateCarStatistics();
+        setCarStats(carData);
       } catch (error) {
         console.error('Error loading statistics:', error);
       }
@@ -103,14 +147,15 @@ const StatsCardsSection = () => {
     },
     {
       title: "رصيد محفظتي",
-      amount: formatNumber(walletBalance),
+      amount: isLoadingBalance ? null : formatNumber(walletBalance ?? 0),
       currency: "ر.س",
       icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "wallet",
+      isLoading: isLoadingBalance,
     },
     {
       title: "تغييرات الزيوت",
-      amount: "250",
+      amount: formatNumber(Math.round(oilStats.totalLitres)),
       unit: "لتر",
       icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "oil",
@@ -150,45 +195,61 @@ const StatsCardsSection = () => {
     },
     {
       title: "عمليات تغيير البطاريات",
-      categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
-      ],
+      categories: batteryStats.sizes.length > 0 
+        ? batteryStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "اجمالي تكلفة الوقود",
-      total: "الاجمالي 13700",
-      breakdown: [
-        { type: "ديزل", amount: "6500", color: "text-color-mode-text-icons-t-orange" },
-        { type: "بنزين 95", amount: "5000", color: "text-color-mode-text-icons-t-red" },
-        { type: "بنزين 91", amount: "2200", color: "text-color-mode-text-icons-t-green" },
-      ],
+      total: `الاجمالي ${formatNumber(Math.round(fuelStats.totalCost))}`,
+      breakdown: fuelStats.fuelTypes.length > 0
+        ? fuelStats.fuelTypes.map(fuel => ({
+            type: fuel.type,
+            amount: formatNumber(Math.round(fuel.totalCost)),
+            color: fuel.color,
+          }))
+        : [
+            { type: "ديزل", amount: "0", color: "text-color-mode-text-icons-t-orange" },
+            { type: "بنزين 95", amount: "0", color: "text-color-mode-text-icons-t-red" },
+            { type: "بنزين 91", amount: "0", color: "text-color-mode-text-icons-t-green" },
+          ],
       icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "الطلبات المكتملة / الملغية",
-      completed: 12,
-      cancelled: 10,
+      completed: orderStats.completed,
+      cancelled: orderStats.cancelled,
       icon: <FileText className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "السيارات",
-      total: 85,
-      categories: [
-        { name: "صغيرة", count: 10 },
-        { name: "متوسطة", count: 30 },
-        { name: "كبيرة", count: 25 },
-        { name: "VIP", count: 20 },
-      ],
+      total: carStats.total,
+      categories: carStats.sizes.length > 0 
+        ? carStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "السائقين النشطين / المعطلين",
-      active: 54,
-      inactive: 14,
+      active: driverStats.active,
+      inactive: driverStats.inactive,
       icon: <Users className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
   ];
@@ -296,6 +357,11 @@ const StatsCardsSection = () => {
                 <span className="text-gray-400 mx-1">/</span>
                 <span className="text-blue-600">{stat.active}</span>
               </p>
+            ) : stat.isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-500">جاري التحميل...</span>
+              </div>
             ) : (
               <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
                 {stat.amount} <span className="text-base">{stat.currency || stat.unit}</span>
@@ -725,22 +791,169 @@ const FuelConsumptionByCitiesSection = () => {
 const MostUsedSection = () => {
   const [selectedStationsFilter, setSelectedStationsFilter] = useState("اخر 12 شهر");
   const [selectedDriversFilter, setSelectedDriversFilter] = useState("اخر 12 شهر");
+  const [topDrivers, setTopDrivers] = useState<any[]>([]);
+  const [topStations, setTopStations] = useState<any[]>([]);
 
-  const stationsData = [
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-  ];
+  useEffect(() => {
+    const loadTopData = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Group orders by driver and calculate total fuel consumption and cost
+        const driverConsumption: Record<string, {
+          name: string;
+          phone: string;
+          totalFuel: number;
+          totalCost: number;
+          fuelType: string;
+        }> = {};
 
-  const driversData = [
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-  ];
+        // Group orders by station and calculate usage
+        const stationUsage: Record<string, {
+          name: string;
+          address: string;
+          totalFuel: number;
+          totalPrice: number;
+          fuelType: string;
+        }> = {};
+
+        orders.forEach(order => {
+          // Process drivers
+          const driverName = order.assignedDriver?.name;
+          const driverPhone = order.assignedDriver?.phoneNumber || order.assignedDriver?.phone || 'N/A';
+          
+          if (driverName) {
+            if (!driverConsumption[driverName]) {
+              driverConsumption[driverName] = {
+                name: driverName,
+                phone: driverPhone,
+                totalFuel: 0,
+                totalCost: 0,
+                fuelType: '',
+              };
+            }
+
+            // Add fuel litres
+            const fuel = parseFloat(order.totalLitre || order.quantity || 0);
+            driverConsumption[driverName].totalFuel += fuel;
+
+            // Add cost
+            const cost = parseFloat(order.totalPrice || 0);
+            driverConsumption[driverName].totalCost += cost;
+
+            // Get fuel type (use the most common one)
+            const fuelType = order.selectedOption?.name?.ar || 
+                           order.selectedOption?.label || 
+                           order.service?.title?.ar ||
+                           'وقود';
+            if (!driverConsumption[driverName].fuelType) {
+              driverConsumption[driverName].fuelType = fuelType;
+            }
+          }
+
+          // Process stations
+          const stationName = order.carStation?.name || order.station?.name;
+          const stationAddress = order.carStation?.address || 
+                                order.carStation?.formattedLocation?.address?.formatted ||
+                                order.station?.address ||
+                                'N/A';
+          
+          if (stationName) {
+            if (!stationUsage[stationName]) {
+              stationUsage[stationName] = {
+                name: stationName,
+                address: typeof stationAddress === 'string' ? stationAddress : 'N/A',
+                totalFuel: 0,
+                totalPrice: 0,
+                fuelType: '',
+              };
+            }
+
+            // Add fuel litres
+            const fuel = parseFloat(order.totalLitre || order.quantity || 0);
+            stationUsage[stationName].totalFuel += fuel;
+
+            // Add price
+            const price = parseFloat(order.totalPrice || 0);
+            stationUsage[stationName].totalPrice += price;
+
+            // Get fuel type
+            const fuelType = order.selectedOption?.name?.ar || 
+                           order.selectedOption?.label || 
+                           order.service?.title?.ar ||
+                           'وقود';
+            if (!stationUsage[stationName].fuelType) {
+              stationUsage[stationName].fuelType = fuelType;
+            }
+          }
+        });
+
+        // Convert to array and sort by total cost (descending)
+        const sortedDrivers = Object.values(driverConsumption)
+          .sort((a, b) => b.totalCost - a.totalCost)
+          .slice(0, 5); // Top 5 drivers
+
+        console.log('\n👥 Top 5 Most Consuming Drivers:');
+        console.log('========================');
+        sortedDrivers.forEach((driver, index) => {
+          console.log(`Driver ${index + 1}:`, {
+            name: driver.name,
+            totalFuel: Math.round(driver.totalFuel),
+            totalCost: Math.round(driver.totalCost),
+            fuelType: driver.fuelType,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform drivers to table format
+        const transformedDrivers = sortedDrivers.map(driver => ({
+          name: driver.name,
+          phone: driver.phone,
+          cost: Math.round(driver.totalCost),
+          fuel: Math.round(driver.totalFuel).toString(),
+          type: driver.fuelType,
+        }));
+
+        setTopDrivers(transformedDrivers);
+
+        // Sort stations by total price (descending)
+        const sortedStations = Object.values(stationUsage)
+          .sort((a, b) => b.totalPrice - a.totalPrice)
+          .slice(0, 5); // Top 5 stations
+
+        console.log('\n⛽ Top 5 Most Used Stations:');
+        console.log('========================');
+        sortedStations.forEach((station, index) => {
+          console.log(`Station ${index + 1}:`, {
+            name: station.name,
+            address: station.address,
+            totalFuel: Math.round(station.totalFuel),
+            totalPrice: Math.round(station.totalPrice),
+            fuelType: station.fuelType,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform stations to table format
+        const transformedStations = sortedStations.map(station => ({
+          name: station.name,
+          address: station.address,
+          price: Math.round(station.totalPrice),
+          fuel: Math.round(station.totalFuel).toString(),
+          type: station.fuelType,
+        }));
+
+        setTopStations(transformedStations);
+      } catch (error) {
+        console.error('Error loading top data:', error);
+      }
+    };
+
+    loadTopData();
+  }, []);
+
+  const stationsData = topStations;
+  const driversData = topDrivers;
 
   // Table columns for stations
   const stationsColumns = [
@@ -895,15 +1108,78 @@ const MostUsedSection = () => {
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
-  const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
 
-  const ordersData = [
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "200" },
-    { code: "21A254", type: "منتج", driver: "--", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "180" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "160" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "140" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "120" },
-  ];
+  useEffect(() => {
+    const loadRecentOrders = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Sort by createdDate (most recent first) and take top 5
+        const sortedOrders = orders
+          .sort((a, b) => {
+            const dateA = a.createdDate?.toDate ? a.createdDate.toDate() : new Date(a.createdDate || 0);
+            const dateB = b.createdDate?.toDate ? b.createdDate.toDate() : new Date(b.createdDate || 0);
+            return dateB.getTime() - dateA.getTime();
+          })
+          .slice(0, 5);
+
+        console.log('\n📋 Latest Orders (Top 5):');
+        console.log('========================');
+        sortedOrders.forEach((order, index) => {
+          console.log(`Order ${index + 1}:`, {
+            id: order.id,
+            date: order.createdDate,
+            driver: order.assignedDriver?.name,
+            type: order.service?.title?.ar || order.selectedOption?.name?.ar,
+            value: order.totalPrice,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform orders to table format with cumulative totals
+        let cumulativeTotal = 0;
+        const transformedOrders = sortedOrders.map(order => {
+          const value = parseFloat(order.totalPrice) || 0;
+          cumulativeTotal += value;
+
+          // Format date
+          let formattedDate = 'N/A';
+          if (order.createdDate) {
+            const date = order.createdDate?.toDate ? order.createdDate.toDate() : new Date(order.createdDate);
+            formattedDate = new Intl.DateTimeFormat('ar-SA', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }).format(date);
+          }
+
+          return {
+            code: order.id || order.refId || 'N/A',
+            type: order.service?.title?.ar || 
+                  order.selectedOption?.name?.ar || 
+                  order.selectedOption?.label ||
+                  order.service?.title?.en ||
+                  'منتج',
+            driver: order.assignedDriver?.name || '--',
+            date: formattedDate,
+            value: Math.round(value).toString(),
+            cumulative: Math.round(cumulativeTotal).toString(),
+          };
+        });
+
+        setRecentOrders(transformedOrders);
+      } catch (error) {
+        console.error('Error loading recent orders:', error);
+      }
+    };
+
+    loadRecentOrders();
+  }, []);
+
+  const ordersData = recentOrders;
 
   // Table columns for orders
   const ordersColumns = [

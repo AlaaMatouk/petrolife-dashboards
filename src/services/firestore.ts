@@ -622,6 +622,427 @@ export const calculateCarWashStatistics = (orders: any[]): {
 };
 
 /**
+ * Calculate oil change statistics from filtered orders
+ * Filters orders by oil service names and sums total litres
+ * @param orders - Array of order documents
+ * @returns Object with total litres of oil
+ */
+export const calculateOilChangeStatistics = (orders: any[]): { totalLitres: number } => {
+  console.log('\n🛢️ ========================================');
+  console.log('CALCULATING OIL CHANGE STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches oil change keywords
+  const oilOrders = orders.filter(order => {
+    // Check all possible service/category field paths for oil keywords
+    const checkOilService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('زيت بترولايف') ||
+             str.includes('Petrolife Oil') ||
+             str.includes('زيت محرك موبيل') ||
+             str.includes('Mobil motor oil') ||
+             str.toLowerCase().includes('oil') ||
+             str.includes('زيت');
+    };
+
+    return checkOilService(order.service?.title?.ar) ||
+           checkOilService(order.service?.title?.en) ||
+           checkOilService(order.service?.name?.ar) ||
+           checkOilService(order.service?.name?.en) ||
+           checkOilService(order.category?.ar) ||
+           checkOilService(order.category?.en) ||
+           checkOilService(order.selectedOption?.title?.ar) ||
+           checkOilService(order.selectedOption?.title?.en) ||
+           checkOilService(order.selectedOption?.name?.ar) ||
+           checkOilService(order.selectedOption?.name?.en) ||
+           checkOilService(order.selectedOption?.label);
+  });
+
+  console.log('Oil orders found:', oilOrders.length);
+
+  // Log sample oil orders for debugging
+  if (oilOrders.length > 0) {
+    console.log('\n📋 Sample Oil Orders (first 3):');
+    oilOrders.slice(0, 3).forEach((order, index) => {
+      console.log(`\nOil Order ${index + 1}:`);
+      console.log('  Service Title AR:', order.service?.title?.ar);
+      console.log('  Service Title EN:', order.service?.title?.en);
+      console.log('  Total Litre:', order.totalLitre);
+      console.log('  Quantity:', order.quantity);
+      console.log('  Cart Items:', order.cartItems?.[0]?.quantity);
+    });
+  }
+
+  // Sum total litres from oil orders
+  let totalLitres = 0;
+  
+  oilOrders.forEach(order => {
+    // Try different field paths for quantity/litres
+    const litres = order.totalLitre || 
+                   order.quantity || 
+                   order.cartItems?.[0]?.quantity || 
+                   0;
+    
+    totalLitres += parseFloat(litres) || 0;
+  });
+
+  console.log('\n🛢️ Oil Change Statistics:');
+  console.log('========================');
+  console.log('Total Oil Orders:', oilOrders.length);
+  console.log('Total Litres:', totalLitres);
+  console.log('========================\n');
+
+  return { totalLitres };
+};
+
+/**
+ * Calculate battery change statistics from filtered orders
+ * Filters orders by battery service names and groups by car size
+ * @param orders - Array of order documents
+ * @returns Object with battery orders grouped by car size
+ */
+export const calculateBatteryChangeStatistics = (orders: any[]): { 
+  sizes: Array<{ name: string; count: number }>;
+  totalOrders: number;
+} => {
+  console.log('\n🔋 ========================================');
+  console.log('CALCULATING BATTERY CHANGE STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches battery keywords
+  const batteryOrders = orders.filter(order => {
+    // Check all possible service/category field paths for battery keywords
+    const checkBatteryService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير وفحص البطارية') ||
+             str.includes('Change and check the Battery') ||
+             str.includes('تغيير البطارية') ||
+             str.includes('Change the battery') ||
+             str.includes('بريميوم بطارية') ||
+             str.includes('Premium Battrey') ||
+             str.includes('بوش') ||
+             str.includes('Bosch') ||
+             str.includes('AGM بطارية') ||
+             str.includes('AGM Battrey') ||
+             str.includes('ايه سي ديلكو') ||
+             str.includes('ACDelco') ||
+             str.includes('بطارية قياسي') ||
+             str.includes('Standard Battrey') ||
+             str.includes('فارتا') ||
+             str.includes('Varta') ||
+             str.toLowerCase().includes('battery') ||
+             str.includes('بطارية');
+    };
+
+    return checkBatteryService(order.service?.title?.ar) ||
+           checkBatteryService(order.service?.title?.en) ||
+           checkBatteryService(order.service?.name?.ar) ||
+           checkBatteryService(order.service?.name?.en) ||
+           checkBatteryService(order.category?.ar) ||
+           checkBatteryService(order.category?.en) ||
+           checkBatteryService(order.selectedOption?.title?.ar) ||
+           checkBatteryService(order.selectedOption?.title?.en) ||
+           checkBatteryService(order.selectedOption?.name?.ar) ||
+           checkBatteryService(order.selectedOption?.name?.en) ||
+           checkBatteryService(order.selectedOption?.label);
+  });
+
+  console.log('Battery orders found:', batteryOrders.length);
+
+  // Log sample battery orders for debugging
+  if (batteryOrders.length > 0) {
+    console.log('\n📋 Sample Battery Orders (first 3):');
+    batteryOrders.slice(0, 3).forEach((order, index) => {
+      console.log(`\nBattery Order ${index + 1}:`);
+      console.log('  Service Title AR:', order.service?.title?.ar);
+      console.log('  Service Title EN:', order.service?.title?.en);
+      console.log('  Car Size:', order.car?.size);
+      console.log('  Order Size:', order.size);
+    });
+  }
+
+  // Group by car size
+  const sizeMap: Record<string, number> = {
+    'صغيرة': 0,
+    'متوسطة': 0,
+    'كبيرة': 0,
+    'VIP': 0,
+  };
+
+  batteryOrders.forEach(order => {
+    // Extract car size from multiple possible paths
+    let carSize = order.car?.size || order.size || '';
+    
+    if (carSize) {
+      console.log(`Processing order - Raw car size: "${carSize}"`);
+      
+      // Normalize the size to match our standard categories
+      const normalizedSize = carSize.toString().toLowerCase().trim();
+      
+      // Map various size representations to standard Arabic names
+      if (normalizedSize.includes('small') || normalizedSize.includes('صغير') || normalizedSize === 'صغيرة') {
+        sizeMap['صغيرة']++;
+        console.log('  → Mapped to: صغيرة');
+      } else if (normalizedSize.includes('medium') || normalizedSize.includes('متوسط') || normalizedSize === 'متوسطة') {
+        sizeMap['متوسطة']++;
+        console.log('  → Mapped to: متوسطة');
+      } else if (normalizedSize.includes('large') || normalizedSize.includes('big') || normalizedSize.includes('كبير') || normalizedSize === 'كبيرة') {
+        sizeMap['كبيرة']++;
+        console.log('  → Mapped to: كبيرة');
+      } else if (normalizedSize.includes('vip') || normalizedSize === 'vip') {
+        sizeMap['VIP']++;
+        console.log('  → Mapped to: VIP');
+      } else {
+        console.log(`  ⚠️ Unknown size format: "${carSize}"`);
+      }
+    } else {
+      console.log('⚠️ WARNING: No car.size found for this battery order');
+    }
+  });
+
+  // Convert to array format
+  const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+    name,
+    count,
+  }));
+
+  const totalOrders = batteryOrders.length;
+
+  console.log('\n🔋 Battery Change Statistics:');
+  console.log('========================');
+  console.log('Total Orders:', totalOrders);
+  console.log('By Size:');
+  sizes.forEach(size => {
+    console.log(`  ${size.name}: ${size.count} orders`);
+  });
+  console.log('========================\n');
+
+  return { sizes, totalOrders };
+};
+
+/**
+ * Calculate driver statistics (active vs inactive)
+ * Fetches companies-drivers and counts by isActive status
+ * @returns Object with active and inactive driver counts
+ */
+export const calculateDriverStatistics = async (): Promise<{ 
+  active: number; 
+  inactive: number;
+  total: number;
+}> => {
+  try {
+    console.log('\n👥 ========================================');
+    console.log('CALCULATING DRIVER STATISTICS');
+    console.log('========================================');
+    
+    // Fetch companies-drivers data (already filtered by current user)
+    const drivers = await fetchCompaniesDrivers();
+    
+    console.log('Total drivers for current company:', drivers.length);
+
+    // Count active and inactive drivers
+    let activeCount = 0;
+    let inactiveCount = 0;
+
+    drivers.forEach(driver => {
+      const isActive = driver.isActive === true || driver.isActive === 'true';
+      
+      if (isActive) {
+        activeCount++;
+      } else {
+        inactiveCount++;
+      }
+      
+      // Debug logging for first 3 drivers
+      if (activeCount + inactiveCount <= 3) {
+        console.log(`\nDriver ${activeCount + inactiveCount}:`);
+        console.log('  Name:', driver.name);
+        console.log('  isActive:', driver.isActive);
+        console.log('  Status:', isActive ? 'Active' : 'Inactive');
+      }
+    });
+
+    console.log('\n👥 Driver Statistics:');
+    console.log('========================');
+    console.log('Active Drivers:', activeCount);
+    console.log('Inactive Drivers:', inactiveCount);
+    console.log('Total Drivers:', drivers.length);
+    console.log('========================\n');
+
+    return {
+      active: activeCount,
+      inactive: inactiveCount,
+      total: drivers.length,
+    };
+  } catch (error) {
+    console.error('Error calculating driver statistics:', error);
+    return { active: 0, inactive: 0, total: 0 };
+  }
+};
+
+/**
+ * Calculate car statistics grouped by size
+ * Fetches companies-cars and counts by size/category
+ * @returns Object with cars grouped by size and total count
+ */
+export const calculateCarStatistics = async (): Promise<{ 
+  sizes: Array<{ name: string; count: number }>;
+  total: number;
+}> => {
+  try {
+    console.log('\n🚗 ========================================');
+    console.log('CALCULATING CAR STATISTICS');
+    console.log('========================================');
+    
+    // Fetch companies-cars data (already filtered by current user)
+    const cars = await fetchCompaniesCars();
+    
+    console.log('Total cars for current company:', cars.length);
+
+    // Initialize size map
+    const sizeMap: Record<string, number> = {
+      'صغيرة': 0,
+      'متوسطة': 0,
+      'كبيرة': 0,
+      'VIP': 0,
+    };
+
+    // Count cars by size
+    cars.forEach((car, index) => {
+      // Extract car size from multiple possible paths
+      let carSize = car.size || car.category?.name || car.category || '';
+      
+      if (carSize) {
+        // Debug logging for first 3 cars
+        if (index < 3) {
+          console.log(`\nCar ${index + 1}:`);
+          console.log('  Name:', car.name);
+          console.log('  Plate Number:', car.plateNumber);
+          console.log('  Raw Size:', carSize);
+        }
+        
+        // Normalize the size to match our standard categories
+        const normalizedSize = carSize.toString().toLowerCase().trim();
+        
+        // Map various size representations to standard Arabic names
+        if (normalizedSize.includes('small') || normalizedSize.includes('صغير') || normalizedSize === 'صغيرة') {
+          sizeMap['صغيرة']++;
+          if (index < 3) console.log('  → Mapped to: صغيرة');
+        } else if (normalizedSize.includes('medium') || normalizedSize.includes('متوسط') || normalizedSize === 'متوسطة') {
+          sizeMap['متوسطة']++;
+          if (index < 3) console.log('  → Mapped to: متوسطة');
+        } else if (normalizedSize.includes('large') || normalizedSize.includes('big') || normalizedSize.includes('كبير') || normalizedSize === 'كبيرة') {
+          sizeMap['كبيرة']++;
+          if (index < 3) console.log('  → Mapped to: كبيرة');
+        } else if (normalizedSize.includes('vip') || normalizedSize === 'vip') {
+          sizeMap['VIP']++;
+          if (index < 3) console.log('  → Mapped to: VIP');
+        } else {
+          if (index < 3) console.log(`  ⚠️ Unknown size format: "${carSize}"`);
+        }
+      } else {
+        if (index < 3) console.log('⚠️ WARNING: No size found for this car');
+      }
+    });
+
+    // Convert to array format
+    const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+      name,
+      count,
+    }));
+
+    console.log('\n🚗 Car Statistics:');
+    console.log('========================');
+    console.log('Total Cars:', cars.length);
+    console.log('By Size:');
+    sizes.forEach(size => {
+      console.log(`  ${size.name}: ${size.count} cars`);
+    });
+    console.log('========================\n');
+
+    return {
+      sizes,
+      total: cars.length,
+    };
+  } catch (error) {
+    console.error('Error calculating car statistics:', error);
+    return { sizes: [], total: 0 };
+  }
+};
+
+/**
+ * Calculate order statistics (completed vs cancelled)
+ * Counts orders by status from filtered orders
+ * @param orders - Array of order documents
+ * @returns Object with completed and cancelled order counts
+ */
+export const calculateOrderStatistics = (orders: any[]): { 
+  completed: number; 
+  cancelled: number;
+  total: number;
+} => {
+  console.log('\n📊 ========================================');
+  console.log('CALCULATING ORDER STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Count completed and cancelled orders
+  let completedCount = 0;
+  let cancelledCount = 0;
+
+  orders.forEach((order, index) => {
+    const status = order.status?.toLowerCase().trim() || '';
+    
+    // Debug logging for first 5 orders
+    if (index < 5) {
+      console.log(`\nOrder ${index + 1}:`);
+      console.log('  ID:', order.id);
+      console.log('  Status:', order.status);
+      console.log('  Status (normalized):', status);
+    }
+    
+    // Check for completed status variations
+    if (status === 'completed' || 
+        status === 'done' || 
+        status === 'delivered' || 
+        status === 'مكتمل' ||
+        status === 'تم التوصيل') {
+      completedCount++;
+      if (index < 5) console.log('  → Counted as: Completed');
+    } 
+    // Check for cancelled status variations
+    else if (status === 'cancelled' || 
+             status === 'canceled' || 
+             status === 'rejected' || 
+             status === 'ملغي' ||
+             status === 'مرفوض') {
+      cancelledCount++;
+      if (index < 5) console.log('  → Counted as: Cancelled');
+    } else {
+      if (index < 5) console.log('  → Status:', status || 'unknown');
+    }
+  });
+
+  console.log('\n📊 Order Statistics:');
+  console.log('========================');
+  console.log('Completed Orders:', completedCount);
+  console.log('Cancelled Orders:', cancelledCount);
+  console.log('Other Orders:', orders.length - completedCount - cancelledCount);
+  console.log('Total Orders:', orders.length);
+  console.log('========================\n');
+
+  return {
+    completed: completedCount,
+    cancelled: cancelledCount,
+    total: orders.length,
+  };
+};
+
+/**
  * Fetch and filter orders by car wash category
  * Prints filtered orders to console in their raw Firestore format
  */
@@ -1061,7 +1482,7 @@ export const fetchWalletChargeRequests = async () => {
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */
-export const fetchCurrentCompany = async () => {
+export const fetchCurrentCompany = async (): Promise<any> => {
   try {
     const currentUser = auth.currentUser;
 
@@ -1107,7 +1528,7 @@ export const fetchCurrentCompany = async () => {
     const companyData = {
       id: companyDoc.id,
       ...companyDoc.data()
-    };
+    } as any;
 
     // console.log('\n✅ CURRENT COMPANY DATA FOUND:');
     // console.log('========================================');
