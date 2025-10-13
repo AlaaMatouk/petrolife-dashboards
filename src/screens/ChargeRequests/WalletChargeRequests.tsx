@@ -8,6 +8,7 @@ import { Layout } from "../../components/shared";
 export const WalletChargeRequests = (): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
 
   return (
     <Layout
@@ -28,8 +29,8 @@ export const WalletChargeRequests = (): JSX.Element => {
       }}
     >
       <div className="flex flex-col items-start gap-6 pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-        <HeaderSection />
-        <ContentSection currentPage={currentPage} setTotalPages={setTotalPages} />
+        <HeaderSection selectedTimeFilter={selectedTimeFilter} onFilterChange={setSelectedTimeFilter} />
+        <ContentSection currentPage={currentPage} setTotalPages={setTotalPages} selectedTimeFilter={selectedTimeFilter} />
         <PaginationSection currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </Layout>

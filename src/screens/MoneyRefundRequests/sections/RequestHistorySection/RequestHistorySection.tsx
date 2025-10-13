@@ -1,16 +1,142 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FileChartColumnIncreasing } from "lucide-react";
-import { Table, TimeFilter, ExportButton, Pagination } from "../../../../components/shared";
+import { Table, TimeFilter, ExportButton, Pagination, LoadingSpinner } from "../../../../components/shared";
+import { fetchWalletChargeRequests } from "../../../../services/firestore";
+
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return '-';
+  
+  try {
+    if (date.toDate && typeof date.toDate === 'function') {
+      return new Date(date.toDate()).toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return new Date(date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to get status in Arabic
+const getStatusText = (status: string): { text: string; type: string } => {
+  const statusLower = status?.toLowerCase() || '';
+  
+  if (statusLower.includes('done') || statusLower.includes('completed') || statusLower === 'مكتمل') {
+    return { text: 'مكتمل', type: 'completed' };
+  }
+  if (statusLower.includes('pending') || statusLower.includes('review') || statusLower === 'جاري المراجعة') {
+    return { text: 'جاري المراجعة', type: 'reviewing' };
+  }
+  if (statusLower.includes('cancel') || statusLower.includes('reject') || statusLower === 'ملغي') {
+    return { text: 'ملغي', type: 'cancelled' };
+  }
+  
+  return { text: status, type: 'unknown' };
+};
 
 export const RequestHistorySection = (): JSX.Element => {
   const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(1);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const ITEMS_PER_PAGE = 10;
 
-  const timeFilters = ["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"];
+  // Fetch wallet charge requests (money refund requests)
+  useEffect(() => {
+    const loadRequests = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchWalletChargeRequests();
+        
+        // Sort by date descending (newest first)
+        const sortedData = [...data].sort((a, b) => {
+          const dateA = a.requestDate?.toDate ? a.requestDate.toDate() : new Date(a.requestDate || a.createdDate || 0);
+          const dateB = b.requestDate?.toDate ? b.requestDate.toDate() : new Date(b.requestDate || b.createdDate || 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        // Transform to request format
+        const transformedRequests = sortedData.map((request) => {
+          const statusInfo = getStatusText(request.status);
+          
+          return {
+            id: request.id || '-',
+            status: statusInfo.text,
+            statusType: statusInfo.type,
+            amount: String(request.value || request.amount || 0),
+            date: formatDate(request.requestDate || request.createdDate),
+            rawDate: request.requestDate || request.createdDate, // Store raw date for filtering
+          };
+        });
+        
+        setRequests(transformedRequests);
+      } catch (error) {
+        console.error('Error loading money refund requests:', error);
+        setRequests([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadRequests();
+  }, []);
+
+  // Apply time filter
+  const filteredRequests = requests.filter(request => {
+    if (selectedTimeFilter === 'الكل') {
+      return true;
+    }
+    
+    const now = new Date();
+    const requestDate = request.rawDate?.toDate 
+      ? request.rawDate.toDate() 
+      : new Date(request.rawDate || 0);
+    
+    let startDate = new Date();
+    
+    switch (selectedTimeFilter) {
+      case 'اخر اسبوع':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'اخر 30 يوم':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case 'اخر 6 شهور':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'اخر 12 شهر':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return true;
+    }
+    
+    return requestDate >= startDate;
+  });
 
   const tableColumns = [
     {
@@ -61,84 +187,11 @@ export const RequestHistorySection = (): JSX.Element => {
     },
   ];
 
-  const requestData = [
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "جاري المراجعة",
-      statusType: "reviewing",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "ملغي",
-      statusType: "cancelled",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-  ];
-
   // Calculate pagination
-  const totalPages = Math.ceil(requestData.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedData = requestData.slice(startIndex, endIndex);
+  const paginatedData = filteredRequests.slice(startIndex, endIndex);
 
   const getStatusBadge = (status: string, statusType: string) => {
     const baseClasses =
@@ -215,21 +268,31 @@ export const RequestHistorySection = (): JSX.Element => {
       </header>
 
       <main className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-        <div className="w-full">
-          <Table
-            columns={tableColumns}
-            data={paginatedData}
-            className="w-full"
-          />
-        </div>
+        {isLoading ? (
+          <LoadingSpinner size="lg" message="جاري التحميل..." />
+        ) : filteredRequests.length === 0 ? (
+          <div className="w-full text-center text-gray-500 py-12">
+            <p className="text-lg [direction:rtl]">لا توجد طلبات استرداد</p>
+          </div>
+        ) : (
+          <div className="w-full">
+            <Table
+              columns={tableColumns}
+              data={paginatedData}
+              className="w-full"
+            />
+          </div>
+        )}
       </main>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-      />
+      {!isLoading && filteredRequests.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+        />
+      )}
     </section>
   );
 };

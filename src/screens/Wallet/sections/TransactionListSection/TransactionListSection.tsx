@@ -70,6 +70,7 @@ const convertOrdersToTransactions = (orders: any[]): any[] => {
       date: formatDate(order.orderDate || order.createdDate),
       amount: order.totalPrice || 0,
       cumulative: cumulative,
+      rawDate: order.orderDate || order.createdDate, // Store raw date for filtering
     };
   });
 };
@@ -117,6 +118,39 @@ export const TransactionListSection = (): JSX.Element => {
     
     loadData();
   }, []);
+
+  // Apply time filter to transactions
+  const filteredTransactions = transactions.filter(transaction => {
+    if (selectedTimeFilter === 'الكل') {
+      return true;
+    }
+    
+    const now = new Date();
+    const transactionDate = transaction.rawDate?.toDate 
+      ? transaction.rawDate.toDate() 
+      : new Date(transaction.rawDate || 0);
+    
+    let startDate = new Date();
+    
+    switch (selectedTimeFilter) {
+      case 'اخر اسبوع':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'اخر 30 يوم':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case 'اخر 6 شهور':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'اخر 12 شهر':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return true;
+    }
+    
+    return transactionDate >= startDate;
+  });
 
   // Define table columns for transactions
   const transactionColumns = [
@@ -292,7 +326,7 @@ export const TransactionListSection = (): JSX.Element => {
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
           {isLoading ? (
             <LoadingSpinner size="lg" message="جاري التحميل..." />
-          ) : transactions.length === 0 ? (
+          ) : filteredTransactions.length === 0 ? (
             <div className="w-full text-center text-gray-500 py-12">
               <p className="text-lg [direction:rtl]">لا توجد معاملات مالية</p>
             </div>
@@ -301,14 +335,14 @@ export const TransactionListSection = (): JSX.Element => {
               <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
                 <Table
                   columns={transactionColumns}
-                  data={transactions}
+                  data={filteredTransactions.slice((currentPage - 1) * 10, currentPage * 10)}
                   className="relative self-stretch w-full flex-[0_0_auto]"
                 />
               </div>
 
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil(transactions.length / 10) || 1}
+                totalPages={Math.ceil(filteredTransactions.length / 10) || 1}
                 onPageChange={setCurrentPage}
               />
             </>
