@@ -323,8 +323,19 @@ export const DataTableSection = (): JSX.Element => {
     }
   };
 
+  // Sort report data by date descending (newest first)
+  const sortedReportData = [...reportData].sort((a, b) => {
+    try {
+      const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date || 0);
+      const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
+      return dateB.getTime() - dateA.getTime();
+    } catch (error) {
+      return 0;
+    }
+  });
+
   // Transform report data to table format
-  const transformedTableData = reportData.map(item => ({
+  const transformedTableData = sortedReportData.map(item => ({
     city: item.city,
     stationName: item.stationName,
     date: formatDate(item.date),
@@ -335,7 +346,62 @@ export const DataTableSection = (): JSX.Element => {
     productType: item.productType,
     driverName: item.driverName,
     driverCode: item.driverCode,
+    rawDate: item.date, // Store raw date for filtering
   }));
+
+  // Extract unique values for filter options
+  const uniqueProductTypes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.productType).filter(Boolean)))];
+  const uniqueDriverCodes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.driverCode).filter(Boolean)))];
+  const uniqueCities = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.city).filter(Boolean)))];
+
+  // Apply filters to data
+  const filteredTableData = transformedTableData.filter(item => {
+    // Filter by time period
+    if (filters.timePeriod !== 'الكل') {
+      const now = new Date();
+      const itemDate = item.rawDate?.toDate ? item.rawDate.toDate() : new Date(item.rawDate || 0);
+      
+      let startDate = new Date();
+      
+      switch (filters.timePeriod) {
+        case 'اخر اسبوع':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'اخر 30 يوم':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case 'اخر 6 شهور':
+          startDate.setMonth(now.getMonth() - 6);
+          break;
+        case 'اخر 12 شهر':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+        default:
+          startDate = new Date(0);
+      }
+      
+      if (itemDate < startDate) {
+        return false;
+      }
+    }
+
+    // Filter by driver code
+    if (filters.driverCode !== 'الكل' && item.driverCode !== filters.driverCode) {
+      return false;
+    }
+
+    // Filter by city
+    if (filters.city !== 'الكل' && item.city !== filters.city) {
+      return false;
+    }
+
+    // Filter by product type
+    if (filters.productType !== 'الكل' && item.productType !== filters.productType) {
+      return false;
+    }
+
+    return true;
+  });
 
   // Extract client info from company data (Step 2)
   const clientInfo = {
@@ -358,11 +424,55 @@ export const DataTableSection = (): JSX.Element => {
     clientName: company?.name || company?.brandName || clientData.clientName,
   };
 
+  // Update filter options with dynamic values
+  const dynamicFilterOptions = [
+    { 
+      label: "الفترة الزمنية", 
+      value: filters.timePeriod, 
+      icon: "/img/side-icons-16.svg",
+      options: [
+        { value: "الكل", label: "الكل" },
+        { value: "اخر اسبوع", label: "اخر اسبوع" },
+        { value: "اخر 30 يوم", label: "اخر 30 يوم" },
+        { value: "اخر 6 شهور", label: "اخر 6 شهور" },
+        { value: "اخر 12 شهر", label: "اخر 12 شهر" }
+      ]
+    },
+    {
+      label: "كود الســـــــــائق",
+      value: filters.driverCode,
+      icon: "/img/side-icons-17.svg",
+      options: uniqueDriverCodes.map(code => ({ value: code, label: code }))
+    },
+    {
+      label: "المديــــــــــــنة",
+      value: filters.city,
+      icon: "/img/side-icons-18.svg",
+      options: uniqueCities.map(city => ({ value: city, label: city }))
+    },
+    { 
+      label: "نوع المنتج", 
+      value: filters.productType, 
+      icon: "/img/side-icons-19.svg",
+      options: uniqueProductTypes.map(type => ({ value: type, label: type }))
+    },
+    { 
+      label: "نوع التقرير", 
+      value: filters.reportType, 
+      icon: "/img/side-icons-20.svg",
+      options: [
+        { value: "تحليلي", label: "تحليلي" },
+        { value: "تفصيلي", label: "تفصيلي" },
+        { value: "ملخص", label: "ملخص" }
+      ]
+    },
+  ];
+
   // Calculate pagination
-  const totalPages = Math.ceil(transformedTableData.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredTableData.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedData = transformedTableData.slice(startIndex, endIndex);
+  const paginatedData = filteredTableData.slice(startIndex, endIndex);
 
   return (
     <section
@@ -487,7 +597,7 @@ export const DataTableSection = (): JSX.Element => {
             role="group"
             aria-label="مرشحات البحث"
           >
-            {filterOptions.map((filter, index) => (
+            {dynamicFilterOptions.map((filter, index) => (
               <RTLSelect
                 key={index}
                 label={filter.label}
@@ -495,13 +605,16 @@ export const DataTableSection = (): JSX.Element => {
                               filter.label === "كود الســـــــــائق" ? "driverCode" :
                               filter.label === "المديــــــــــــنة" ? "city" :
                               filter.label === "نوع المنتج" ? "productType" : "reportType"]}
-                onChange={(value) => handleFilterChange(
-                  filter.label === "الفترة الزمنية" ? "timePeriod" : 
-                  filter.label === "كود الســـــــــائق" ? "driverCode" :
-                  filter.label === "المديــــــــــــنة" ? "city" :
-                  filter.label === "نوع المنتج" ? "productType" : "reportType", 
-                  value
-                )}
+                onChange={(value) => {
+                  handleFilterChange(
+                    filter.label === "الفترة الزمنية" ? "timePeriod" : 
+                    filter.label === "كود الســـــــــائق" ? "driverCode" :
+                    filter.label === "المديــــــــــــنة" ? "city" :
+                    filter.label === "نوع المنتج" ? "productType" : "reportType", 
+                    value
+                  );
+                  setCurrentPage(1); // Reset to first page when filter changes
+                }}
                 options={filter.options}
                 placeholder={filter.value}
               />
@@ -517,9 +630,13 @@ export const DataTableSection = (): JSX.Element => {
               <div className="flex items-center justify-center w-full min-h-[400px]">
                 <p className="text-red-500 text-center [direction:rtl]">{error}</p>
               </div>
-            ) : transformedTableData.length === 0 ? (
+            ) : filteredTableData.length === 0 ? (
               <div className="flex items-center justify-center w-full min-h-[400px]">
-                <p className="text-gray-500 text-center [direction:rtl]">لا توجد بيانات متاحة</p>
+                <p className="text-gray-500 text-center [direction:rtl]">
+                  {transformedTableData.length === 0 
+                    ? 'لا توجد بيانات متاحة' 
+                    : 'لا توجد نتائج تطابق المرشحات المحددة'}
+                </p>
               </div>
             ) : (
               <>

@@ -851,6 +851,181 @@ export const calculateBatteryChangeStatistics = (orders: any[]): {
 };
 
 /**
+ * Calculate tire change statistics
+ * Filters orders by tire service names and groups by car size
+ * @param orders - Array of orders to process
+ * @returns Object with sizes array and total tire change count
+ */
+export const calculateTireChangeStatistics = (orders: any[]): { 
+  sizes: Array<{ name: string; count: number }>;
+  totalOrders: number;
+} => {
+  // console.log('\n🚗 ========================================');
+  // console.log('CALCULATING TIRE CHANGE STATISTICS');
+  // console.log('========================================');
+  // console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches tire keywords
+  const tireOrders = orders.filter(order => {
+    // Check all possible service/category field paths for tire keywords
+    const checkTireService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير الإطارات') ||
+             str.includes('Tire Change') ||
+             str.includes('تغيير إطار') ||
+             str.includes('Change Tire') ||
+             str.includes('إطارات') ||
+             str.includes('Tires') ||
+             str.toLowerCase().includes('tire') ||
+             str.toLowerCase().includes('tyre');
+    };
+
+    return checkTireService(order.service?.title?.ar) ||
+           checkTireService(order.service?.title?.en) ||
+           checkTireService(order.service?.name?.ar) ||
+           checkTireService(order.service?.name?.en) ||
+           checkTireService(order.category?.ar) ||
+           checkTireService(order.category?.en) ||
+           checkTireService(order.selectedOption?.title?.ar) ||
+           checkTireService(order.selectedOption?.title?.en) ||
+           checkTireService(order.selectedOption?.name?.ar) ||
+           checkTireService(order.selectedOption?.name?.en) ||
+           checkTireService(order.selectedOption?.label);
+  });
+
+  // console.log('Tire change orders found:', tireOrders.length);
+
+  // Group by car size
+  const sizeMap: Record<string, number> = {
+    'صغيرة': 0,
+    'متوسطة': 0,
+    'كبيرة': 0,
+    'VIP': 0,
+  };
+
+  tireOrders.forEach(order => {
+    // Extract car size from multiple possible paths
+    let carSize = order.car?.size || order.size || '';
+    
+    if (carSize) {
+      // Use normalizeCarSize helper function
+      const normalizedSize = normalizeCarSize(carSize);
+      
+      // Increment count for normalized size
+      if (sizeMap.hasOwnProperty(normalizedSize)) {
+        sizeMap[normalizedSize]++;
+      }
+    }
+  });
+
+  // Convert to array format
+  const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+    name,
+    count,
+  }));
+
+  const totalOrders = tireOrders.length;
+
+  // console.log('\n🚗 Tire Change Statistics:');
+  // console.log('========================');
+  // console.log('Total Orders:', totalOrders);
+  // console.log('By Size:');
+  // sizes.forEach(size => {
+  //   console.log(`  ${size.name}: ${size.count} orders`);
+  // });
+  // console.log('========================\n');
+
+  return { sizes, totalOrders };
+};
+
+/**
+ * Calculate battery replacement statistics
+ * Filters orders by battery replacement keywords and calculates cost and counts
+ * @param orders - Array of orders to process
+ * @returns Object with total cost, replaced count, and requested count
+ */
+export const calculateBatteryReplacementStatistics = (orders: any[]): { 
+  totalCost: number;
+  replacedCount: number;
+  requestedCount: number;
+} => {
+  // console.log('\n🔋 ========================================');
+  // console.log('CALCULATING BATTERY REPLACEMENT STATISTICS');
+  // console.log('========================================');
+  // console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches battery keywords
+  const batteryOrders = orders.filter(order => {
+    // Check all possible service/category field paths for battery keywords
+    const checkBatteryService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير وفحص البطارية') ||
+             str.includes('Change and check the Battery') ||
+             str.includes('تغيير البطارية') ||
+             str.includes('Change the battery') ||
+             str.includes('بريميوم بطارية') ||
+             str.includes('Premium Battrey') ||
+             str.includes('بوش') ||
+             str.includes('Bosch') ||
+             str.includes('AGM بطارية') ||
+             str.includes('AGM Battrey') ||
+             str.includes('ايه سي ديلكو') ||
+             str.includes('ACDelco') ||
+             str.includes('بطارية قياسي') ||
+             str.includes('Standard Battrey') ||
+             str.includes('فارتا') ||
+             str.includes('Varta') ||
+             str.includes('استبدال البطارية') ||
+             str.includes('Battery Replacement') ||
+             str.toLowerCase().includes('battery') ||
+             str.includes('بطارية');
+    };
+
+    return checkBatteryService(order.service?.title?.ar) ||
+           checkBatteryService(order.service?.title?.en) ||
+           checkBatteryService(order.service?.name?.ar) ||
+           checkBatteryService(order.service?.name?.en) ||
+           checkBatteryService(order.category?.ar) ||
+           checkBatteryService(order.category?.en) ||
+           checkBatteryService(order.selectedOption?.title?.ar) ||
+           checkBatteryService(order.selectedOption?.title?.en) ||
+           checkBatteryService(order.selectedOption?.name?.ar) ||
+           checkBatteryService(order.selectedOption?.name?.en) ||
+           checkBatteryService(order.selectedOption?.label);
+  });
+
+  // console.log('Battery replacement orders found:', batteryOrders.length);
+
+  // Calculate statistics
+  let totalCost = 0;
+  let replacedCount = 0;
+  let requestedCount = batteryOrders.length;
+
+  batteryOrders.forEach(order => {
+    // Calculate total cost
+    const orderCost = parseFloat(order.totalCost || order.total || order.price || 0);
+    totalCost += orderCost;
+
+    // Count replaced batteries (status = done or completed)
+    const status = order.status?.toLowerCase() || '';
+    if (status === 'done' || status === 'completed' || status === 'مكتمل') {
+      replacedCount++;
+    }
+  });
+
+  // console.log('\n🔋 Battery Replacement Statistics:');
+  // console.log('========================');
+  // console.log('Total Cost:', totalCost);
+  // console.log('Replaced Count:', replacedCount);
+  // console.log('Requested Count:', requestedCount);
+  // console.log('========================\n');
+
+  return { totalCost, replacedCount, requestedCount };
+};
+
+/**
  * Calculate driver statistics (active vs inactive)
  * Fetches companies-drivers and counts by isActive status
  * @returns Object with active and inactive driver counts

@@ -4,7 +4,7 @@ import { Table, TimeFilter } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics } from "../../services/firestore";
+import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics } from "../../services/firestore";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -58,6 +58,17 @@ const StatsCardsSection = () => {
     totalOrders: number;
   }>({ sizes: [], totalOrders: 0 });
   
+  const [tireStats, setTireStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    totalOrders: number;
+  }>({ sizes: [], totalOrders: 0 });
+  
+  const [batteryReplacementStats, setBatteryReplacementStats] = useState<{
+    totalCost: number;
+    replacedCount: number;
+    requestedCount: number;
+  }>({ totalCost: 0, replacedCount: 0, requestedCount: 0 });
+  
   const [driverStats, setDriverStats] = useState<{
     active: number;
     inactive: number;
@@ -102,6 +113,12 @@ const StatsCardsSection = () => {
         
         const batteryData = calculateBatteryChangeStatistics(orders);
         setBatteryStats(batteryData);
+        
+        const tireData = calculateTireChangeStatistics(orders);
+        setTireStats(tireData);
+        
+        const batteryReplacementData = calculateBatteryReplacementStatistics(orders);
+        setBatteryReplacementStats(batteryReplacementData);
         
         const orderData = calculateOrderStatistics(orders);
         setOrderStats(orderData);
@@ -162,12 +179,17 @@ const StatsCardsSection = () => {
     },
     {
       title: "عمليات تغيير الإطارات",
-      categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
-      ],
+      categories: tireStats.sizes.length > 0 
+        ? tireStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
@@ -187,10 +209,10 @@ const StatsCardsSection = () => {
     },
     {
       title: "استبدال البطاريات",
-      cost: "14,210",
+      cost: formatNumber(Math.round(batteryReplacementStats.totalCost)),
       currency: "ر.س",
-      replaced: "250",
-      requested: "845",
+      replaced: formatNumber(batteryReplacementStats.replacedCount),
+      requested: formatNumber(batteryReplacementStats.requestedCount),
       icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
