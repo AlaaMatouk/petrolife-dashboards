@@ -1,4 +1,4 @@
-import { DataTableSection } from "../../components/shared/DataTableSection";
+import { DataTableSection } from "../../components/sections/DataTableSection";
 import { serviceDistributerNavigationMenuData, userInfo, workersData } from "../../constants/data";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { UserRound } from "lucide-react";
@@ -102,6 +102,7 @@ export const StationWorkers = (): JSX.Element => {
           viewDetailsRoute={(id) => `/driver/${id}`}
           loadingMessage="جاري تحميل بيانات العاملين..."
           errorMessage="فشل في تحميل بيانات العاملين. استخدام البيانات التجريبية."
+          itemsPerPage={5}
         />
       </div>
     </LayoutSimple>

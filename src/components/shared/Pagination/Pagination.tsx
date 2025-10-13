@@ -63,6 +63,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   const pageNumbers = generatePageNumbers();
+  // Reverse for RTL (right-to-left) display
+  const rtlPageNumbers = [...pageNumbers].reverse();
 
   const handlePrevious = () => {
     if (currentPage > 1 && !disabled) {
@@ -111,7 +113,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         </button>
 
         {/* Page Numbers */}
-        {pageNumbers.map((page, index) => {
+        {rtlPageNumbers.map((page, index) => {
           if (page === "...") {
             return (
               <div

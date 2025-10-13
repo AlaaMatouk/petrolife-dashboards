@@ -1,4 +1,4 @@
-import { DataTableSection } from "../../components/shared/DataTableSection";
+import { DataTableSection } from "../../components/sections/DataTableSection";
 import { serviceDistributerNavigationMenuData, userInfo, stationsData } from "../../constants/data";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Fuel } from "lucide-react";
@@ -8,14 +8,10 @@ interface Station {
   id: number;
   stationCode: string;
   stationName: string;
-  location: string;
-  city: string;
+  address: string;
   phone: string;
-  emailAddress: string;
-  managerName: string;
   fuelTypes: string[];
-  workersCount: number;
-  accountStatus: { active: boolean; text: string };
+  stationStatus: { active: boolean; text: string };
 }
 
 export const Stations = (): JSX.Element => {
@@ -28,56 +24,27 @@ export const Stations = (): JSX.Element => {
       priority: "high"
     },
     {
-      key: "accountStatus",
-      label: "حالة الحساب",
+      key: "stationStatus", 
+      label: "حالة المحطة",
       width: "flex-1 grow min-w-[120px]",
       priority: "high"
     },
     {
-      key: "workersCount",
-      label: "عدد العمال",
-      width: "flex-1 grow min-w-[100px]",
-      priority: "medium",
-      render: (value: number) => (
-        <div className="text-center">
-          <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-            {value}
-          </span>
-        </div>
-      )
-    },
-    {
       key: "fuelTypes",
-      label: "أنواع الوقود",
+      label: "نوع الوقود",
       width: "flex-1 grow min-w-[150px]",
       priority: "low",
       render: (value: string[]) => (
-        <div className="flex flex-wrap gap-1 justify-center">
-          {value.map((fuel, index) => (
-            <span key={index} className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
-              {fuel}
-            </span>
-          ))}
+        <div className="text-center">
+          {value.join(', ')}
         </div>
       )
     },
     {
-      key: "managerName",
-      label: "مدير المحطة",
-      width: "flex-1 grow min-w-[120px]",
-      priority: "medium"
-    },
-    {
-      key: "city",
-      label: "المدينة",
+      key: "address",
+      label: "العنوان",
       width: "flex-1 grow min-w-[100px]",
       priority: "medium"
-    },
-    {
-      key: "emailAddress",
-      label: "البريد الإلكتروني",
-      width: "flex-1 grow min-w-[180px]",
-      priority: "low"
     },
     {
       key: "phone",
@@ -102,7 +69,18 @@ export const Stations = (): JSX.Element => {
   // Fetch data function for stations
   const fetchStationsData = async (): Promise<Station[]> => {
     // TODO: Replace with actual API call when ready
-    return Promise.resolve(stationsData as Station[]);
+    // Transform the data to match the new Station interface
+    return Promise.resolve(
+      stationsData.map((station) => ({
+        id: station.id,
+        stationCode: station.stationCode,
+        stationName: station.stationName,
+        address: station.location,
+        phone: station.phone,
+        fuelTypes: station.fuelTypes,
+        stationStatus: station.accountStatus,
+      }))
+    );
   };
 
   // Handle status toggle
@@ -114,7 +92,7 @@ export const Stations = (): JSX.Element => {
   return (
     <LayoutSimple
       headerProps={{
-        title: "محطات الوقود",
+        title: "المحطات",
         titleIconSrc: <Fuel className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
@@ -130,7 +108,7 @@ export const Stations = (): JSX.Element => {
     >
       <div className="flex flex-col w-full items-start gap-5">
         <DataTableSection<Station>
-          title="محطات الوقود"
+          title="المحطات"
           entityName="المحطة"
           entityNamePlural="المحطات"
           icon={Fuel}
@@ -141,6 +119,7 @@ export const Stations = (): JSX.Element => {
           viewDetailsRoute={(id) => `/station/${id}`}
           loadingMessage="جاري تحميل بيانات المحطات..."
           errorMessage="فشل في تحميل بيانات المحطات. استخدام البيانات التجريبية."
+          itemsPerPage={5}
         />
       </div>
     </LayoutSimple>

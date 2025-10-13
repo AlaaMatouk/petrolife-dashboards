@@ -110,7 +110,7 @@ export const serviceDistributerNavigationMenuData = {
       icon: "/img/side-icons-1.svg",
       isActive: false,
       hasBackground: false,
-      href: ROUTES.DASHBOARD
+      href: ROUTES.SERVICE_DISTRIBUTER_DASHBOARD
     }
   ],
   sections: [
@@ -122,13 +122,13 @@ export const serviceDistributerNavigationMenuData = {
           label: "عمال المحطـــــات",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
-          href: ROUTES.DRIVERS
+          href: ROUTES.STATION_WORKERS
         },
         {
           id: "stations",
           label: "المحطــــــات",
           icon: "/img/side-icons-7.svg",
-          href: ROUTES.CARS
+          href: ROUTES.STATIONS
         }
       ]
     },
@@ -138,7 +138,7 @@ export const serviceDistributerNavigationMenuData = {
       id: "fuel-delivery",
       label: "طلبات محطـــات الوقود",
       icon: "/img/side-icons-7.svg",
-      href: ROUTES.FUEL_DELIVERY
+      href: ROUTES.FUEL_STATION_REQUESTS
     },
     {
       id: "stations",
@@ -447,7 +447,7 @@ export const stationsData = [
     phone: "00966112345678",
     emailAddress: "riyadh.central@petrolife.com",
     managerName: "عبدالعزيز السعيد",
-    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    fuelTypes: ["بنزين 91", "ديزل"],
     workersCount: 12,
     accountStatus: { active: true, text: "مفعل" }
   },
@@ -473,7 +473,7 @@ export const stationsData = [
     phone: "00966132345678",
     emailAddress: "dammam@petrolife.com",
     managerName: "فهد الخالدي",
-    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    fuelTypes: ["بنزين 91", "ديزل"],
     workersCount: 8,
     accountStatus: { active: true, text: "مفعل" }
   },
@@ -1066,6 +1066,110 @@ export const fuelData = [
     type: "بنزين 91",
     amount: "845 .L",
     color: "text-color-mode-text-icons-t-green"
+  }
+];
+
+// Fuel Station Requests Data
+export const fuelStationRequestsData = [
+  {
+    id: 1,
+    transactionNumber: "21A254",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 2,
+    transactionNumber: "21A255",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "بنزين 91، بنزين 95",
+    totalLiters: "4",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 3,
+    transactionNumber: "21A256",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "بنزين 95",
+    totalLiters: "2",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 4,
+    transactionNumber: "21A257",
+    stationName: "جدة",
+    clientName: "أحمد محمد",
+    workerName: "محمد أحمد",
+    fuelType: "ديزل",
+    totalLiters: "4",
+    creationDate: "20 فبراير 2025 - 4:30 ص"
+  },
+  {
+    id: 5,
+    transactionNumber: "21A258",
+    stationName: "الدمام",
+    clientName: "علي حسن",
+    workerName: "حسن علي",
+    fuelType: "بنزين 91",
+    totalLiters: "2",
+    creationDate: "20 فبراير 2025 - 3:15 ص"
+  },
+  {
+    id: 6,
+    transactionNumber: "21A259",
+    stationName: "مكة",
+    clientName: "محمود سعد",
+    workerName: "سعد محمود",
+    fuelType: "بنزين 95",
+    totalLiters: "4",
+    creationDate: "19 فبراير 2025 - 6:45 ص"
+  },
+  {
+    id: 7,
+    transactionNumber: "21A260",
+    stationName: "المدينة المنورة",
+    clientName: "يوسف إبراهيم",
+    workerName: "إبراهيم يوسف",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "19 فبراير 2025 - 2:20 ص"
+  },
+  {
+    id: 8,
+    transactionNumber: "21A261",
+    stationName: "الخبر",
+    clientName: "خالد عبدالله",
+    workerName: "عبدالله خالد",
+    fuelType: "بنزين 91، بنزين 95",
+    totalLiters: "4",
+    creationDate: "18 فبراير 2025 - 7:10 ص"
+  },
+  {
+    id: 9,
+    transactionNumber: "21A262",
+    stationName: "الطائف",
+    clientName: "فهد المطيري",
+    workerName: "مطيري فهد",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "18 فبراير 2025 - 1:55 ص"
+  },
+  {
+    id: 10,
+    transactionNumber: "21A263",
+    stationName: "أبها",
+    clientName: "عبدالعزيز السعيد",
+    workerName: "سعيد عبدالعزيز",
+    fuelType: "بنزين 95",
+    totalLiters: "4",
+    creationDate: "17 فبراير 2025 - 8:30 ص"
   }
 ];
 

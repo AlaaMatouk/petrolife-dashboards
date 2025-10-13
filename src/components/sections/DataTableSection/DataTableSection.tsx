@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Table } from "../Table/Table";
-import { Pagination } from "../Pagination/Pagination";
+import { Table } from "../../shared/Table/Table";
+import { Pagination } from "../../shared/Pagination/Pagination";
 import { useNavigate } from "react-router-dom";
 import {
   CirclePlus,
@@ -13,6 +13,7 @@ import {
   LucideIcon
 } from "lucide-react";
 import { createPortal } from "react-dom";
+import { TimeFilter } from "../../shared/TimeFilter/TimeFilter";
 
 // Generic props interface for DataTableSection
 export interface DataTableSectionProps<T> {
@@ -28,6 +29,7 @@ export interface DataTableSectionProps<T> {
   loadingMessage: string;
   errorMessage?: string;
   itemsPerPage?: number;
+  showTimeFilter?: boolean; // New prop to control TimeFilter visibility
 }
 
 // Generic Action Menu Component
@@ -255,7 +257,7 @@ const ExportMenu = () => {
 };
 
 // Generic DataTableSection Component
-export const DataTableSection = <T extends { id: number; driverCode?: string; stationCode?: string; accountStatus?: { active: boolean; text: string } }>({
+export const DataTableSection = <T extends { id: number; driverCode?: string; stationCode?: string; accountStatus?: { active: boolean; text: string }; stationStatus?: { active: boolean; text: string } }>({
   title,
   entityName,
   entityNamePlural,
@@ -267,13 +269,15 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   viewDetailsRoute,
   loadingMessage,
   errorMessage,
-  itemsPerPage = 10
+  itemsPerPage = 10,
+  showTimeFilter = false
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string>("الكل");
 
   // Fetch data on component mount
   useEffect(() => {
@@ -314,20 +318,37 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
       onToggleStatus(itemId);
       // Update local state
       setData(prevData =>
-        prevData.map(item =>
-          item.id === itemId && item.accountStatus
-            ? {
+        prevData.map(item => {
+          if (item.id === itemId) {
+            if (item.accountStatus) {
+              return {
                 ...item,
                 accountStatus: {
                   active: !item.accountStatus.active,
                   text: !item.accountStatus.active ? "مفعل" : "معطل"
                 }
-              }
-            : item
-        )
+              };
+            }
+            if ((item as any).stationStatus) {
+              return {
+                ...item,
+                stationStatus: {
+                  active: !(item as any).stationStatus.active,
+                  text: !(item as any).stationStatus.active ? "مفعل" : "معطل"
+                }
+              };
+            }
+          }
+          return item;
+        })
       );
     }
   };
+
+  // Calculate paginated data
+  const paginatedData = Array.isArray(data) 
+    ? data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : [];
 
   // Enhance columns with ActionMenu
   const enhancedColumns = columns.map(col => {
@@ -343,7 +364,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
         )
       };
     }
-    if (col.key === "accountStatus" && onToggleStatus) {
+    if ((col.key === "accountStatus" || col.key === "stationStatus") && onToggleStatus) {
       return {
         ...col,
         render: (value: any, row: T) => (
@@ -398,32 +419,42 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
       {/* Main Data Table Section */}
       <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
-          <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-            <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
-              <button
-                onClick={() => navigate(addNewRoute)}
-                className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
-              >
-                <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-                  <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
-                    <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                      إضافة {entityName} جديد
-                    </span>
+          {showTimeFilter ? (
+            // Show TimeFilter for fuel station requests
+             <div className="flex items-center w-full">
+            <TimeFilter
+              selectedFilter={selectedFilter}
+              onFilterChange={setSelectedFilter}
+            /></div> 
+          ) : (
+            // Show buttons for other entities
+            <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
+              <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
+                <button
+                  onClick={() => navigate(addNewRoute)}
+                  className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
+                >
+                  <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                    <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
+                      <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                        إضافة {entityName} جديد
+                      </span>
+                    </div>
+                    <CirclePlus className="w-4 h-4 text-gray-500" />
                   </div>
-                  <CirclePlus className="w-4 h-4 text-gray-500" />
-                </div>
-              </button>
+                </button>
 
-              <ExportMenu />
-            </div>
+                <ExportMenu />
+              </div>
 
-            <div className="flex items-center justify-end gap-1.5 relative">
-              <h1 className="relative mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                {title}
-              </h1>
-              <Icon className="w-5 h-5 text-gray-500" />
+              <div className="flex items-center justify-end gap-1.5 relative">
+                <h1 className="relative mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
+                  {title}
+                </h1>
+                <Icon className="w-5 h-5 text-gray-500" />
+              </div>
             </div>
-          </div>
+          )}
         </header>
 
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
@@ -432,7 +463,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
             <div className="hidden lg:block w-full">
               <Table
                 columns={enhancedColumns}
-                data={Array.isArray(data) ? data : []}
+                data={paginatedData}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -443,7 +474,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
                 columns={enhancedColumns.filter(
                   (col) => col.priority === "high" || col.priority === "medium"
                 )}
-                data={Array.isArray(data) ? data : []}
+                data={paginatedData}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>

@@ -36,7 +36,9 @@ export const ROUTES = {
   // Service Distributer Dashboard
   SERVICE_DISTRIBUTER_DASHBOARD: '/servicedistributer',
   STATION_WORKERS: '/stationworkers',
+  STATION_WORKER_DETAILS: '/stationworker/:id',
   STATIONS: '/stations',
+  FUEL_STATION_REQUESTS: '/fuel-station-requests',
   
 } as const;
 

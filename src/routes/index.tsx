@@ -25,6 +25,8 @@ import { ServiceDistributerDashboard } from '../components/ServiceDistributerDas
 import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
+import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
+import { FuelStationRequests } from '../screens/FuelStationRequests';
 
 
 // 404 Component
@@ -80,7 +82,9 @@ export const AppRouter = () => {
       <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
       {/* Service Distributer Station WOrkers */}
       <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
-      <Route path={ROUTES.STATIONS} element={<Stations     />} />
+      <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
+      <Route path={ROUTES.STATIONS} element={<Stations/>} />
+      <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
 
       
       {/* Test Route - Companies-Drivers-Transfer */}
