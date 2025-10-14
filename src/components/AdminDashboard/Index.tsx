@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import sideIcons1 from "../../../static/img/side-icons-1.svg";
 import { RocketLaunchIcon } from "@heroicons/react/24/outline";
+import MostUsedSection from "./MostUsedSection";
 
 // Stats Cards Section
 const StatsCardsSection = () => {
-  const [selectedOptions, setSelectedOptions] = useState<{[key: number]: number}>({3: 1, 9: 1,10:1,11:1});
+  const [selectedOptions, setSelectedOptions] = useState<{
+    [key: number]: number;
+  }>({ 3: 1, 9: 1, 10: 1, 11: 1 });
 
   // Static wallet balance data for testing
   const walletBalance = 720250;
@@ -64,8 +67,10 @@ const StatsCardsSection = () => {
         { name: "Classic", count: 524 },
         { name: "Basic", count: 254 },
       ],
-      options: [ "الافراد","الشركات",],
-      icon: <RocketLaunchIcon className="w-5 h-5" style={{ color: "#E76500" }} />,
+      options: ["الافراد", "الشركات"],
+      icon: (
+        <RocketLaunchIcon className="w-5 h-5" style={{ color: "#E76500" }} />
+      ),
     },
     {
       title: "السيارات المشتركة",
@@ -109,7 +114,7 @@ const StatsCardsSection = () => {
         },
       ],
       total: { name: "الاجمالي", count: 13700 },
-      icon: <DollarSign className="w-5 h-5" style={{ color: "#E76500"}} />,
+      icon: <DollarSign className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "اجمالي اللترات",
@@ -131,7 +136,7 @@ const StatsCardsSection = () => {
         },
       ],
       total: { name: "الاجمالي", count: 2238 },
-      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500"}} />,
+      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "رصيد محافظ العملاء",
@@ -147,7 +152,7 @@ const StatsCardsSection = () => {
         { name: "متوسطة", count: 3250 },
         { name: "صغيرة", count: 1250 },
       ],
-      options: [ "الافراد","الشركات",],
+      options: ["الافراد", "الشركات"],
       icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
@@ -158,7 +163,7 @@ const StatsCardsSection = () => {
         { name: "متوسطة", count: 3250 },
         { name: "صغيرة", count: 1250 },
       ],
-      options: [ "الافراد","الشركات",],
+      options: ["الافراد", "الشركات"],
       icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
@@ -169,7 +174,7 @@ const StatsCardsSection = () => {
         { name: "متوسطة", count: 3250 },
         { name: "صغيرة", count: 1250 },
       ],
-      options: [ "الافراد","الشركات",],
+      options: ["الافراد", "الشركات"],
       icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
   ];
@@ -197,18 +202,22 @@ const StatsCardsSection = () => {
                   return (
                     <button
                       key={optionIndex}
-                      onClick={() => setSelectedOptions(prev => ({
-                        ...prev,
-                        [index]: optionIndex
-                      }))}
+                      onClick={() =>
+                        setSelectedOptions((prev) => ({
+                          ...prev,
+                          [index]: optionIndex,
+                        }))
+                      }
                       className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
                       style={{
-                        backgroundColor: isSelected ? "#F9F3FF" : "rgba(245, 246, 247, 0.4)",
+                        backgroundColor: isSelected
+                          ? "#F9F3FF"
+                          : "rgba(245, 246, 247, 0.4)",
                         color: isSelected ? "#223548" : "#A9B4BE",
                         fontSize: "12px",
                         fontWeight: "400",
                         border: "none",
-                        cursor: "pointer"
+                        cursor: "pointer",
                       }}
                     >
                       {option}
@@ -282,9 +291,7 @@ const StatsCardsSection = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-xl text-[#5B738B] font-bold">
-                {stat.amount}
-              </p>
+              <p className="text-xl text-[#5B738B] font-bold">{stat.amount}</p>
             )}
           </div>
         </div>
@@ -296,66 +303,8 @@ const StatsCardsSection = () => {
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <section className="grid grid-cols-1 mb-8">
       {/* Subscription Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg lg:col-span-1">
-        {/* Main Title */}
-        <div className="text-right mb-6">
-          <h3 className="text-lg font-bold text-purple-800 [direction:rtl] text-right">
-            اشتراكي الحالي
-          </h3>
-        </div>
-
-        {/* Two Information Boxes */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {/* Package Type Box */}
-          <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">
-              نوع الباقة
-            </div>
-            <div className="text-xs text-purple-800">سنوي</div>
-          </div>
-
-          {/* Number of Vehicles Box */}
-          <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">
-              عدد المركبات
-            </div>
-            <div className="text-xs text-purple-800">120</div>
-          </div>
-        </div>
-
-        {/* Explanatory Text */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="flex items-center gap-2 text-orange-500">
-            <div className="w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-            </div>
-            <span className="text-xs text-center [direction:rtl]">
-              نوع الاشتراك يُحدد تلقائياً وفقاً لعدد المركبات.
-            </span>
-          </div>
-        </div>
-
-        {/* Remaining Days Section */}
-        <div className="text-center">
-          <div className="text-sm text-purple-800 mb-3 [direction:rtl] text-center">
-            الأيام المتبقية من الاشتراك
-          </div>
-
-          {/* Countdown Numbers */}
-          <div className="text-2xl font-bold text-orange-500 mb-2 [direction:rtl] text-center">
-            24 : 152 : 245
-          </div>
-
-          {/* Time Unit Labels */}
-          <div className="flex justify-center gap-6 text-xs text-gray-700 [direction:rtl]">
-            <span>يوم</span>
-            <span>ساعة</span>
-            <span>دقيقة</span>
-          </div>
-        </div>
-      </div>
 
       {/* Station Locations Card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
@@ -603,20 +552,23 @@ const FuelDeliveryRequestsSection = () => {
 // My Cars Section
 const MyCarsSection = () => {
   const carCategories = [
-    { name: "سيارات صغيرة", count: 20, total: 85 },
-    { name: "سيارات متوسطة", count: 25, total: 85 },
-    { name: "سيارات كبيرة", count: 30, total: 85 },
-    { name: "سيارات VIP", count: 10, total: 85 },
+    { name: "طللبات غسيل السيارات", count: 100, total: 200 },
+    { name: "طلبات الوقود", count: 50, total: 200 },
+    { name: "طلبات تغيير الزيوت", count: 20, total: 200 },
+    { name: "طلبات تغيير الاطارات", count: 15, total: 200 },
+    { name: "طلبات تغيير البطاريات", count: 15, total: 200 },
   ];
+
+  const colors = ["#5A66C1", "#EE3939", "#5B738B", "#E76500", "#00C950"];
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
-        <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          اجمالي السيارات 85
+        <div className="text-[16px] font-normal text-[#5B738B] [direction:rtl] text-right">
+          اجمالي طلبات التوصيل 200
         </div>
-        <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
-          سياراتي
+        <h3 className="text-xl font-bold text-[#5A66C1] [direction:rtl] text-right">
+          تقرير طلبات التوصيل
         </h3>
       </div>
 
@@ -627,19 +579,19 @@ const MyCarsSection = () => {
           return (
             <div key={index} className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700 [direction:rtl]">
+                <span className="text-sm font-medium text-[#223548] [direction:rtl]">
                   {category.total}/{category.count}
                 </span>
-                <span className="text-sm font-medium text-gray-900 [direction:rtl]">
+                <span className="text-sm font-normal text-[#223548] [direction:rtl]">
                   {category.name}
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 flex justify-end">
+              <div className="w-full bg-gray-100 rounded-full h-[5px] flex justify-end">
                 <div
-                  className="h-3 rounded-full transition-all duration-500"
+                  className="h-[5px] rounded-full transition-all duration-500"
                   style={{
                     width: `${percentage}%`,
-                    backgroundColor: "#5A66C1",
+                    backgroundColor: colors[index],
                   }}
                 ></div>
               </div>
@@ -726,302 +678,91 @@ const FuelConsumptionByCitiesSection = () => {
   );
 };
 
-// Most Used Stations and Drivers Section
-const MostUsedSection = () => {
-  const [selectedStationsFilter, setSelectedStationsFilter] =
-    useState("اخر 12 شهر");
-  const [selectedDriversFilter, setSelectedDriversFilter] =
-    useState("اخر 12 شهر");
+// Most Used Section
+const stationsData = [
+  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
+  { name: "محطة الصالح", email: "info@salah.com", price: 2543 },
+  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
+  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
+  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
+];
 
-  const stationsData = [
-    {
-      name: "محطة الصالح",
-      address: "15 ش الرياض، الرياض",
-      price: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محطة الصالح",
-      address: "15 ش الرياض، الرياض",
-      price: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محطة الصالح",
-      address: "15 ش الرياض، الرياض",
-      price: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محطة الصالح",
-      address: "15 ش الرياض، الرياض",
-      price: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محطة الصالح",
-      address: "15 ش الرياض، الرياض",
-      price: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-  ];
-
-  const driversData = [
-    {
-      name: "محمد أحمد",
-      phone: "00965284358",
-      cost: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محمد أحمد",
-      phone: "00965284358",
-      cost: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محمد أحمد",
-      phone: "00965284358",
-      cost: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محمد أحمد",
-      phone: "00965284358",
-      cost: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-    {
-      name: "محمد أحمد",
-      phone: "00965284358",
-      cost: 2543,
-      fuel: "542",
-      type: "بنزين 91",
-    },
-  ];
-
-  // Table columns for stations
-  const stationsColumns = [
-    {
-      key: "fuel",
-      label: "الوقود",
-      width: "min-w-[100px]",
-      render: (_: any, station: any) => (
-        <div className="text-right">
-          <div className="font-medium text-orange-500">
-            {station?.fuel || "N/A"}
-          </div>
-          <div className="text-gray-500">{station?.type || "N/A"}</div>
-        </div>
-      ),
-    },
-    {
-      key: "price",
-      label: "السعر",
-      width: "min-w-[100px]",
-      render: (_: any, station: any) => (
-        <div className="text-right">
-          <div className="font-medium text-blue-600">
-            {station?.price || "N/A"}
-          </div>
-          <div className="text-gray-500">ر.س</div>
-        </div>
-      ),
-    },
-    {
-      key: "station",
-      label: "المحطة",
-      width: "min-w-[200px]",
-      render: (_: any, station: any) => (
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {station?.name || "N/A"}
-            </div>
-            <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {station?.address || "N/A"}
-            </div>
-          </div>
-          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-            <Fuel className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  // Table columns for drivers
-  const driversColumns = [
-    {
-      key: "fuel",
-      label: "الوقود",
-      width: "min-w-[100px]",
-      render: (_: any, driver: any) => (
-        <div className="text-right">
-          <div className="font-medium text-orange-500">
-            {driver?.fuel || "N/A"}
-          </div>
-          <div className="text-gray-500">{driver?.type || "N/A"}</div>
-        </div>
-      ),
-    },
-    {
-      key: "cost",
-      label: "التكلفة",
-      width: "min-w-[100px]",
-      render: (_: any, driver: any) => (
-        <div className="text-right">
-          <div className="font-medium text-blue-600">
-            {driver?.cost || "N/A"}
-          </div>
-          <div className="text-gray-500">ر.س</div>
-        </div>
-      ),
-    },
-    {
-      key: "driver",
-      label: "السائق",
-      width: "min-w-[200px]",
-      render: (_: any, driver: any) => (
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {driver?.name || "N/A"}
-            </div>
-            <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {driver?.phone || "N/A"}
-            </div>
-          </div>
-          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-            <Users className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      {/* Most Used Stations */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="mb-6">
-          <div className="flex justify-end mb-4">
-            <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
-              <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                المحطات الأكثر استخداما
-              </h3>
-              <Fuel className="w-5 h-5 text-gray-500" />
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedStationsFilter}
-              onFilterChange={setSelectedStationsFilter}
-            />
-          </div>
-        </div>
-
-        <Table columns={stationsColumns} data={stationsData} className="mb-4" />
-      </div>
-
-      {/* Most Consuming Drivers */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="mb-6">
-          <div className="flex justify-end mb-4">
-            <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
-              <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                السائقين الأكثر استهلاكا
-              </h3>
-              <Users className="w-5 h-5 text-gray-500" />
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedDriversFilter}
-              onFilterChange={setSelectedDriversFilter}
-            />
-          </div>
-        </div>
-
-        <Table columns={driversColumns} data={driversData} className="mb-4" />
-      </div>
-    </section>
-  );
-};
+const driversData = [
+  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
+  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
+  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
+  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
+  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
+];
+const companiesData = [
+  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
+  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
+  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
+  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
+  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
+];
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
+  const [selectedButton, setSelectedButton] = useState(0);
+  
   const ordersData = [
     {
       code: "21A254",
-      type: "وقود 91",
-      driver: "احمد محمد",
+      client: "احمد محمد",
+      service:"وقود طوارئ",
+      litre: "20",
+      totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      value: "20",
-      cumulative: "200",
+      status:"جاري المراجعة"
     },
     {
       code: "21A254",
-      type: "منتج",
-      driver: "--",
+      client: "احمد محمد",
+      service:"وقود طوارئ",
+      litre: "20",
+      totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      value: "20",
-      cumulative: "180",
+      status:"جاري المراجعة"
     },
     {
       code: "21A254",
-      type: "وقود 91",
-      driver: "احمد محمد",
+      client: "احمد محمد",
+      service:"وقود طوارئ",
+      litre: "20",
+      totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      value: "20",
-      cumulative: "160",
+      status:"جاري المراجعة"
     },
     {
       code: "21A254",
-      type: "وقود 91",
-      driver: "احمد محمد",
+      client: "احمد محمد",
+      service:"وقود طوارئ",
+      litre: "20",
+      totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      value: "20",
-      cumulative: "140",
+      status:"جاري المراجعة"
     },
     {
       code: "21A254",
-      type: "وقود 91",
-      driver: "احمد محمد",
+      client: "احمد محمد",
+      service:"وقود طوارئ",
+      litre: "20",
+      totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      value: "20",
-      cumulative: "120",
+      status:"جاري المراجعة"
     },
   ];
 
   // Table columns for orders
   const ordersColumns = [
     {
-      key: "cumulative",
-      label: "تراكمي العمليات (ر.س)",
+      key: "status",
+      label: "حالة الطلب",
       width: "min-w-[150px]",
       render: (_: any, order: any) => (
-        <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.cumulative || "N/A"}
-        </div>
-      ),
-    },
-    {
-      key: "value",
-      label: "قيمة العملية",
-      width: "min-w-[100px]",
-      render: (_: any, order: any) => (
-        <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.value || "N/A"}
+        <div className="text-right font-medium text-sm rounded-[8px] px-[10px] py-2 text-[#E76500] bg-[#FFFCEC] [direction:rtl]">
+         <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#E76500]"></span> {order?.status || "N/A"}
         </div>
       ),
     },
@@ -1036,29 +777,49 @@ const LatestOrdersSection = () => {
       ),
     },
     {
-      key: "driver",
-      label: "اسم السائق",
-      width: "min-w-[120px]",
+      key: "totalCost",
+      label: "السعر الكلي",
+      width: "min-w-[100px]",
       render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.driver || "N/A"}
+          {order?.totalCost || "N/A"}
         </div>
       ),
     },
     {
-      key: "type",
-      label: "نوع العملية",
-      width: "min-w-[120px]",
+      key: "litre",
+      label: "اجمالي اللترات",
+      width: "min-w-[100px]",
       render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.type || "N/A"}
+          {order?.litre || "N/A"}
+        </div>
+      ),
+    },
+    {
+      key: "service",
+      label: "الخدمة",
+      width: "min-w-[100px]",
+      render: (_: any, order: any) => (
+        <div className="text-right text-sm text-gray-800 [direction:rtl]">
+          {order?.service || "N/A"}
+        </div>
+      ),
+    },
+    {
+      key: "client",
+      label: "اسم العميل",
+      width: "min-w-[100px]",
+      render: (_: any, order: any) => (
+        <div className="text-right text-sm text-gray-800 [direction:rtl]">
+          {order?.client || "N/A"}
         </div>
       ),
     },
     {
       key: "code",
-      label: "كود العملية",
-      width: "min-w-[120px]",
+      label: "الرقم المرجعي",
+      width: "min-w-[100px]",
       render: (_: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
           {order?.code || "N/A"}
@@ -1070,16 +831,53 @@ const LatestOrdersSection = () => {
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <button className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          <span className="text-sm font-medium [direction:rtl]">
+        <button 
+          className="flex items-center gap-2 px-3 py-2 bg-white text-[#5A66C1] rounded-lg hover:bg-gray-50 transition-colors"
+          style={{ border: '1px solid #5A66C1' }}
+        >
+          <span className="text-sm font-medium [direction:rtl] ">
             عرض المزيد
           </span>
         </button>
-        <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
-          <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
+       
+        <div className="inline-flex items-center gap-[28px] relative flex-[0_0_auto]">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setSelectedButton(0)}
+              className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
+              style={{
+                backgroundColor: selectedButton === 0
+                  ? "#F9F3FF"
+                  : "rgba(245, 246, 247, 0.4)",
+                color: selectedButton === 0 ? "#223548" : "#A9B4BE",
+                fontSize: "14px",
+                fontWeight: "500",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              محطات الوقود
+            </button>
+            <button
+              onClick={() => setSelectedButton(1)}
+              className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
+              style={{
+                backgroundColor: selectedButton === 1
+                  ? "#F9F3FF"
+                  : "rgba(245, 246, 247, 0.4)",
+                color: selectedButton === 1 ? "#223548" : "#A9B4BE",
+                fontSize: "14px",
+                fontWeight: "500",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              الشركات
+            </button>
+          </div>
+          <h3 className="mt-[-1.00px] font-[800] text-[#5A66C1] text-[18px] leading-[24px] [direction:rtl] relative  whitespace-nowrap ">
             أحدث الطلبات
           </h3>
-          <FileText className="w-5 h-5 text-gray-500" />
         </div>
       </div>
 
@@ -1114,23 +912,30 @@ export const Index = (): JSX.Element => {
         {/* All Cards - 4 rows of 3 cards each */}
         <StatsCardsSection />
 
-        {/* Subscription and Locations */}
-        <SubscriptionAndLocationsSection />
-
         {/* Consumption Section */}
         <ConsumptionSection />
-
-        {/* New Dashboard Sections */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <FuelDeliveryRequestsSection />
-          <MyCarsSection />
-        </section>
 
         {/* Fuel Consumption by Cities */}
         <FuelConsumptionByCitiesSection />
 
+        {/* Subscription and Locations */}
+        <SubscriptionAndLocationsSection />
+
+        {/* New Dashboard Sections */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <MyCarsSection />
+          <MyCarsSection />
+        </section>
+
         {/* Most Used Section */}
-        <MostUsedSection />
+        <MostUsedSection
+          stationsData={stationsData}
+          driversData={driversData}
+          companiesData={companiesData}
+          stationsTitle="محطات الوقود الأكثر استخداما"
+          driversTitle="الأفراد الأكثر استهلاكا"
+          companiesTitle="الشركات الأكثر استهلاكا"
+        />
 
         {/* Latest Orders */}
         <LatestOrdersSection />
