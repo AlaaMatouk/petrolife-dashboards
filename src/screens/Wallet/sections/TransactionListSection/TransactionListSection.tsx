@@ -4,6 +4,8 @@ import { Table, Pagination, TimeFilter, ExportButton, LoadingSpinner } from "../
 import { CirclePlus, WalletMinimal } from "lucide-react";
 import { useAuth } from "../../../../hooks/useGlobalState";
 import { fetchOrders, calculateFuelStatistics } from "../../../../services/firestore";
+import { exportDataTable } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 
 // Helper function to format date
 const formatDate = (date: any): string => {
@@ -78,6 +80,7 @@ const convertOrdersToTransactions = (orders: any[]): any[] => {
 export const TransactionListSection = (): JSX.Element => {
   const navigate = useNavigate();
   const { company } = useAuth();
+  const { addToast } = useToast();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(1);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -119,6 +122,42 @@ export const TransactionListSection = (): JSX.Element => {
     loadData();
   }, []);
 
+  // Handle export
+  const handleExport = async (format: string) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'id', label: 'رقم العملية' },
+        { key: 'type', label: 'نوع العملية' },
+        { key: 'driver', label: 'اسم السائق' },
+        { key: 'date', label: 'تاريخ العملية' },
+        { key: 'amount', label: 'قيمة العملية' },
+        { key: 'cumulative', label: 'تراكمي العمليات (ر.س)' },
+      ];
+
+      await exportDataTable(
+        filteredTransactions,
+        exportColumns,
+        'wallet-transactions',
+        format as 'excel' | 'pdf',
+        'تقرير المعاملات المالية'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير المعاملات المالية بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
   // Apply time filter to transactions
   const filteredTransactions = transactions.filter(transaction => {
     if (selectedTimeFilter === 'الكل') {
@@ -154,12 +193,6 @@ export const TransactionListSection = (): JSX.Element => {
 
   // Define table columns for transactions
   const transactionColumns = [
-    {
-      key: "export",
-      label: "",
-      width: "min-w-[100px]",
-      render: () => <ExportButton className="!border-0 inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors" />,
-    },
     {
       key: "cumulative",
       label: "تراكمي العمليات (ر.س)",
@@ -306,7 +339,7 @@ export const TransactionListSection = (): JSX.Element => {
                 </div>
             </button>
 
-               <ExportButton />
+               <ExportButton onExport={handleExport} />
 
               <TimeFilter
                 selectedFilter={selectedTimeFilter}

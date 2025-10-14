@@ -14,13 +14,6 @@ export const StoreScreen = (): JSX.Element => {
       headerProps={{
         title: "المتجر",
         titleIconSrc: <Store className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "البحث في المنتجات",
-          onSearch: (query) => {
-            // console.log("Search:", query);
-          },
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

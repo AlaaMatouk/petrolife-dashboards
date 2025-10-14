@@ -396,6 +396,28 @@ export const createDeliveryOrder = async (orderData: {
       fuelType: orderData.fuelType,
       totalLitre: orderData.quantity,
       
+      // Selected option - maps to product/fuel type
+      selectedOption: {
+        name: {
+          ar: orderData.fuelType,
+          en: orderData.fuelType === 'بنزين 91' ? 'Gasoline 91' : 
+              orderData.fuelType === 'بنزين 95' ? 'Gasoline 95' : 
+              orderData.fuelType === 'ديزل' ? 'Diesel' : orderData.fuelType
+        }
+      },
+      
+      // Service type - identifies this as a Fuel Delivery order
+      service: {
+        title: {
+          ar: 'توصيل الوقود',
+          en: 'Fuel Delivery'
+        },
+        desc: {
+          ar: 'عند الطلب وفي أي وقت وفي أي مكان',
+          en: 'On-demand, anytime anywhere.'
+        }
+      },
+      
       // Costs
       fuelCost: orderData.fuelCost,
       deliveryFees: orderData.deliveryFees,
@@ -1344,13 +1366,39 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
     });
 
     console.log('\n🏢 Car Stations fetched:', carStations.length);
+    
+    // Debug: Show first 3 stations
+    console.log('\n📍 Sample Car Stations:');
+    carStations.slice(0, 3).forEach((station, i) => {
+      console.log(`Station ${i + 1}:`, {
+        city: station.city,
+        company: station.company,
+        email: station.email
+      });
+    });
 
     // Step 2: Fetch orders filtered by current user
     const orders = await fetchOrders();
-    console.log('📦 Orders fetched for current user:', orders.length);
+    console.log('\n📦 Orders fetched for current user:', orders.length);
+    
+    // Debug: Show first 3 orders
+    if (orders.length > 0) {
+      console.log('\n📍 Sample Orders:');
+      orders.slice(0, 3).forEach((order, i) => {
+        console.log(`Order ${i + 1}:`, {
+          id: order.id || order.refId,
+          carStationEmail: order.carStation?.email || order.stationEmail || 'NO EMAIL',
+          totalLitre: order.totalLitre,
+          quantity: order.quantity
+        });
+      });
+    }
 
     // Step 3: Match orders to stations and calculate consumption
-    orders.forEach(order => {
+    let matchedCount = 0;
+    let unmatchedCount = 0;
+    
+    orders.forEach((order, index) => {
       const orderStationEmail = order.carStation?.email || order.stationEmail;
       
       if (orderStationEmail) {
@@ -1365,11 +1413,31 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
                           0;
           
           station.totalLitersConsumed += quantity;
+          matchedCount++;
           
-          console.log(`✅ Matched order ${order.refId} to station ${station.company} - Added ${quantity}L`);
+          if (index < 5) {
+            console.log(`✅ Order ${index + 1} matched to "${station.company}" (${station.city}) - Added ${quantity}L`);
+          }
+        } else {
+          unmatchedCount++;
+          if (index < 5) {
+            console.log(`⚠️ Order ${index + 1} - No station found with email: ${orderStationEmail}`);
+          }
+        }
+      } else {
+        unmatchedCount++;
+        if (index < 5) {
+          console.log(`⚠️ Order ${index + 1} - No carStation.email in order`);
         }
       }
     });
+    
+    console.log('\n🔗 MATCHING SUMMARY:');
+    console.log('===================');
+    console.log(`Total orders: ${orders.length}`);
+    console.log(`Matched to stations: ${matchedCount}`);
+    console.log(`Unmatched: ${unmatchedCount}`);
+    console.log('===================\n');
 
     // Log summary
     console.log('\n📊 Car Stations Summary:');
@@ -1490,6 +1558,122 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
     return reportData;
   } catch (error) {
     console.error('Error fetching financial report data:', error);
+    return [];
+  }
+};
+
+/**
+ * Calculate fuel consumption by cities from car stations data
+ * Uses fetchCarStationsWithConsumption() which calculates consumption from orders
+ * Groups stations by city and sums consumption
+ * @returns Promise with array of cities and their fuel consumption
+ */
+export const calculateFuelConsumptionByCities = async () => {
+  try {
+    console.log('\n🏙️ ========================================');
+    console.log('📊 CALCULATING FUEL CONSUMPTION BY CITIES');
+    console.log('📍 Using fetchCarStationsWithConsumption()');
+    console.log('========================================\n');
+
+    // Fetch car stations WITH consumption calculated from orders
+    // This function matches orders to stations and calculates totalLitersConsumed
+    const stations = await fetchCarStationsWithConsumption();
+    
+    if (!stations || stations.length === 0) {
+      console.log('⚠️ No stations found');
+      return [];
+    }
+
+    console.log(`📦 Total stations fetched: ${stations.length}`);
+
+    // Debug: Log first 5 stations to see what we got
+    console.log('\n📋 SAMPLE STATIONS WITH CONSUMPTION:');
+    console.log('====================================');
+    stations.slice(0, 5).forEach((station, index) => {
+      console.log(`Station ${index + 1}:`, {
+        city: station.city,
+        company: station.company,
+        totalLitersConsumed: station.totalLitersConsumed
+      });
+    });
+    console.log('====================================\n');
+
+    // Group stations by city and sum consumption
+    const cityConsumption: Record<string, {
+      name: string;
+      totalLitres: number;
+      stationCount: number;
+    }> = {};
+
+    let processedCount = 0;
+    let skippedNoCityCount = 0;
+    let skippedNoConsumptionCount = 0;
+
+    stations.forEach((station, index) => {
+      // Extract city from station (already extracted by fetchCarStationsWithConsumption)
+      const cityName = station.city;
+      
+      // Extract consumption (already calculated by fetchCarStationsWithConsumption)
+      const consumption = station.totalLitersConsumed || 0;
+
+      // Only process stations with valid city and consumption
+      if (!cityName || cityName === 'N/A') {
+        skippedNoCityCount++;
+        if (index < 10) {
+          console.log(`⚠️ Station ${index + 1} (${station.company}) skipped - No valid city`);
+        }
+      } else if (consumption <= 0) {
+        skippedNoConsumptionCount++;
+        if (index < 10) {
+          console.log(`⚠️ Station ${index + 1} (${station.company}) skipped - No consumption (City: ${cityName})`);
+        }
+      } else {
+        // Valid station - add to city totals
+        processedCount++;
+        
+        if (index < 10) {
+          console.log(`✅ Station ${index + 1} (${station.company}) processed - City: ${cityName}, Litres: ${consumption}`);
+        }
+        
+        if (!cityConsumption[cityName]) {
+          cityConsumption[cityName] = {
+            name: cityName,
+            totalLitres: 0,
+            stationCount: 0,
+          };
+        }
+
+        cityConsumption[cityName].totalLitres += consumption;
+        cityConsumption[cityName].stationCount += 1;
+      }
+    });
+
+    console.log('\n📊 PROCESSING SUMMARY:');
+    console.log('====================');
+    console.log(`Total stations: ${stations.length}`);
+    console.log(`Processed: ${processedCount}`);
+    console.log(`Skipped (no city): ${skippedNoCityCount}`);
+    console.log(`Skipped (no consumption): ${skippedNoConsumptionCount}`);
+    console.log('====================\n');
+
+    // Convert to array and sort by consumption (highest first)
+    const citiesArray = Object.values(cityConsumption)
+      .sort((a, b) => b.totalLitres - a.totalLitres)
+      .map(city => ({
+        name: city.name,
+        consumption: Math.round(city.totalLitres * 100) / 100, // Round to 2 decimal places
+        stationCount: city.stationCount,
+      }));
+
+    console.log('\n✅ FUEL CONSUMPTION BY CITIES:');
+    console.log('========================================');
+    console.table(citiesArray);
+    console.log(`📍 Total cities: ${citiesArray.length}`);
+    console.log('========================================\n');
+
+    return citiesArray;
+  } catch (error) {
+    console.error('❌ Error calculating fuel consumption by cities:', error);
     return [];
   }
 };
@@ -2351,6 +2535,80 @@ export const fetchCompaniesCars = async () => {
     }
   } catch (error) {
     console.error('Error fetching companies-cars data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch notifications from Firestore notifications collection
+ * Filtered by current company ID in the companies array
+ * @returns Promise with filtered notifications data
+ */
+export const fetchNotifications = async () => {
+  try {
+    console.log('🔔 Fetching notifications from Firestore...');
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      console.log('❌ No user is currently logged in.');
+      return [];
+    }
+
+    // First, get the current company data
+    const companyData = await fetchCurrentCompany();
+    
+    if (!companyData || !companyData.id) {
+      console.log('❌ No company found for current user.');
+      return [];
+    }
+
+    const companyId = companyData.id;
+    console.log('✅ Current Company ID:', companyId);
+
+    // Fetch all notifications
+    const notificationsRef = collection(db, 'notifications');
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(notificationsRef);
+    
+    const allNotifications: any[] = [];
+    querySnapshot.forEach((doc) => {
+      allNotifications.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    console.log('📋 Total notifications in collection:', allNotifications.length);
+
+    // Filter notifications where companies array contains current company ID
+    const filteredNotifications = allNotifications.filter((notification) => {
+      const companies = notification.companies || [];
+      const isForCompany = companies.includes(companyId);
+      
+      if (isForCompany) {
+        console.log('✅ Notification matched for company:', {
+          id: notification.id,
+          body: notification.body?.substring(0, 50),
+          createdDate: notification.createdDate
+        });
+      }
+      
+      return isForCompany;
+    });
+
+    console.log('✅ Filtered notifications for current company:', filteredNotifications.length);
+
+    // Sort by createdDate (most recent first)
+    filteredNotifications.sort((a, b) => {
+      const dateA = a.createdDate?.toDate?.() || new Date(a.createdDate || 0);
+      const dateB = b.createdDate?.toDate?.() || new Date(b.createdDate || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return filteredNotifications;
+  } catch (error) {
+    console.error('❌ Error fetching notifications:', error);
     throw error;
   }
 };

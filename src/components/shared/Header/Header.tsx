@@ -1,9 +1,11 @@
 import React, { ReactNode, useState, useRef, useEffect } from "react";
-import { Bell, Sun, Search, ShoppingCart, User, LogOut } from "lucide-react";
+import { Sun, Search, User, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../../config/firebase";
 import { signOutUser } from "../../../services/auth";
 import { useGlobalState } from "../../../context/GlobalStateContext";
+import { NotificationDropdown } from "../Notification";
+import { CartDropdown } from "../Cart";
 
 // Breadcrumb route mapping
 const breadcrumbRoutes: Record<string, string> = {
@@ -223,13 +225,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Profile Dropdown - First on the left */}
           <ProfileDropdown />
 
-          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-            <Bell className="w-4 h-4 text-gray-600" />
-          </button>
+          {/* Notification Dropdown */}
+          <NotificationDropdown />
 
-          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-            <ShoppingCart className="w-4 h-4 text-gray-600" />
-          </button>
+          {/* Cart Dropdown */}
+          <CartDropdown />
 
           <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <Sun className="w-4 h-4 text-gray-600" />

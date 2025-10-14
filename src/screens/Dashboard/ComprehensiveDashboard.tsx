@@ -4,7 +4,9 @@ import { Table, TimeFilter } from "../../components/shared";
 import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics } from "../../services/firestore";
+import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics, calculateFuelConsumptionByCities } from "../../services/firestore";
+import { exportDataTable } from "../../services/exportService";
+import { useToast } from "../../context/ToastContext";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -926,29 +928,76 @@ const MyCarsSection = () => {
 
 // Fuel Consumption by Cities Section
 const FuelConsumptionByCitiesSection = () => {
+  const { addToast } = useToast();
   const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
+  const [citiesData, setCitiesData] = useState<Array<{ name: string; consumption: number; stationCount?: number }>>([]);
+  const [loading, setLoading] = useState(true);
 
-  const citiesData = [
-    { name: "الرياض", consumption: 15 },
-    { name: "جدة", consumption: 70 },
-    { name: "مكة", consumption: 45 },
-    { name: "الرياض", consumption: 60 },
-    { name: "الرياض", consumption: 75 },
-    { name: "الرياض", consumption: 80 },
-    { name: "الرياض", consumption: 65 },
-    { name: "الرياض", consumption: 20 },
-    { name: "الرياض", consumption: 85 },
-    { name: "الرياض", consumption: 90 },
-    { name: "الرياض", consumption: 95 },
-  ];
+  // Fetch cities data from Firestore
+  useEffect(() => {
+    const loadCitiesData = async () => {
+      try {
+        setLoading(true);
+        const data = await calculateFuelConsumptionByCities();
+        setCitiesData(data);
+      } catch (error) {
+        console.error('Error loading cities data:', error);
+        addToast({
+          title: 'خطأ',
+          message: 'فشل في تحميل بيانات المدن',
+          type: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const maxConsumption = Math.max(...citiesData.map(city => city.consumption));
+    loadCitiesData();
+  }, [addToast]);
+
+  const maxConsumption = citiesData.length > 0 
+    ? Math.max(...citiesData.map(city => city.consumption))
+    : 0;
+  
+  // Handle export
+  const handleExport = async () => {
+    try {
+      const exportColumns = [
+        { key: 'name', label: 'المدينة' },
+        { key: 'consumption', label: 'الاستهلاك (لتر)' },
+      ];
+
+      await exportDataTable(
+        citiesData,
+        exportColumns,
+        'fuel-consumption-by-cities',
+        'excel',
+        'استهلاك الوقود للمدن'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: 'تم تصدير بيانات استهلاك الوقود بنجاح',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <Download className="w-4 h-4" />
             <span className="text-sm font-medium [direction:rtl]">تصدير</span>
           </button>
@@ -962,34 +1011,64 @@ const FuelConsumptionByCitiesSection = () => {
         </h3>
       </div>
       
+      {/* Loading State */}
+      {loading && (
+        <div className="h-80 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 [direction:rtl]">جاري تحميل البيانات...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Empty State */}
+      {!loading && citiesData.length === 0 && (
+        <div className="h-80 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 [direction:rtl] text-lg font-medium">لا توجد بيانات لعرضها</p>
+            <p className="text-gray-500 [direction:rtl] text-sm mt-2">لم يتم العثور على استهلاك وقود في أي مدينة</p>
+          </div>
+        </div>
+      )}
+      
       {/* Bar Chart */}
-      <div className="h-80 flex items-end justify-between gap-1">
-        {citiesData.map((city, index) => {
-          const height = (city.consumption / maxConsumption) * 100;
-          return (
-            <div key={index} className="flex flex-col items-center flex-1">
-              {/* Bar */}
-              <div className="relative w-6 mb-3">
-                <div className="w-full bg-gray-100 rounded-full" style={{ height: '240px' }}>
-                    <div
-                      className="w-full rounded-full transition-all duration-700"
-                      style={{ 
-                        height: `${height}%`,
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: '#5A66C1'
-                      }}
-                    ></div>
+      {!loading && citiesData.length > 0 && (
+        <div className="h-80 flex items-end justify-between gap-1">
+          {citiesData.map((city, index) => {
+            const height = maxConsumption > 0 ? (city.consumption / maxConsumption) * 100 : 0;
+            return (
+              <div key={index} className="flex flex-col items-center flex-1">
+                {/* Litres Consumed - On Top */}
+                <div className="text-xs font-bold text-gray-700 [direction:rtl] text-center mb-2" style={{ minHeight: '20px' }}>
+                  {city.consumption.toFixed(1)} .L
+                </div>
+                
+                {/* Bar */}
+                <div className="relative w-6 mb-3">
+                  <div className="w-full bg-gray-100 rounded-full" style={{ height: '220px' }}>
+                      <div
+                        className="w-full rounded-full transition-all duration-700 hover:opacity-80"
+                        style={{ 
+                          height: `${height}%`,
+                          position: 'absolute',
+                          bottom: 0,
+                          backgroundColor: '#5A66C1'
+                        }}
+                        title={`${city.name}: ${city.consumption.toFixed(1)} لتر`}
+                      ></div>
+                  </div>
+                </div>
+                
+                {/* City Name - At Bottom */}
+                <div className="text-xs text-gray-600 [direction:rtl] text-center font-medium max-w-[60px] truncate" title={city.name}>
+                  {city.name}
                 </div>
               </div>
-              {/* City Name */}
-              <div className="text-xs text-gray-600 [direction:rtl] text-center font-medium">
-                {city.name}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -1482,11 +1561,6 @@ export const ComprehensiveDashboard = (): JSX.Element => {
       headerProps={{
         title: "لوحة التحكم",
         titleIconSrc: <BarChart3 className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "بحث برقم العميل / العملية السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

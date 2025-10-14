@@ -100,32 +100,6 @@ const dummyStationData: StationData[] = [
   },
 ];
 
-interface ToggleSwitchProps {
-  isOn: boolean;
-  onToggle: () => void;
-  ariaLabel: string;
-}
-
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
-  isOn,
-  onToggle,
-  ariaLabel,
-}) => {
-  return (
-    <button
-      onClick={onToggle}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-        isOn ? 'bg-green-600' : 'bg-gray-200'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          isOn ? 'translate-x-5' : 'translate-x-0.5'
-        }`}
-      />
-    </button>
-  );
-};
 
 interface ControlPanelSectionProps {
   currentPage: number;
@@ -136,8 +110,6 @@ export const ControlPanelSection = ({ currentPage, setTotalPages }: ControlPanel
   const [stationData, setStationData] = useState<StationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [stationStates, setStationStates] = useState<Record<string, boolean>>({});
   
   const ITEMS_PER_PAGE = 10;
 
@@ -163,16 +135,6 @@ export const ControlPanelSection = ({ currentPage, setTotalPages }: ControlPanel
 
         setStationData(transformedStations);
         
-        // Initialize station states
-        const initialStates = transformedStations.reduce(
-          (acc, station) => {
-            acc[station.id] = station.isAvailable;
-            return acc;
-          },
-          {} as Record<string, boolean>,
-        );
-        setStationStates(initialStates);
-        
         // Update total pages
         const pages = Math.ceil(transformedStations.length / ITEMS_PER_PAGE);
         setTotalPages(pages);
@@ -186,13 +148,6 @@ export const ControlPanelSection = ({ currentPage, setTotalPages }: ControlPanel
 
     loadStations();
   }, []);
-
-  const handleToggle = (stationId: string) => {
-    setStationStates((prev) => ({
-      ...prev,
-      [stationId]: !prev[stationId],
-    }));
-  };
 
   const tableColumns = [
     {

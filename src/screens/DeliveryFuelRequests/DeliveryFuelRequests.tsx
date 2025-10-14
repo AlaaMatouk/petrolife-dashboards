@@ -14,11 +14,6 @@ export const DeliveryFuelRequests = (): JSX.Element => {
       headerProps={{
         title: "طلبات توصيل الوقود",
         titleIconSrc: <Fuel className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "البحث في طلبات التوصيل",
-          onSearch: (query) => {}, // console.log("Search:", query)
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

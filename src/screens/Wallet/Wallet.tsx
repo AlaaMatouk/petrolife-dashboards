@@ -33,11 +33,6 @@ export const Wallet = (): JSX.Element => {
       headerProps={{
         title: "محفظــــــــــــتي",
         titleIconSrc: <WalletMinimal className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

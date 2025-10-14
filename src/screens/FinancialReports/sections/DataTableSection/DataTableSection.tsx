@@ -4,6 +4,8 @@ import { UserRound, ChartNoAxesCombined } from "lucide-react";
 import { fetchFinancialReportData } from "../../../../services/firestore";
 import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
 import { useAuth } from "../../../../hooks/useGlobalState";
+import { exportDataTable } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 
 const clientData = {
   phone: "00966254523658",
@@ -253,6 +255,7 @@ const tableColumns = [
 
 export const DataTableSection = (): JSX.Element => {
   const { company } = useAuth();
+  const { addToast } = useToast();
   const [reportData, setReportData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -267,6 +270,49 @@ export const DataTableSection = (): JSX.Element => {
     productType: "الكل",
     reportType: "تحليلي",
   });
+
+  // Handle export
+  const handleExport = async (format: string) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'city', label: 'المدينة' },
+        { key: 'stationName', label: 'اسم المحطة' },
+        { key: 'date', label: 'التاريخ' },
+        { key: 'operationNumber', label: 'رقم العملية' },
+        { key: 'quantity', label: 'الكمية' },
+        { key: 'productName', label: 'اسم المنتج' },
+        { key: 'productNumber', label: 'رقم المنتج' },
+        { key: 'productType', label: 'نوع المنتج' },
+        { key: 'driverName', label: 'اسم السائق' },
+        { key: 'driverCode', label: 'كود السائق' },
+      ];
+
+      // Get filtered data for export
+      const dataToExport = filteredTableData;
+
+      await exportDataTable(
+        dataToExport,
+        exportColumns,
+        'financial-report',
+        format as 'excel' | 'pdf',
+        'التقارير المالية'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير التقرير المالي بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
 
   // Fetch financial report data
   useEffect(() => {
@@ -580,7 +626,7 @@ export const DataTableSection = (): JSX.Element => {
       <article className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <div className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <header className="items-center justify-between self-stretch w-full flex-[0_0_auto] flex relative">
-            <ExportButton />
+            <ExportButton onExport={handleExport} />
 
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h2 className="relative w-[103px] h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">

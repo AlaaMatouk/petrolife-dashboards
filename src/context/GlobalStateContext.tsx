@@ -71,6 +71,17 @@ export interface Notification {
   read: boolean;
 }
 
+export interface CartItem {
+  id: string;
+  productId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  category?: string;
+  [key: string]: any;
+}
+
 export interface PaginationState {
   currentPage: number;
   itemsPerPage: number;
@@ -101,6 +112,7 @@ export interface GlobalState {
   cars: Car[];
   transactions: Transaction[];
   notifications: Notification[];
+  cart: CartItem[];
   
   // UI State
   sidebarCollapsed: boolean;
@@ -153,6 +165,11 @@ export type GlobalAction =
   | { type: 'MARK_NOTIFICATION_READ'; payload: string }
   | { type: 'CLEAR_NOTIFICATIONS' }
   
+  | { type: 'ADD_TO_CART'; payload: CartItem }
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'UPDATE_CART_QUANTITY'; payload: { id: string; quantity: number } }
+  | { type: 'CLEAR_CART' }
+  
   // UI State
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' }
@@ -185,6 +202,7 @@ const initialState: GlobalState = {
   cars: [],
   transactions: [],
   notifications: [],
+  cart: [],
   
   // UI State
   sidebarCollapsed: false,
@@ -367,6 +385,39 @@ const globalReducer = (state: GlobalState, action: GlobalAction): GlobalState =>
       };
     case 'CLEAR_NOTIFICATIONS':
       return { ...state, notifications: [] };
+    
+    // Cart
+    case 'ADD_TO_CART':
+      // Check if item already exists in cart
+      const existingItemIndex = state.cart.findIndex(item => item.productId === action.payload.productId);
+      if (existingItemIndex >= 0) {
+        // Update quantity if item exists
+        const updatedCart = [...state.cart];
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          quantity: updatedCart[existingItemIndex].quantity + action.payload.quantity,
+        };
+        return { ...state, cart: updatedCart };
+      } else {
+        // Add new item to cart
+        return { ...state, cart: [...state.cart, action.payload] };
+      }
+    case 'REMOVE_FROM_CART':
+      return { 
+        ...state, 
+        cart: state.cart.filter(item => item.id !== action.payload) 
+      };
+    case 'UPDATE_CART_QUANTITY':
+      return {
+        ...state,
+        cart: state.cart.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: action.payload.quantity }
+            : item
+        ),
+      };
+    case 'CLEAR_CART':
+      return { ...state, cart: [] };
     
     // UI State
     case 'TOGGLE_SIDEBAR':

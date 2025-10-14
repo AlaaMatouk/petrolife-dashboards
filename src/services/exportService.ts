@@ -528,3 +528,196 @@ export const getFilteredTransactions = (
     return true;
   });
 };
+
+/**
+ * Generic export function for any data table with company data
+ * @param data - Array of data objects to export
+ * @param columns - Column headers for the table
+ * @param filename - Name of the exported file
+ * @param format - Export format ('excel' or 'pdf')
+ * @param reportTitle - Title for the report
+ */
+export const exportDataTable = async (
+  data: any[],
+  columns: { key: string; label: string }[],
+  filename: string,
+  format: 'excel' | 'pdf',
+  reportTitle: string = 'تقرير البيانات'
+) => {
+  try {
+    // Fetch company data
+    const company = await fetchCurrentCompany();
+    
+    if (format === 'excel') {
+      await exportTableToExcel(data, columns, company, filename, reportTitle);
+    } else {
+      await exportTableToPDF(data, columns, company, filename, reportTitle);
+    }
+  } catch (error) {
+    console.error('Export error:', error);
+    throw new Error('فشل في تصدير البيانات');
+  }
+};
+
+/**
+ * Export table data to Excel with company header
+ */
+const exportTableToExcel = async (
+  data: any[],
+  columns: { key: string; label: string }[],
+  company: any,
+  filename: string,
+  reportTitle: string
+) => {
+  try {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([]);
+    
+    let currentRow = 0;
+    
+    // Add report title
+    XLSX.utils.sheet_add_aoa(worksheet, [[reportTitle]], { origin: { r: currentRow, c: 0 } });
+    currentRow += 2;
+    
+    // Add company information header
+    if (company) {
+      const companyInfo = [
+        ['معلومات الشركة'],
+        ['اسم الشركة:', company.brandName || company.name || '-'],
+        ['البريد الإلكتروني:', company.email || '-'],
+        ['رقم الهاتف:', company.phoneNumber || '-'],
+        ['العنوان:', company.address || '-'],
+        ['السجل التجاري:', company.commercialRegistrationNumber || '-'],
+        ['الرقم الضريبي:', company.vatNumber || '-'],
+        ['الرصيد الحالي:', `${company.balance || 0} ر.س`],
+        [''], // Empty row
+      ];
+      
+      XLSX.utils.sheet_add_aoa(worksheet, companyInfo, { origin: { r: currentRow, c: 0 } });
+      currentRow += companyInfo.length + 1;
+    }
+    
+    // Add table headers
+    const headers = columns.map(col => col.label);
+    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: { r: currentRow, c: 0 } });
+    currentRow += 1;
+    
+    // Add table data
+    const rows = data.map(item => 
+      columns.map(col => {
+        const value = item[col.key];
+        // Handle nested objects
+        if (typeof value === 'object' && value !== null) {
+          if (value.text) return value.text;
+          if (value.name) return value.name;
+          return JSON.stringify(value);
+        }
+        return value || '-';
+      })
+    );
+    
+    XLSX.utils.sheet_add_aoa(worksheet, rows, { origin: { r: currentRow, c: 0 } });
+    
+    // Set column widths
+    const colWidths = columns.map(() => ({ wch: 20 }));
+    worksheet['!cols'] = colWidths;
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
+    
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const fullFilename = `${filename}-${currentDate}.xlsx`;
+    
+    // Save the workbook
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    saveAs(blob, fullFilename);
+  } catch (error) {
+    console.error('Excel export error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Export table data to PDF with company header
+ */
+const exportTableToPDF = async (
+  data: any[],
+  columns: { key: string; label: string }[],
+  company: any,
+  filename: string,
+  reportTitle: string
+) => {
+  try {
+    const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+    
+    let yPosition = 10;
+    
+    // Add report title
+    pdf.setFontSize(16);
+    pdf.text(reportTitle, pdf.internal.pageSize.getWidth() - 10, yPosition, { align: 'right' });
+    yPosition += 10;
+    
+    // Add company information
+    if (company) {
+      pdf.setFontSize(10);
+      const companyInfo = [
+        `اسم الشركة: ${company.brandName || company.name || '-'}`,
+        `البريد الإلكتروني: ${company.email || '-'}`,
+        `رقم الهاتف: ${company.phoneNumber || '-'}`,
+        `الرصيد: ${company.balance || 0} ر.س`,
+      ];
+      
+      companyInfo.forEach(info => {
+        pdf.text(info, pdf.internal.pageSize.getWidth() - 10, yPosition, { align: 'right' });
+        yPosition += 6;
+      });
+      
+      yPosition += 5;
+    }
+    
+    // Prepare table data
+    const tableHeaders = columns.map(col => col.label);
+    const tableRows = data.map(item => 
+      columns.map(col => {
+        const value = item[col.key];
+        // Handle nested objects
+        if (typeof value === 'object' && value !== null) {
+          if (value.text) return value.text;
+          if (value.name) return value.name;
+          return '-';
+        }
+        return value || '-';
+      })
+    );
+    
+    // Add table using autoTable
+    (pdf as any).autoTable({
+      head: [tableHeaders],
+      body: tableRows,
+      startY: yPosition,
+      styles: {
+        font: 'helvetica',
+        halign: 'center',
+      },
+      headStyles: {
+        fillColor: [79, 91, 179],
+        textColor: [255, 255, 255],
+        fontSize: 10,
+      },
+      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+    });
+    
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const fullFilename = `${filename}-${currentDate}.pdf`;
+    
+    // Save the PDF
+    pdf.save(fullFilename);
+  } catch (error) {
+    console.error('PDF export error:', error);
+    throw error;
+  }
+};

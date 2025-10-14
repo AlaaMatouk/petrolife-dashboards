@@ -14,11 +14,6 @@ export const SubscriptionsScreen = (): JSX.Element => {
       headerProps={{
         title: "اشتراكاتي",
         titleIconSrc: <CreditCard className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "البحث في الاشتراكات",
-          onSearch: (query) => console.log("Search:", query),
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

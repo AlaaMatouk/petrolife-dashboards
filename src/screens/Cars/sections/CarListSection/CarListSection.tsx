@@ -7,6 +7,8 @@ import { Car, CirclePlus, Settings, ChevronDown, ChevronUp, MoreVertical, Edit, 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { fetchCompaniesCars, normalizeCarSize } from "../../../../services/firestore";
+import { exportDataTable } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 
 // Define table columns for cars - original order with responsive design
 const carColumns = [
@@ -413,8 +415,13 @@ const convertFirestoreToCars = (firestoreData: any[]): any[] => {
   }));
 };
 
-export const CarListSection = (): JSX.Element => {
+interface CarListSectionProps {
+  searchQuery?: string;
+}
+
+export const CarListSection = ({ searchQuery = "" }: CarListSectionProps): JSX.Element => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
   const [cars, setCars] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -464,11 +471,69 @@ export const CarListSection = (): JSX.Element => {
     setExpandedCards(newExpanded);
   };
 
+  // Handle export
+  const handleExport = async (format: string) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'carNumber', label: 'رقم السيارة' },
+        { key: 'carName', label: 'اسم السيارة' },
+        { key: 'brand', label: 'الماركة' },
+        { key: 'model', label: 'الطراز' },
+        { key: 'year', label: 'سنة الاصدار' },
+        { key: 'fuelType', label: 'نوع الوقود' },
+        { key: 'category', label: 'تصنيف السيارة' },
+        { key: 'drivers', label: 'السائقون' },
+      ];
+
+      await exportDataTable(
+        filteredCars,
+        exportColumns,
+        'cars-report',
+        format as 'excel' | 'pdf',
+        'تقرير السيارات'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير بيانات السيارات بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
+  // Filter cars based on search query
+  const filteredCars = cars.filter(car => {
+    if (!searchQuery || searchQuery.trim() === '') {
+      return true;
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Search across multiple fields
+    return (
+      car.carName?.toLowerCase().includes(query) ||
+      car.carNumber?.toLowerCase().includes(query) ||
+      car.brand?.toLowerCase().includes(query) ||
+      car.model?.toLowerCase().includes(query) ||
+      car.year?.toLowerCase().includes(query) ||
+      car.fuelType?.toLowerCase().includes(query) ||
+      car.category?.name?.toLowerCase().includes(query)
+    );
+  });
+
   // Calculate pagination
-  const totalPages = Math.ceil(cars.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredCars.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedCars = cars.slice(startIndex, endIndex);
+  const paginatedCars = filteredCars.slice(startIndex, endIndex);
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
@@ -488,12 +553,16 @@ export const CarListSection = (): JSX.Element => {
           )}
 
           {/* No Data Message */}
-          {!isLoading && !error && cars.length === 0 && (
+          {!isLoading && !error && filteredCars.length === 0 && (
             <div className="flex items-center justify-center w-full py-12 bg-white rounded-lg border border-gray-200">
               <div className="text-center">
                 <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg [direction:rtl]">لا توجد سيارات</p>
-                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">قم بإضافة سيارة جديدة للبدء</p>
+                <p className="text-gray-600 text-lg [direction:rtl]">
+                  {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سيارات'}
+                </p>
+                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">
+                  {searchQuery ? 'جرب مصطلح بحث آخر' : 'قم بإضافة سيارة جديدة للبدء'}
+                </p>
               </div>
             </div>
           )}
@@ -529,12 +598,12 @@ export const CarListSection = (): JSX.Element => {
                 </div>
               </button>
 
-              <ExportButton />
+              <ExportButton onExport={handleExport} />
             </div>
 
             <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
               <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                السيــــــــــــــارت ({cars.length})
+                السيــــــــــــــارت ({filteredCars.length})
               </h1>
               <Car className="w-5 h-5 text-gray-500" />
             </div>

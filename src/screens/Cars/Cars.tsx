@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CarListSection } from "./sections/CarListSection/CarListSection";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import {
@@ -8,6 +9,12 @@ import {
 import { Car } from "lucide-react";
 
 export const Cars = (): JSX.Element => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   return (
     <LayoutSimple
       headerProps={{
@@ -15,7 +22,8 @@ export const Cars = (): JSX.Element => {
         titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
-          onSearch: (query) => console.log("Search:", query),
+          onSearch: handleSearch,
+          placeholder: "بحث بالاسم، الماركة، الرقم، أو الطراز...",
         },
       }}
       sidebarProps={{
@@ -26,7 +34,7 @@ export const Cars = (): JSX.Element => {
       }}
     >
       <div className="flex flex-col w-full items-start gap-5 ">
-        <CarListSection />
+        <CarListSection searchQuery={searchQuery} />
       </div>
     </LayoutSimple>
   );

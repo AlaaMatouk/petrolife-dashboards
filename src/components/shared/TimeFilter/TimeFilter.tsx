@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar } from "lucide-react";
+// import { Calendar } from "lucide-react"; // Commented out - calendar icon not in use
 
 interface TimeFilterProps {
   selectedFilter: string;
@@ -16,12 +16,13 @@ export const TimeFilter: React.FC<TimeFilterProps> = ({
 }) => {
   return (
     <div className={`inline-flex items-center gap-[11px] relative flex-[0_0_auto] ${className}`}>
-      <button
+      {/* Calendar icon button - commented out */}
+      {/* <button
         className="w-[35px] bg-color-mode-surface-bg-icon-gray border-[0.2px] border-solid border-color-mode-surface-bg-screen flex items-center justify-center h-[30px] relative rounded-[5px] hover:bg-opacity-60 transition-all duration-200"
         aria-label="عرض الخيارات"
       >
         <Calendar className="w-4 h-4 text-gray-600" />
-      </button>
+      </button> */}
 
       {filters.map((filter) => (
         <button

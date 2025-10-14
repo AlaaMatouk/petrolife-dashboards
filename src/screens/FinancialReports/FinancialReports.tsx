@@ -16,10 +16,6 @@ export const FinancialReports = (): JSX.Element => {
         title: "التقــــــــــــــــارير / التقارير المالية",
         titleIconSrc: <ChartNoAxesCombined className="w-5 h-5 text-gray-500" />,
         navigationIcons: navigationIcons,
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
         walletButton: {
           label: "محفظــــــــــــــتي",
           iconSrc: "/img/side-icons.svg",

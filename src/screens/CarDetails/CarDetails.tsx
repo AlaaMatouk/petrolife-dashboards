@@ -48,10 +48,6 @@ export const CarDetails = (): JSX.Element => {
       headerProps={{
         title: "السيــــــــــــارات",
         titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
       }}
       sidebarProps={{
         sections: navigationMenuData.sections,

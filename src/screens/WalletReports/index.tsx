@@ -35,11 +35,6 @@ export const WalletReports = (): JSX.Element => {
         title: "التقــــــــــــــــارير / تقرير المحفظة",
         titleIconSrc: <Wallet className="w-5 h-5 text-gray-500" />,
         navigationIcons: walletReportsNavigationIcons,
-        showSearch: true,
-        searchProps: {
-          placeholder: "بحث برقم العميل/العملية/ السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
-        },
         walletButton: {
           label: "محفظــــــــــــــتي",
           iconSrc: "/img/side-icons.svg",

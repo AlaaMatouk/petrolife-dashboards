@@ -34,23 +34,12 @@ export const DriverRow: React.FC<DriverRowProps> = ({ driver }) => {
       {/* Account Status Column */}
       <div className="flex flex-col w-[111px] items-end relative">
         <div className="flex h-[42px] items-center justify-end gap-2.5 pt-[var(--corner-radius-extra-small)] pr-[var(--corner-radius-none)] pb-[var(--corner-radius-extra-small)] pl-[var(--corner-radius-none)] relative self-stretch w-full border-b-[0.2px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder">
-          <div className="inline-flex items-center gap-[var(--corner-radius-small)] relative flex-[0_0_auto]">
-            <div
-              className={`relative w-[39.48px] h-6 rounded-[77.42px] overflow-hidden rotate-[-180.00deg] ${
-                driver.accountStatus.active
-                  ? "bg-color-mode-surface-primary-green"
-                  : "bg-system-colors-fills-secondary"
-              }`}
-            >
-              <div
-                className={`absolute top-[calc(50.00%_-_11px)] h-[21px] w-[21px] bg-color-mode-surface-bg-screen rounded-[77.42px] shadow-[var(--shadow-sm)] ${
-                  driver.accountStatus.active ? "right-0.5" : "left-0.5"
-                }`}
-              />
-            </div>
-            <div className="relative w-[43px] h-[19px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-              {driver.accountStatus.text}
-            </div>
+          <div className={`font-[number:var(--body-body-2-font-weight)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)] ${
+            driver.accountStatus.active
+              ? "text-green-700"
+              : "text-gray-500"
+          }`}>
+            {driver.accountStatus.text}
           </div>
         </div>
       </div>
