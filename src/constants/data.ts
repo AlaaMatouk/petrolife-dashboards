@@ -1342,6 +1342,90 @@ export const fuelStationRequestsData = [
   }
 ];
 
+// Invoices Data
+export const invoicesData = [
+  {
+    id: 1,
+    invoiceCode: "INV-2024-001",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-01",
+    vat: "150.00 ر.س",
+    totalWithVat: "1,150.00 ر.س"
+  },
+  {
+    id: 2,
+    invoiceCode: "INV-2024-002",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-05",
+    vat: "75.00 ر.س",
+    totalWithVat: "575.00 ر.س"
+  },
+  {
+    id: 3,
+    invoiceCode: "INV-2024-003",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-10",
+    vat: "300.00 ر.س",
+    totalWithVat: "2,300.00 ر.س"
+  },
+  {
+    id: 4,
+    invoiceCode: "INV-2024-004",
+    invoiceType: "فاتورة مشتريات",
+    creationDate: "2024-10-12",
+    vat: "225.00 ر.س",
+    totalWithVat: "1,725.00 ر.س"
+  },
+  {
+    id: 5,
+    invoiceCode: "INV-2024-005",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-14",
+    vat: "180.00 ر.س",
+    totalWithVat: "1,380.00 ر.س"
+  },
+  {
+    id: 6,
+    invoiceCode: "INV-2024-006",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-15",
+    vat: "90.00 ر.س",
+    totalWithVat: "690.00 ر.س"
+  },
+  {
+    id: 7,
+    invoiceCode: "INV-2024-007",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-16",
+    vat: "135.00 ر.س",
+    totalWithVat: "1,035.00 ر.س"
+  },
+  {
+    id: 8,
+    invoiceCode: "INV-2024-008",
+    invoiceType: "فاتورة مشتريات",
+    creationDate: "2024-10-17",
+    vat: "210.00 ر.س",
+    totalWithVat: "1,610.00 ر.س"
+  },
+  {
+    id: 9,
+    invoiceCode: "INV-2024-009",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-18",
+    vat: "165.00 ر.س",
+    totalWithVat: "1,265.00 ر.س"
+  },
+  {
+    id: 10,
+    invoiceCode: "INV-2024-010",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-19",
+    vat: "195.00 ر.س",
+    totalWithVat: "1,495.00 ر.س"
+  }
+];
+
 // Time Filters
 export const timeFilters = [
   "اخر اسبوع",
