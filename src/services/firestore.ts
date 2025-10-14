@@ -1694,53 +1694,87 @@ export const fetchUserSubscriptions = async (): Promise<any[]> => {
     console.log('==============================');
     console.log('Current User UID:', user.uid);
 
-    // Fetch subscriptions where createdUserId == currentUser.uid
-    const subscriptionsCollection = collection(db, 'subscriptions');
-    const q = query(subscriptionsCollection, where('createdUserId', '==', user.uid));
+    // First, get the current company
+    const company = await fetchCurrentCompany();
+    if (!company) {
+      console.error('No company found for current user');
+      return [];
+    }
+
+    console.log('Current Company ID:', company.id);
+    console.log('Current User Email:', user.email);
+    console.log('Current Company Email:', company.email);
+
+    // Fetch subscriptions from subscriptions-payment collection
+    const subscriptionsCollection = collection(db, 'subscriptions-payment');
+    
+    // Query by company email
+    const companyEmail = company.email;
+    if (!companyEmail) {
+      console.error('No company email found');
+      return [];
+    }
+
+    console.log('Fetching subscriptions-payment filtered by company email:', companyEmail);
+    
+    // Query by company.email (nested field)
+    const q = query(subscriptionsCollection, where('company.email', '==', companyEmail));
     const subscriptionsSnapshot = await getDocs(q);
 
-    console.log('Subscriptions found:', subscriptionsSnapshot.docs.length);
+    console.log('Total subscriptions found (filtered by company.email):', subscriptionsSnapshot.docs.length);
+
+    // If we found subscriptions, log the first one's structure to help debug
+    if (subscriptionsSnapshot.docs.length > 0) {
+      console.log('\n🔍 First subscription document structure:');
+      console.log('Document ID:', subscriptionsSnapshot.docs[0].id);
+      console.log('Available fields:', Object.keys(subscriptionsSnapshot.docs[0].data()));
+      console.log('Full document data:', subscriptionsSnapshot.docs[0].data());
+    } else {
+      console.log('\n❌ No documents found in subscriptions-payment collection');
+      console.log('Please check:');
+      console.log('1. Does the subscriptions-payment collection exist?');
+      console.log('2. Do documents have email field matching:', company.email);
+      console.log('3. Check Firebase Console for actual field names');
+    }
 
     // Transform each subscription
     const subscriptions = subscriptionsSnapshot.docs.map((doc, index) => {
       const data = doc.data();
 
-      // Extract fields
-      const planName = data.planName || data.title?.ar || data.title?.en || 'N/A';
-      const price = data.price || 0;
-      const createdDate = data.createdDate;
-      const periodValueInDays = data.periodValueInDays || 30;
-
-      // Calculate expiry date
-      let expiryDate = null;
-      if (createdDate) {
-        const createdDateObj = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
-        expiryDate = new Date(createdDateObj);
-        expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
-      }
+      // Extract fields from the document structure
+      const selectedSubscription = data.selectedSubscription || {};
+      const planName = selectedSubscription.title?.ar || selectedSubscription.title?.en || 'N/A';
+      const price = selectedSubscription.price || 0;
+      const subscriptionStartDate = data.subscriptionStartDate || data.createdDate;
+      const subscriptionEndDate = data.subscriptionEndDate;
+      const periodValueInDays = selectedSubscription.periodValueInDays || 30;
+      const isPaid = data.isPaid !== undefined ? data.isPaid : true;
 
       // Format dates as DD/MM/YYYY
-      const formatDate = (date: Date | null): string => {
+      const formatDate = (date: any): string => {
         if (!date) return 'N/A';
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        try {
+          const dateObj = date.toDate ? date.toDate() : new Date(date);
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const year = dateObj.getFullYear();
+          return `${day}/${month}/${year}`;
+        } catch (error) {
+          return 'N/A';
+        }
       };
 
-      const createdDateFormatted = createdDate 
-        ? formatDate(createdDate.toDate ? createdDate.toDate() : new Date(createdDate))
-        : 'N/A';
-      
-      const expiryDateFormatted = expiryDate ? formatDate(expiryDate) : 'N/A';
+      const createdDateFormatted = formatDate(subscriptionStartDate);
+      const expiryDateFormatted = formatDate(subscriptionEndDate);
 
       if (index < 3) {
         console.log(`\n--- Subscription ${index + 1} ---`);
         console.log('Plan Name:', planName);
         console.log('Price:', price);
-        console.log('Created Date:', createdDateFormatted);
+        console.log('Start Date:', createdDateFormatted);
+        console.log('End Date:', expiryDateFormatted);
         console.log('Period (days):', periodValueInDays);
-        console.log('Expiry Date:', expiryDateFormatted);
+        console.log('Is Paid:', isPaid);
       }
 
       return {
@@ -1750,10 +1784,37 @@ export const fetchUserSubscriptions = async (): Promise<any[]> => {
         createdDate: createdDateFormatted,
         expiryDate: expiryDateFormatted,
         periodValueInDays,
+        isPaid,
         // Keep original data for reference
         originalData: data
       };
     });
+
+    // If still no subscriptions found, check if they're stored in the company document itself
+    if (subscriptions.length === 0) {
+      console.log('\n⚠️ No subscriptions found in subscriptions-payment collection');
+      console.log('Checking if subscriptions are stored in company document...');
+      
+      if (company.subscriptionsHistory && Array.isArray(company.subscriptionsHistory)) {
+        console.log('Found subscriptionsHistory in company document:', company.subscriptionsHistory.length);
+        // Return the subscriptions from company document
+        return company.subscriptionsHistory.map((sub: any, index: number) => ({
+          id: sub.id || `company-sub-${index}`,
+          planName: sub.planName || sub.title?.ar || sub.title?.en || 'N/A',
+          price: sub.price || 0,
+          createdDate: sub.createdDate || 'N/A',
+          expiryDate: sub.expiryDate || 'N/A',
+          periodValueInDays: sub.periodValueInDays || 30,
+          originalData: sub
+        }));
+      }
+      
+      console.log('⚠️ No subscriptions found in company document either');
+      console.log('Please check:');
+      console.log('1. Are subscriptions being created in the database?');
+      console.log('2. What is the correct field name to query by?');
+      console.log('3. Check Firebase Console to see subscription documents structure');
+    }
 
     console.log('\n✅ Subscriptions processed:', subscriptions.length);
     console.log('==============================\n');

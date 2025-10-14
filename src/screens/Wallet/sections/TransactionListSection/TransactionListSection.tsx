@@ -122,7 +122,7 @@ export const TransactionListSection = (): JSX.Element => {
     loadData();
   }, []);
 
-  // Handle export
+  // Handle export all transactions
   const handleExport = async (format: string) => {
     try {
       // Define columns for export
@@ -146,6 +146,43 @@ export const TransactionListSection = (): JSX.Element => {
       addToast({
         title: 'نجح التصدير',
         message: `تم تصدير المعاملات المالية بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
+  // Handle export single row
+  const handleExportRow = async (row: any) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'id', label: 'رقم العملية' },
+        { key: 'type', label: 'نوع العملية' },
+        { key: 'driver', label: 'اسم السائق' },
+        { key: 'date', label: 'تاريخ العملية' },
+        { key: 'amount', label: 'قيمة العملية' },
+        { key: 'cumulative', label: 'تراكمي العمليات (ر.س)' },
+      ];
+
+      // Export single row as an array with one item
+      await exportDataTable(
+        [row],
+        exportColumns,
+        `wallet-transaction-${row.id}`,
+        'excel',
+        'تقرير المعاملة المالية'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير المعاملة رقم ${row.id} بنجاح`,
         type: 'success',
       });
     } catch (error) {
@@ -193,6 +230,21 @@ export const TransactionListSection = (): JSX.Element => {
 
   // Define table columns for transactions
   const transactionColumns = [
+    {
+      key: "export",
+      label: "تصدير",
+      width: "min-w-[100px]",
+      render: (_value: any, row: any) => (
+        <ExportButton
+          onExport={() => handleExportRow(row)}
+          buttonText="تصدير"
+          showExcel={true}
+          showPDF={false}
+          showCSV={false}
+          className="!border-0 !p-0"
+        />
+      ),
+    },
     {
       key: "cumulative",
       label: "تراكمي العمليات (ر.س)",

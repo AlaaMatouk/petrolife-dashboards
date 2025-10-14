@@ -135,9 +135,9 @@ const createDetailedReport = async (
   worksheet['D1'] = createRTLCell(''); // Merge with C1
   worksheet['C2'] = createRTLCell('بترو لايف');
   worksheet['D2'] = createRTLCell(''); // Merge with C2
-  worksheet['C3'] = createRTLCell(`السجل التجاري : ${commercialRegister}`);
+  worksheet['C3'] = createRTLCell(`${commercialRegister} : السجل التجاري`);
   worksheet['D3'] = createRTLCell(''); // Merge with C3
-  worksheet['C4'] = createRTLCell(`الرقم الضريبي : ${taxNumber}`);
+  worksheet['C4'] = createRTLCell(`${taxNumber} : الرقم الضريبي`);
   worksheet['D4'] = createRTLCell(''); // Merge with C4
 
   // Top Middle (F & G & H columns) - Logo placeholders
@@ -170,9 +170,9 @@ const createDetailedReport = async (
   // SECOND PART - Middle section
   
   // Left side - Labels on left (C), values on right (D), merge rows 6-7
-  worksheet['C6'] = createRTLCell('اسم العميل');
+  worksheet['C6'] = createRTLCell(`:اسم العميل`);
   worksheet['D6'] = createRTLCell(companyName);
-  worksheet['C7'] = createRTLCell('رقم العميل');
+  worksheet['C7'] = createRTLCell(`:رقم العميل`);
   worksheet['D7'] = createRTLCell(clientNumber);
   
   // Merge C6:D6 and C7:D7
@@ -182,9 +182,9 @@ const createDetailedReport = async (
   );
 
   // Right side - Labels on right (K), values on left (J), merge rows 6-7
-  worksheet['J6'] = createRTLCell('السجل التجاري :');
+  worksheet['J6'] = createRTLCell(`: السجل التجاري`);
   worksheet['K6'] = createRTLCell(commercialRegister);
-  worksheet['J7'] = createRTLCell('الرقم الضريبي :');
+  worksheet['J7'] = createRTLCell(`: الرقم الضريبي`);
   worksheet['K7'] = createRTLCell(taxNumber);
   
   // Merge J6:K6 and J7:K7
@@ -288,9 +288,9 @@ const createSummaryReport = async (
   worksheet['D1'] = createRTLCell('');
   worksheet['C2'] = createRTLCell('بترو لايف');
   worksheet['D2'] = createRTLCell('');
-  worksheet['C3'] = createRTLCell(`السجل التجاري : ${commercialRegister}`);
+  worksheet['C3'] = createRTLCell(`${commercialRegister} : السجل التجاري`);
   worksheet['D3'] = createRTLCell('');
-  worksheet['C4'] = createRTLCell(`الرقم الضريبي : ${taxNumber}`);
+  worksheet['C4'] = createRTLCell(`${taxNumber} : الرقم الضريبي`);
   worksheet['D4'] = createRTLCell('');
 
   // Top Middle (F & G & H columns) - Logo placeholders
@@ -323,9 +323,9 @@ const createSummaryReport = async (
   // SECOND PART - Middle section
   
   // Left side - Labels on left (C), values on right (D), merge rows 6-7
-  worksheet['C6'] = createRTLCell('اسم العميل');
+  worksheet['C6'] = createRTLCell(`:اسم العميل`);
   worksheet['D6'] = createRTLCell(companyName);
-  worksheet['C7'] = createRTLCell('رقم العميل');
+  worksheet['C7'] = createRTLCell(`:رقم العميل`);
   worksheet['D7'] = createRTLCell(clientNumber);
   
   // Merge C6:D6 and C7:D7
@@ -335,9 +335,9 @@ const createSummaryReport = async (
   );
 
   // Right side - Labels on right (K), values on left (J), merge rows 6-7
-  worksheet['J6'] = createRTLCell('السجل التجاري :');
+  worksheet['J6'] = createRTLCell(`: السجل التجاري`);
   worksheet['K6'] = createRTLCell(commercialRegister);
-  worksheet['J7'] = createRTLCell('الرقم الضريبي :');
+  worksheet['J7'] = createRTLCell(`: الرقم الضريبي`);
   worksheet['K7'] = createRTLCell(taxNumber);
   
   // Merge J6:K6 and J7:K7
@@ -600,13 +600,13 @@ const exportTableToExcel = async (
     if (company) {
       const companyInfo = [
         ['معلومات الشركة'],
-        ['اسم الشركة:', company.brandName || company.name || '-'],
-        ['البريد الإلكتروني:', company.email || '-'],
-        ['رقم الهاتف:', company.phoneNumber || '-'],
-        ['العنوان:', company.address || '-'],
-        ['السجل التجاري:', company.commercialRegistrationNumber || '-'],
-        ['الرقم الضريبي:', company.vatNumber || '-'],
-        ['الرصيد الحالي:', `${company.balance || 0} ر.س`],
+        [`:اسم الشركة`, company.brandName || company.name || '-'],
+        [`:البريد الإلكتروني`, company.email || '-'],
+        [`:رقم الهاتف`, company.phoneNumber || '-'],
+        [`:العنوان`, company.address || '-'],
+        [`:السجل التجاري`, company.commercialRegistrationNumber || '-'],
+        [`:الرقم الضريبي`, company.vatNumber || '-'],
+        [`:الرصيد الحالي`, `${company.balance || 0} ر.س`],
         [''], // Empty row
       ];
       
@@ -698,10 +698,10 @@ const exportTableToPDF = async (
     if (company) {
       pdf.setFontSize(10);
       const companyInfo = [
-        `اسم الشركة: ${company.brandName || company.name || '-'}`,
-        `البريد الإلكتروني: ${company.email || '-'}`,
-        `رقم الهاتف: ${company.phoneNumber || '-'}`,
-        `الرصيد: ${company.balance || 0} ر.س`,
+        `${company.brandName || company.name || '-'} :اسم الشركة`,
+        `${company.email || '-'} :البريد الإلكتروني`,
+        `${company.phoneNumber || '-'} :رقم الهاتف`,
+        `ر.س ${company.balance || 0} :الرصيد`,
       ];
       
       companyInfo.forEach(info => {
