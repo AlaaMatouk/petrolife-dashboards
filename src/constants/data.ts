@@ -144,19 +144,19 @@ export const serviceDistributerNavigationMenuData = {
       id: "stations",
       label:"التقارير المالية",
       icon: "/img/side-icons-8.svg",
-      href: ROUTES.PEROLIFE_STATION_LOCATIONS
+      href: ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS
     },
     {
       id: "refund-requests",
       label: "مواقع المحطات",
       icon: "/img/side-icons-10.svg",
-      href: ROUTES.REFUND_REQUESTS
+      href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS
     },
     {
       id: "charge-requests",
       label: "الفواتيــــــــــــر",
       icon: "/img/side-icons-10.svg",
-      href: ROUTES.CHARGE_REQUESTS
+      href: ROUTES.SERVICE_DISTRIBUTER_INVOICES
     },
     {
       id: "charge-requests",
@@ -1066,6 +1066,175 @@ export const fuelData = [
     type: "بنزين 91",
     amount: "845 .L",
     color: "text-color-mode-text-icons-t-green"
+  }
+];
+
+// Service Distributer Financial Reports Filter Options
+export const serviceDistributerFinancialReportsFilterOptions = [
+  { 
+    label: "نوع التقرير", 
+    value: "تحليلي", 
+    icon: "/img/side-icons-20.svg",
+    options: [
+      { value: "تحليلي", label: "تحليلي" },
+      { value: "ملخص", label: "ملخص" },
+      { value: "تفصيلي", label: "تفصيلي" }
+    ]
+  },
+  {
+    label: "اسم المنتج",
+    value: "الكل",
+    icon: "/img/side-icons-19.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "بنزين 91", label: "بنزين 91" },
+      { value: "بنزين 95", label: "بنزين 95" },
+      { value: "ديزل", label: "ديزل" },
+      { value: "زيت محرك", label: "زيت محرك" },
+      { value: "سائل تبريد", label: "سائل تبريد" }
+    ]
+  },
+  {
+    label: "قائمة المحطات",
+    value: "الكل",
+    icon: "/img/side-icons-18.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "محطة الرياض المركزية", label: "محطة الرياض المركزية" },
+      { value: "محطة جدة الشمالية", label: "محطة جدة الشمالية" },
+      { value: "محطة الدمام", label: "محطة الدمام" },
+      { value: "محطة مكة", label: "محطة مكة" }
+    ]
+  },
+  {
+    label: "المدينة",
+    value: "الكل",
+    icon: "/img/side-icons-17.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "الرياض", label: "الرياض" },
+      { value: "جدة", label: "جدة" },
+      { value: "الدمام", label: "الدمام" },
+      { value: "مكة", label: "مكة" },
+      { value: "المدينة المنورة", label: "المدينة المنورة" }
+    ]
+  },
+  {
+    label: "رقم العملية",
+    value: "الكل",
+    icon: "/img/side-icons-16.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "21A254", label: "21A254" },
+      { value: "21A255", label: "21A255" },
+      { value: "21A256", label: "21A256" },
+      { value: "21A257", label: "21A257" },
+      { value: "21A258", label: "21A258" }
+    ]
+  }
+];
+
+// Service Distributer Financial Reports Data
+export const serviceDistributerFinancialReportsData = [
+  {
+    id: 1,
+    productType: "وقود",
+    productNumber: "21A254",
+    productName: "بنزين 91",
+    quantity: "20",
+    value: "94",
+    unit: "لتر",
+    operationNumber: "21A254"
+  },
+  {
+    id: 2,
+    productType: "وقود",
+    productNumber: "21A255",
+    productName: "بنزين 95",
+    quantity: "15",
+    value: "78",
+    unit: "لتر",
+    operationNumber: "21A255"
+  },
+  {
+    id: 3,
+    productType: "وقود",
+    productNumber: "21A256",
+    productName: "ديزل",
+    quantity: "25",
+    value: "85",
+    unit: "لتر",
+    operationNumber: "21A256"
+  },
+  {
+    id: 4,
+    productType: "منتج",
+    productNumber: "21A257",
+    productName: "زيت محرك",
+    quantity: "5",
+    value: "120",
+    unit: "لتر",
+    operationNumber: "21A257"
+  },
+  {
+    id: 5,
+    productType: "وقود",
+    productNumber: "21A258",
+    productName: "بنزين 91",
+    quantity: "30",
+    value: "141",
+    unit: "لتر",
+    operationNumber: "21A258"
+  },
+  {
+    id: 6,
+    productType: "وقود",
+    productNumber: "21A259",
+    productName: "ديزل",
+    quantity: "18",
+    value: "61",
+    unit: "لتر",
+    operationNumber: "21A259"
+  },
+  {
+    id: 7,
+    productType: "منتج",
+    productNumber: "21A260",
+    productName: "سائل تبريد",
+    quantity: "8",
+    value: "96",
+    unit: "لتر",
+    operationNumber: "21A260"
+  },
+  {
+    id: 8,
+    productType: "وقود",
+    productNumber: "21A261",
+    productName: "بنزين 95",
+    quantity: "22",
+    value: "115",
+    unit: "لتر",
+    operationNumber: "21A261"
+  },
+  {
+    id: 9,
+    productType: "وقود",
+    productNumber: "21A262",
+    productName: "بنزين 91",
+    quantity: "12",
+    value: "56",
+    unit: "لتر",
+    operationNumber: "21A262"
+  },
+  {
+    id: 10,
+    productType: "منتج",
+    productNumber: "21A263",
+    productName: "زيت ناقل حركة",
+    quantity: "3",
+    value: "75",
+    unit: "لتر",
+    operationNumber: "21A263"
   }
 ];
 

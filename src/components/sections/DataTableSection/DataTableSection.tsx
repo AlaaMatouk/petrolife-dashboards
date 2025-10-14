@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { TimeFilter } from "../../shared/TimeFilter/TimeFilter";
+import { RTLSelect } from "../../shared/Form/RTLSelect";
 
 // Generic props interface for DataTableSection
 export interface DataTableSectionProps<T> {
@@ -30,6 +31,8 @@ export interface DataTableSectionProps<T> {
   errorMessage?: string;
   itemsPerPage?: number;
   showTimeFilter?: boolean; // New prop to control TimeFilter visibility
+  showAddButton?: boolean; // New prop to control Add button visibility
+  filterOptions?: any[]; // New prop for RTLSelect filters
 }
 
 // Generic Action Menu Component
@@ -270,7 +273,9 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   loadingMessage,
   errorMessage,
   itemsPerPage = 10,
-  showTimeFilter = false
+  showTimeFilter = false,
+  showAddButton = true,
+  filterOptions = []
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
@@ -278,6 +283,28 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("الكل");
+  
+  // Initialize filters state based on filterOptions
+  const initialFilters = filterOptions.reduce((acc, filter) => {
+    const key = filter.label === "نوع التقرير" ? "reportType" : 
+                filter.label === "اسم المنتج" ? "productName" :
+                filter.label === "قائمة المحطات" ? "stationList" :
+                filter.label === "المدينة" ? "city" :
+                filter.label === "رقم العملية" ? "operationNumber" : 
+                filter.label.toLowerCase().replace(/\s+/g, "");
+    acc[key] = filter.value;
+    return acc;
+  }, {} as Record<string, string>);
+  
+  const [filters, setFilters] = useState<Record<string, string>>(initialFilters);
+  
+  // Handle filter changes
+  const handleFilterChange = (filterKey: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterKey]: value
+    }));
+  };
 
   // Fetch data on component mount
   useEffect(() => {
@@ -430,19 +457,21 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
             // Show buttons for other entities
             <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
               <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
-                <button
-                  onClick={() => navigate(addNewRoute)}
-                  className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
-                >
-                  <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
-                    <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
-                      <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                        إضافة {entityName} جديد
-                      </span>
+                {showAddButton && (
+                  <button
+                    onClick={() => navigate(addNewRoute)}
+                    className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
+                  >
+                    <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                      <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
+                        <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                          إضافة {entityName} جديد
+                        </span>
+                      </div>
+                      <CirclePlus className="w-4 h-4 text-gray-500" />
                     </div>
-                    <CirclePlus className="w-4 h-4 text-gray-500" />
-                  </div>
-                </button>
+                  </button>
+                )}
 
                 <ExportMenu />
               </div>
@@ -456,6 +485,35 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
             </div>
           )}
         </header>
+
+        {/* RTLSelect Filters Section */}
+        {filterOptions.length > 0 && (
+          <div className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
+            {filterOptions.map((filter, index) => (
+              <RTLSelect
+                key={index}
+                label={filter.label}
+                value={filters[filter.label === "نوع التقرير" ? "reportType" : 
+                              filter.label === "اسم المنتج" ? "productName" :
+                              filter.label === "قائمة المحطات" ? "stationList" :
+                              filter.label === "المدينة" ? "city" :
+                              filter.label === "رقم العملية" ? "operationNumber" : 
+                              filter.label.toLowerCase().replace(/\s+/g, "")]}
+                onChange={(value) => handleFilterChange(
+                  filter.label === "نوع التقرير" ? "reportType" : 
+                  filter.label === "اسم المنتج" ? "productName" :
+                  filter.label === "قائمة المحطات" ? "stationList" :
+                  filter.label === "المدينة" ? "city" :
+                  filter.label === "رقم العملية" ? "operationNumber" : 
+                  filter.label.toLowerCase().replace(/\s+/g, ""), 
+                  value
+                )}
+                options={filter.options}
+                placeholder={filter.value}
+              />
+            ))}
+          </div>
+        )}
 
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
