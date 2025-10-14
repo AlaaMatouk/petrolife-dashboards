@@ -5,16 +5,20 @@ import {
   userInfo
 } from "../../constants/data";
 import {
-  BarChart3,
-  Battery,
-  Car,
   Droplets,
-  FileText,
   Fuel,
-  MapPin,
-  Users,
   Wallet
 } from "lucide-react";
+import dashboardIcon from "../../assets/imgs/icons/dashboard.svg";
+
+// Dashboard icon component
+const DashboardIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <img 
+    src={dashboardIcon} 
+    alt="Dashboard" 
+    className={className}
+  />
+);
 import BannerSection from "../sections/BannerSection/BannerSection";
 import ConsumptionSection from "../sections/ConsumptionSection/ConsumptionSection";
 import { SubscriptionAndLocationsSection } from "../sections/SubscriptionAndLocationsSection";
@@ -65,28 +69,28 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/money-bag-orange.svg" alt="droplet" className="w-5 h-5" />,
     },
     {
       title: "اجمالي اللترات",
       content: fuelData,
-      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
+      icon: <img src="/src/assets/imgs/icons/droplet-orange.svg" alt="droplet" className="w-5 h-5" />,
       type: "fuel"
     },
     {
       title: "نوع الخدمة",
       value: "تعبئة وقود",
-      icon: <Wallet className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/dashboard-orange.svg" alt="droplet" className="w-5 h-5" />,
     },
     {
       title: "عدد المحطـــــــــــــــات",
       value: "42",
-      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/petrol-station-orange.svg" alt="petrol station" className="w-5 h-5" />
     },
     {
       title: "عدد العمــــــــــال",
       value: "1250",
-      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />,
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="petrol station" className="w-5 h-5" />,
       type: "oil"
     },
     {
@@ -108,7 +112,7 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="petrol station" className="w-5 h-5" />,
     }
   ];
 
@@ -133,7 +137,7 @@ export const ServiceDistributerDashboard = () => {
     <LayoutSimple
       headerProps={{
         title: "لوحة التحكم",
-        titleIconSrc: <BarChart3 className="w-5 h-5 text-gray-500" />,
+        titleIconSrc: <DashboardIcon className="w-5 h-5 text-gray-500" />,
         showSearch: false
       }}
       sidebarProps={{

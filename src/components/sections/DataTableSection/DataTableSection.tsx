@@ -446,16 +446,17 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
       {/* Main Data Table Section */}
       <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
-          {showTimeFilter ? (
-            // Show TimeFilter for fuel station requests
-             <div className="flex items-center w-full">
-            <TimeFilter
-              selectedFilter={selectedFilter}
-              onFilterChange={setSelectedFilter}
-            /></div> 
-          ) : (
-            // Show buttons for other entities
-            <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
+          <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
+            {showTimeFilter ? (
+              // Show TimeFilter on the left side
+              <div className="flex items-center">
+                <TimeFilter
+                  selectedFilter={selectedFilter}
+                  onFilterChange={setSelectedFilter}
+                />
+              </div>
+            ) : (
+              // Show buttons for other entities
               <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
                 {showAddButton && (
                   <button
@@ -475,15 +476,16 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
 
                 <ExportMenu />
               </div>
+            )}
 
-              <div className="flex items-center justify-end gap-1.5 relative">
-                <h1 className="relative mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                  {title}
-                </h1>
-                <Icon className="w-5 h-5 text-gray-500" />
-              </div>
+            {/* Always show title on the right side */}
+            <div className="flex items-center justify-end gap-1.5 relative">
+              <h1 className="relative mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
+                {title}
+              </h1>
+              <Icon className="w-5 h-5 text-gray-500" />
             </div>
-          )}
+          </div>
         </header>
 
         {/* RTLSelect Filters Section */}

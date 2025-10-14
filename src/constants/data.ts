@@ -107,7 +107,7 @@ export const serviceDistributerNavigationMenuData = {
     {
       id: "dashboard",
       label: "لوحة التحكم",
-      icon: "/img/side-icons-1.svg",
+      icon: "/src/assets/imgs/icons/dashboard.svg",
       isActive: false,
       hasBackground: false,
       href: ROUTES.SERVICE_DISTRIBUTER_DASHBOARD
@@ -120,14 +120,14 @@ export const serviceDistributerNavigationMenuData = {
         {
           id: "workers",
           label: "عمال المحطـــــات",
-          icon: "/img/side-icons-3.svg",
+          icon: "/src/assets/imgs/icons/user-group.svg",
           hasBackground: false,
           href: ROUTES.STATION_WORKERS
         },
         {
           id: "stations",
           label: "المحطــــــات",
-          icon: "/img/side-icons-7.svg",
+          icon: "/src/assets/imgs/icons/petrol-station.svg",
           href: ROUTES.STATIONS
         }
       ]
@@ -135,33 +135,33 @@ export const serviceDistributerNavigationMenuData = {
   ],
   bottomItems: [
     {
-      id: "fuel-delivery",
+      id: "fuel-station-requests",
       label: "طلبات محطـــات الوقود",
-      icon: "/img/side-icons-7.svg",
+      icon: "/src/assets/imgs/icons/document-clock.svg",
       href: ROUTES.FUEL_STATION_REQUESTS
     },
     {
-      id: "stations",
+      id: "financial-reports",
       label:"التقارير المالية",
-      icon: "/img/side-icons-8.svg",
+      icon: "/src/assets/imgs/icons/analytics.svg",
       href: ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS
     },
     {
-      id: "refund-requests",
+      id: "station-locations",
       label: "مواقع المحطات",
-      icon: "/img/side-icons-10.svg",
+      icon: "/src/assets/imgs/icons/location-pin.svg",
       href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS
     },
     {
-      id: "charge-requests",
+      id: "invoices",
       label: "الفواتيــــــــــــر",
-      icon: "/img/side-icons-10.svg",
+      icon: "/src/assets/imgs/icons/invoice.svg",
       href: ROUTES.SERVICE_DISTRIBUTER_INVOICES
     },
     {
-      id: "charge-requests",
+      id: "support",
       label: "الدعم الفني",
-      icon: "/img/side-icons-11.svg",
+      icon: "/src/assets/imgs/icons/customer-support.svg",
       href: ROUTES.CHARGE_REQUESTS
     }
   ]
