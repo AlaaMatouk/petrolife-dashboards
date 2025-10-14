@@ -2612,3 +2612,76 @@ export const fetchNotifications = async () => {
     throw error;
   }
 };
+
+/**
+ * Interface for fuel station data
+ */
+export interface FuelStation {
+  id: string;
+  stationName: string;
+  cityName: string;
+  latitude: number;
+  longitude: number;
+  formattedLocation?: {
+    name?: string;
+    lat?: number;
+    lng?: number;
+    address?: {
+      city?: string;
+    };
+  };
+}
+
+/**
+ * Fetch fuel stations from Firestore (carstations collection)
+ * @returns Promise with array of fuel stations
+ */
+export const fetchFuelStations = async (): Promise<FuelStation[]> => {
+  try {
+    console.log('📍 Fetching fuel stations from Firestore (carstations)...');
+    
+    const carStationsRef = collection(db, 'carstations');
+    const q = query(carStationsRef);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    const fuelStations: FuelStation[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      
+      // Extract location data from formattedLocation or direct fields
+      const formattedLocation = data.formattedLocation || {};
+      const stationName = data.name || data.email || formattedLocation.name || 'Unknown Station';
+      const cityName = formattedLocation.address?.city || data.address?.city || data.city || 'Unknown City';
+      const latitude = formattedLocation.lat || data.latitude || 0;
+      const longitude = formattedLocation.lng || data.longitude || 0;
+      
+      console.log(`Station ${doc.id}:`, {
+        name: stationName,
+        city: cityName,
+        lat: latitude,
+        lng: longitude,
+        hasFormattedLocation: !!data.formattedLocation
+      });
+      
+      // Only add stations with valid coordinates
+      if (latitude !== 0 && longitude !== 0) {
+        fuelStations.push({
+          id: doc.id,
+          stationName,
+          cityName,
+          latitude,
+          longitude,
+          formattedLocation: data.formattedLocation
+        });
+      }
+    });
+    
+    console.log(`✅ Fetched ${fuelStations.length} fuel stations with valid coordinates from carstations collection`);
+    
+    return fuelStations;
+  } catch (error) {
+    console.error('❌ Error fetching fuel stations:', error);
+    throw error;
+  }
+};

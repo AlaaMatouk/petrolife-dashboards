@@ -83,8 +83,8 @@ const exportToExcel = async (
     const currentDate = new Date().toISOString().split('T')[0];
     const filename = `wallet-report-${reportType}-${currentDate}.xlsx`;
 
-    // Save the workbook
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    // Save the workbook with cell styles
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array', cellStyles: true });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
     saveAs(blob, filename);
@@ -92,6 +92,23 @@ const exportToExcel = async (
     console.error('Excel export error:', error);
     throw error;
   }
+};
+
+/**
+ * Helper function to create a cell with RTL alignment
+ */
+const createRTLCell = (value: string | number, type: 's' | 'n' = 's') => {
+  return {
+    v: value,
+    t: type,
+    s: {
+      alignment: {
+        horizontal: 'right',
+        vertical: 'center',
+        readingOrder: 2  // RTL reading order
+      }
+    }
+  };
 };
 
 /**
@@ -114,31 +131,31 @@ const createDetailedReport = async (
   // TOP PART (B to L columns, 1 to 5 rows)
   
   // Top Left (C & D columns)
-  worksheet['C1'] = { v: 'شركة بترولايف', t: 's' };
-  worksheet['D1'] = { v: '', t: 's' }; // Merge with C1
-  worksheet['C2'] = { v: 'بترو لايف', t: 's' };
-  worksheet['D2'] = { v: '', t: 's' }; // Merge with C2
-  worksheet['C3'] = { v: `السجل التجاري : ${commercialRegister}`, t: 's' };
-  worksheet['D3'] = { v: '', t: 's' }; // Merge with C3
-  worksheet['C4'] = { v: `الرقم الضريبي : ${taxNumber}`, t: 's' };
-  worksheet['D4'] = { v: '', t: 's' }; // Merge with C4
+  worksheet['C1'] = createRTLCell('شركة بترولايف');
+  worksheet['D1'] = createRTLCell(''); // Merge with C1
+  worksheet['C2'] = createRTLCell('بترو لايف');
+  worksheet['D2'] = createRTLCell(''); // Merge with C2
+  worksheet['C3'] = createRTLCell(`السجل التجاري : ${commercialRegister}`);
+  worksheet['D3'] = createRTLCell(''); // Merge with C3
+  worksheet['C4'] = createRTLCell(`الرقم الضريبي : ${taxNumber}`);
+  worksheet['D4'] = createRTLCell(''); // Merge with C4
 
   // Top Middle (F & G & H columns) - Logo placeholders
-  worksheet['F1'] = { v: '[LOGO-2]', t: 's' };
-  worksheet['G1'] = { v: '', t: 's' }; // Merge with F1
-  worksheet['H1'] = { v: '', t: 's' }; // Merge with F1
-  worksheet['F2'] = { v: '[LOGO-3]', t: 's' };
-  worksheet['G2'] = { v: '', t: 's' }; // Merge with F2
-  worksheet['H2'] = { v: '', t: 's' }; // Merge with F2
-  worksheet['F3'] = { v: 'Insert logos', t: 's' };
-  worksheet['G3'] = { v: 'from static', t: 's' };
-  worksheet['H3'] = { v: 'folder', t: 's' };
+  worksheet['F1'] = createRTLCell('[LOGO-2]');
+  worksheet['G1'] = createRTLCell(''); // Merge with F1
+  worksheet['H1'] = createRTLCell(''); // Merge with F1
+  worksheet['F2'] = createRTLCell('[LOGO-3]');
+  worksheet['G2'] = createRTLCell(''); // Merge with F2
+  worksheet['H2'] = createRTLCell(''); // Merge with F2
+  worksheet['F3'] = createRTLCell('Insert logos');
+  worksheet['G3'] = createRTLCell('from static');
+  worksheet['H3'] = createRTLCell('folder');
 
   // Top Right (J & K columns) - Merged cells
-  worksheet['J1'] = { v: 'petrolife co.', t: 's' };
-  worksheet['J2'] = { v: 'petro life', t: 's' };
-  worksheet['J3'] = { v: `CR: ${commercialRegister}`, t: 's' };
-  worksheet['J4'] = { v: `vat :${taxNumber}`, t: 's' };
+  worksheet['J1'] = createRTLCell('petrolife co.');
+  worksheet['J2'] = createRTLCell('petro life');
+  worksheet['J3'] = createRTLCell(`CR: ${commercialRegister}`);
+  worksheet['J4'] = createRTLCell(`vat :${taxNumber}`);
   
   // Set merge ranges for J & K columns in rows 1-3
   if (!worksheet['!merges']) {
@@ -152,11 +169,11 @@ const createDetailedReport = async (
 
   // SECOND PART - Middle section
   
-  // Left side - Move labels to column D, values to column C, merge rows 6-7
-  worksheet['C6'] = { v: companyName, t: 's' };
-  worksheet['D6'] = { v: 'اسم العميل', t: 's' };
-  worksheet['C7'] = { v: clientNumber, t: 's' };
-  worksheet['D7'] = { v: 'رقم العميل', t: 's' };
+  // Left side - Labels on left (C), values on right (D), merge rows 6-7
+  worksheet['C6'] = createRTLCell('اسم العميل');
+  worksheet['D6'] = createRTLCell(companyName);
+  worksheet['C7'] = createRTLCell('رقم العميل');
+  worksheet['D7'] = createRTLCell(clientNumber);
   
   // Merge C6:D6 and C7:D7
   worksheet['!merges'].push(
@@ -164,11 +181,11 @@ const createDetailedReport = async (
     { s: { r: 6, c: 2 }, e: { r: 6, c: 3 } }  // C7:D7
   );
 
-  // Right side - Move labels to column K, values to column J, merge rows 6-7
-  worksheet['J6'] = { v: commercialRegister, t: 's' };
-  worksheet['K6'] = { v: 'السجل التجاري :', t: 's' };
-  worksheet['J7'] = { v: taxNumber, t: 's' };
-  worksheet['K7'] = { v: 'الرقم الضريبي :', t: 's' };
+  // Right side - Labels on right (K), values on left (J), merge rows 6-7
+  worksheet['J6'] = createRTLCell('السجل التجاري :');
+  worksheet['K6'] = createRTLCell(commercialRegister);
+  worksheet['J7'] = createRTLCell('الرقم الضريبي :');
+  worksheet['K7'] = createRTLCell(taxNumber);
   
   // Merge J6:K6 and J7:K7
   worksheet['!merges'].push(
@@ -179,17 +196,17 @@ const createDetailedReport = async (
   // FINAL PART - Report title and table
   
   // Report title (row 9)
-  worksheet['F9'] = { v: 'التقرير التفصيلي للمحفظة', t: 's' };
+  worksheet['F9'] = createRTLCell('التقرير التفصيلي للمحفظة');
 
-  // Table headers (row 11) - Each header takes two columns
-  worksheet['C11'] = { v: 'التاريخ', t: 's' };
-  worksheet['E11'] = { v: 'رقم العملية', t: 's' };
-  worksheet['G11'] = { v: 'نوع العملية', t: 's' };
-  worksheet['I11'] = { v: 'الحالة', t: 's' };
-  worksheet['K11'] = { v: 'اسم الشركة', t: 's' };
-  worksheet['M11'] = { v: 'اسم الشخص', t: 's' };
-  worksheet['O11'] = { v: 'المرفق', t: 's' };
-  worksheet['Q11'] = { v: 'المبلغ', t: 's' };
+  // Table headers (row 11) - Each header takes two columns - RTL order
+  worksheet['C11'] = createRTLCell('المبلغ');
+  worksheet['E11'] = createRTLCell('المرفق');
+  worksheet['G11'] = createRTLCell('اسم الشخص');
+  worksheet['I11'] = createRTLCell('اسم الشركة');
+  worksheet['K11'] = createRTLCell('الحالة');
+  worksheet['M11'] = createRTLCell('نوع العملية');
+  worksheet['O11'] = createRTLCell('رقم العملية');
+  worksheet['Q11'] = createRTLCell('التاريخ');
   
   // Merge each header across two columns
   worksheet['!merges'].push(
@@ -203,19 +220,19 @@ const createDetailedReport = async (
     { s: { r: 10, c: 16 }, e: { r: 10, c: 17 } }  // Q11:R11
   );
 
-  // Add transaction data starting from row 12 - Each data cell takes two columns
+  // Add transaction data starting from row 12 - Each data cell takes two columns - RTL order
   transactions.forEach((transaction, index) => {
     const row = 12 + index;
     
-    // Data in first column of each pair, merge with second column
-    worksheet[`C${row}`] = { v: formatSimpleDate(transaction.date), t: 's' };
-    worksheet[`E${row}`] = { v: transaction.id, t: 's' };
-    worksheet[`G${row}`] = { v: transaction.operationType, t: 's' };
-    worksheet[`I${row}`] = { v: 'accepted', t: 's' };
-    worksheet[`K${row}`] = { v: transaction.operationName || 'Alkafa\'a', t: 's' };
-    worksheet[`M${row}`] = { v: 'AdminX', t: 's' };
-    worksheet[`O${row}`] = { v: '', t: 's' };
-    worksheet[`Q${row}`] = { v: transaction.debit, t: 's' };
+    // Data in first column of each pair, merge with second column - reversed order
+    worksheet[`C${row}`] = createRTLCell(transaction.debit);
+    worksheet[`E${row}`] = createRTLCell('');
+    worksheet[`G${row}`] = createRTLCell('AdminX');
+    worksheet[`I${row}`] = createRTLCell(transaction.operationName || 'Alkafa\'a');
+    worksheet[`K${row}`] = createRTLCell('accepted');
+    worksheet[`M${row}`] = createRTLCell(transaction.operationType);
+    worksheet[`O${row}`] = createRTLCell(transaction.id);
+    worksheet[`Q${row}`] = createRTLCell(formatSimpleDate(transaction.date));
     
     // Merge each data cell across two columns
     if (!worksheet['!merges']) {
@@ -267,31 +284,31 @@ const createSummaryReport = async (
   // TOP PART (B to L columns, 1 to 5 rows)
   
   // Top Left (C & D columns)
-  worksheet['C1'] = { v: 'شركة بترولايف', t: 's' };
-  worksheet['D1'] = { v: '', t: 's' };
-  worksheet['C2'] = { v: 'بترو لايف', t: 's' };
-  worksheet['D2'] = { v: '', t: 's' };
-  worksheet['C3'] = { v: `السجل التجاري : ${commercialRegister}`, t: 's' };
-  worksheet['D3'] = { v: '', t: 's' };
-  worksheet['C4'] = { v: `الرقم الضريبي : ${taxNumber}`, t: 's' };
-  worksheet['D4'] = { v: '', t: 's' };
+  worksheet['C1'] = createRTLCell('شركة بترولايف');
+  worksheet['D1'] = createRTLCell('');
+  worksheet['C2'] = createRTLCell('بترو لايف');
+  worksheet['D2'] = createRTLCell('');
+  worksheet['C3'] = createRTLCell(`السجل التجاري : ${commercialRegister}`);
+  worksheet['D3'] = createRTLCell('');
+  worksheet['C4'] = createRTLCell(`الرقم الضريبي : ${taxNumber}`);
+  worksheet['D4'] = createRTLCell('');
 
   // Top Middle (F & G & H columns) - Logo placeholders
-  worksheet['F1'] = { v: '[LOGO-2]', t: 's' };
-  worksheet['G1'] = { v: '', t: 's' };
-  worksheet['H1'] = { v: '', t: 's' };
-  worksheet['F2'] = { v: '[LOGO-3]', t: 's' };
-  worksheet['G2'] = { v: '', t: 's' };
-  worksheet['H2'] = { v: '', t: 's' };
-  worksheet['F3'] = { v: 'Insert logos', t: 's' };
-  worksheet['G3'] = { v: 'from static', t: 's' };
-  worksheet['H3'] = { v: 'folder', t: 's' };
+  worksheet['F1'] = createRTLCell('[LOGO-2]');
+  worksheet['G1'] = createRTLCell('');
+  worksheet['H1'] = createRTLCell('');
+  worksheet['F2'] = createRTLCell('[LOGO-3]');
+  worksheet['G2'] = createRTLCell('');
+  worksheet['H2'] = createRTLCell('');
+  worksheet['F3'] = createRTLCell('Insert logos');
+  worksheet['G3'] = createRTLCell('from static');
+  worksheet['H3'] = createRTLCell('folder');
 
   // Top Right (J & K columns) - Merged cells
-  worksheet['J1'] = { v: 'petrolife co.', t: 's' };
-  worksheet['J2'] = { v: 'petro life', t: 's' };
-  worksheet['J3'] = { v: `CR: ${commercialRegister}`, t: 's' };
-  worksheet['J4'] = { v: `vat :${taxNumber}`, t: 's' };
+  worksheet['J1'] = createRTLCell('petrolife co.');
+  worksheet['J2'] = createRTLCell('petro life');
+  worksheet['J3'] = createRTLCell(`CR: ${commercialRegister}`);
+  worksheet['J4'] = createRTLCell(`vat :${taxNumber}`);
   
   // Set merge ranges for J & K columns in rows 1-3
   if (!worksheet['!merges']) {
@@ -305,11 +322,11 @@ const createSummaryReport = async (
 
   // SECOND PART - Middle section
   
-  // Left side - Move labels to column D, values to column C, merge rows 6-7
-  worksheet['C6'] = { v: companyName, t: 's' };
-  worksheet['D6'] = { v: 'اسم العميل', t: 's' };
-  worksheet['C7'] = { v: clientNumber, t: 's' };
-  worksheet['D7'] = { v: 'رقم العميل', t: 's' };
+  // Left side - Labels on left (C), values on right (D), merge rows 6-7
+  worksheet['C6'] = createRTLCell('اسم العميل');
+  worksheet['D6'] = createRTLCell(companyName);
+  worksheet['C7'] = createRTLCell('رقم العميل');
+  worksheet['D7'] = createRTLCell(clientNumber);
   
   // Merge C6:D6 and C7:D7
   worksheet['!merges'].push(
@@ -317,11 +334,11 @@ const createSummaryReport = async (
     { s: { r: 6, c: 2 }, e: { r: 6, c: 3 } }  // C7:D7
   );
 
-  // Right side - Move labels to column K, values to column J, merge rows 6-7
-  worksheet['J6'] = { v: commercialRegister, t: 's' };
-  worksheet['K6'] = { v: 'السجل التجاري :', t: 's' };
-  worksheet['J7'] = { v: taxNumber, t: 's' };
-  worksheet['K7'] = { v: 'الرقم الضريبي :', t: 's' };
+  // Right side - Labels on right (K), values on left (J), merge rows 6-7
+  worksheet['J6'] = createRTLCell('السجل التجاري :');
+  worksheet['K6'] = createRTLCell(commercialRegister);
+  worksheet['J7'] = createRTLCell('الرقم الضريبي :');
+  worksheet['K7'] = createRTLCell(taxNumber);
   
   // Merge J6:K6 and J7:K7
   worksheet['!merges'].push(
@@ -332,12 +349,12 @@ const createSummaryReport = async (
   // FINAL PART - Report title and summary table
   
   // Report title (row 9)
-  worksheet['F9'] = { v: 'التقرير الإجمالي للمحفظة', t: 's' };
+  worksheet['F9'] = createRTLCell('التقرير الإجمالي للمحفظة');
 
-  // Summary table headers (row 11) - Each header takes two columns
-  worksheet['C11'] = { v: 'نوع العملية', t: 's' };
-  worksheet['E11'] = { v: 'الكمية', t: 's' };
-  worksheet['G11'] = { v: 'المبلغ', t: 's' };
+  // Summary table headers (row 11) - Each header takes two columns - RTL order
+  worksheet['C11'] = createRTLCell('المبلغ');
+  worksheet['E11'] = createRTLCell('الكمية');
+  worksheet['G11'] = createRTLCell('نوع العملية');
   
   // Merge each header across two columns
   worksheet['!merges'].push(
@@ -346,10 +363,10 @@ const createSummaryReport = async (
     { s: { r: 10, c: 6 }, e: { r: 10, c: 7 } }  // G11:H11
   );
 
-  // Summary data (row 12) - Each data cell takes two columns
-  worksheet['C12'] = { v: `${transactionCount} ${operationType}`, t: 's' };
-  worksheet['E12'] = { v: transactionCount.toString(), t: 's' };
-  worksheet['G12'] = { v: totalAmount.toFixed(2), t: 'n' };
+  // Summary data (row 12) - Each data cell takes two columns - RTL order
+  worksheet['C12'] = createRTLCell(totalAmount.toFixed(2), 'n');
+  worksheet['E12'] = createRTLCell(transactionCount.toString());
+  worksheet['G12'] = createRTLCell(`${transactionCount} ${operationType}`);
   
   // Merge data cells across two columns
   worksheet['!merges'].push(
@@ -358,9 +375,9 @@ const createSummaryReport = async (
     { s: { r: 11, c: 6 }, e: { r: 11, c: 7 } }  // G12:H12
   );
 
-  // Total row (row 13) - Each data cell takes two columns
-  worksheet['C13'] = { v: 'الاجمالي', t: 's' };
-  worksheet['G13'] = { v: totalAmount.toFixed(2), t: 'n' };
+  // Total row (row 13) - Each data cell takes two columns - RTL order
+  worksheet['C13'] = createRTLCell(totalAmount.toFixed(2), 'n');
+  worksheet['G13'] = createRTLCell('الاجمالي');
   
   // Merge total row cells across two columns
   worksheet['!merges'].push(
@@ -597,12 +614,12 @@ const exportTableToExcel = async (
       currentRow += companyInfo.length + 1;
     }
     
-    // Add table headers
-    const headers = columns.map(col => col.label);
+    // Add table headers - reversed for RTL
+    const headers = columns.map(col => col.label).reverse();
     XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: { r: currentRow, c: 0 } });
     currentRow += 1;
     
-    // Add table data
+    // Add table data - reversed for RTL
     const rows = data.map(item => 
       columns.map(col => {
         const value = item[col.key];
@@ -613,10 +630,27 @@ const exportTableToExcel = async (
           return JSON.stringify(value);
         }
         return value || '-';
-      })
+      }).reverse()
     );
     
     XLSX.utils.sheet_add_aoa(worksheet, rows, { origin: { r: currentRow, c: 0 } });
+    
+    // Apply RTL alignment to all cells
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+        if (worksheet[cellAddress] && typeof worksheet[cellAddress] === 'object') {
+          worksheet[cellAddress].s = {
+            alignment: {
+              horizontal: 'right',
+              vertical: 'center',
+              readingOrder: 2
+            }
+          };
+        }
+      }
+    }
     
     // Set column widths
     const colWidths = columns.map(() => ({ wch: 20 }));
@@ -629,8 +663,8 @@ const exportTableToExcel = async (
     const currentDate = new Date().toISOString().split('T')[0];
     const fullFilename = `${filename}-${currentDate}.xlsx`;
     
-    // Save the workbook
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    // Save the workbook with cell styles
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array', cellStyles: true });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
     saveAs(blob, fullFilename);

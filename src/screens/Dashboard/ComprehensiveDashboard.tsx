@@ -7,6 +7,9 @@ import { useAuth } from "../../hooks/useGlobalState";
 import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics, calculateFuelConsumptionByCities } from "../../services/firestore";
 import { exportDataTable } from "../../services/exportService";
 import { useToast } from "../../context/ToastContext";
+import { useNavigation } from "../../hooks/useNavigation";
+import { ROUTES } from "../../constants/routes";
+import { Map } from "../PerolifeStationLocations/sections/map/Map";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -521,34 +524,8 @@ const SubscriptionAndLocationsSection = () => {
       </div>
 
       {/* Station Locations Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-1.5">
-            <h3 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-              مواقع محطات بترولايف
-            </h3>
-            <MapPin className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-        
-        <div className="h-48 rounded-lg overflow-hidden relative">
-          <img
-            src="/img/vector-map.svg"
-            alt="World map with Petrolife station locations"
-            className="w-full h-full object-cover"
-          />
-          
-          {/* Map Markers */}
-          <div className="absolute top-[83.20%] left-[86.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[86.89%] left-[93.55%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[32.17%] left-[12.70%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[41.80%] left-[15.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[19.88%] left-[50.88%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[45.90%] left-[66.21%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[40.78%] left-[82.32%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[14.96%] left-[56.74%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[36.07%] left-[50.10%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-        </div>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm lg:col-span-2 overflow-hidden">
+        <Map />
       </div>
     </section>
   );
@@ -1075,8 +1052,6 @@ const FuelConsumptionByCitiesSection = () => {
 
 // Most Used Stations and Drivers Section
 const MostUsedSection = () => {
-  const [selectedStationsFilter, setSelectedStationsFilter] = useState("اخر 12 شهر");
-  const [selectedDriversFilter, setSelectedDriversFilter] = useState("اخر 12 شهر");
   const [topDrivers, setTopDrivers] = useState<any[]>([]);
   const [topStations, setTopStations] = useState<any[]>([]);
 
@@ -1338,19 +1313,13 @@ const MostUsedSection = () => {
       {/* Most Used Stations */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="mb-6">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
                 المحطات الأكثر استخداما
               </h3>
               <Fuel className="w-5 h-5 text-gray-500" />
             </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedStationsFilter}
-              onFilterChange={setSelectedStationsFilter}
-            />
           </div>
         </div>
 
@@ -1365,19 +1334,13 @@ const MostUsedSection = () => {
       {/* Most Consuming Drivers */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="mb-6">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
                 السائقين الأكثر استهلاكا
               </h3>
               <Users className="w-5 h-5 text-gray-500" />
             </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedDriversFilter}
-              onFilterChange={setSelectedDriversFilter}
-            />
           </div>
         </div>
 
@@ -1395,6 +1358,7 @@ const MostUsedSection = () => {
 // Latest Orders Table
 const LatestOrdersSection = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const { goTo } = useNavigation();
 
   useEffect(() => {
     const loadRecentOrders = async () => {
@@ -1534,7 +1498,10 @@ const LatestOrdersSection = () => {
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <button className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+        <button 
+          onClick={() => goTo(ROUTES.WALLET)}
+          className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
           <span className="text-sm font-medium [direction:rtl]">عرض المزيد</span>
         </button>
         <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">

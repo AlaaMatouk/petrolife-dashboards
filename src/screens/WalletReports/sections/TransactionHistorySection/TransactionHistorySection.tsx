@@ -309,6 +309,9 @@ export const TransactionHistorySection = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [operationNameOptions, setOperationNameOptions] = useState<{ value: string; label: string }[]>([
+    { value: "الكل", label: "الكل" }
+  ]);
   
   const ITEMS_PER_PAGE = 10;
 
@@ -351,6 +354,27 @@ export const TransactionHistorySection = (): JSX.Element => {
         console.log('================================\n');
         
         setTransactions(allTransactions);
+        
+        // Extract unique operation names from the data
+        const uniqueOperationNames = new Set<string>();
+        allTransactions.forEach(transaction => {
+          if (transaction.operationName && transaction.operationName !== '-') {
+            uniqueOperationNames.add(transaction.operationName);
+          }
+        });
+        
+        // Convert to options array
+        const dynamicOptions = [
+          { value: "الكل", label: "الكل" },
+          ...Array.from(uniqueOperationNames).sort().map(name => ({
+            value: name,
+            label: name
+          }))
+        ];
+        
+        setOperationNameOptions(dynamicOptions);
+        
+        console.log('📋 Operation Name Options:', dynamicOptions);
       } catch (err) {
         console.error('Error loading wallet transactions:', err);
         setError('فشل في تحميل المعاملات');
@@ -437,8 +461,8 @@ export const TransactionHistorySection = (): JSX.Element => {
     
     // Filter by operation name (اسم العملية)
     if (filters.operationName !== 'الكل') {
-      // Check if operation name contains the filter value
-      if (!transaction.operationName.includes(filters.operationName)) {
+      // Exact match for operation name
+      if (transaction.operationName !== filters.operationName) {
         return false;
       }
     }
@@ -451,6 +475,17 @@ export const TransactionHistorySection = (): JSX.Element => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+  // Create dynamic filter options with updated operation name options
+  const dynamicFilterOptions = [
+    filterOptions[0], // الفترة الزمنية
+    {
+      ...filterOptions[1], // اسم العملية
+      options: operationNameOptions // Use dynamic options
+    },
+    filterOptions[2], // نوع العملية
+    filterOptions[3], // نوع التقرير
+  ];
 
   return (
     <section
@@ -487,7 +522,7 @@ export const TransactionHistorySection = (): JSX.Element => {
           role="group"
           aria-label="مرشحات البحث"
         >
-          {filterOptions.map((filter, index) => (
+          {dynamicFilterOptions.map((filter, index) => (
             <RTLSelect
               key={index}
               label={filter.label}
