@@ -158,12 +158,12 @@ export const serviceDistributerNavigationMenuData = {
       icon: "/src/assets/imgs/icons/invoice.svg",
       href: ROUTES.SERVICE_DISTRIBUTER_INVOICES
     },
-    {
-      id: "support",
-      label: "الدعم الفني",
-      icon: "/src/assets/imgs/icons/customer-support.svg",
-      href: ROUTES.CHARGE_REQUESTS
-    }
+    // {
+    //   id: "support",
+    //   label: "الدعم الفني",
+    //   icon: "/src/assets/imgs/icons/customer-support.svg",
+    //   href: ROUTES.CHARGE_REQUESTS
+    // }
   ]
 };
 

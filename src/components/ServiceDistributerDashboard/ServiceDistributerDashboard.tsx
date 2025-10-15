@@ -69,7 +69,7 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <img src="/src/assets/imgs/icons/money-bag-orange.svg" alt="droplet" className="w-5 h-5" />,
+      icon: <img src="/src/assets/imgs/icons/money-bag-orange.svg" alt="money bag" className="w-5 h-5" />,
     },
     {
       title: "اجمالي اللترات",
@@ -80,7 +80,7 @@ export const ServiceDistributerDashboard = () => {
     {
       title: "نوع الخدمة",
       value: "تعبئة وقود",
-      icon: <img src="/src/assets/imgs/icons/dashboard-orange.svg" alt="droplet" className="w-5 h-5" />,
+      icon: <img src="/src/assets/imgs/icons/dashboard-orange.svg" alt="dashboard" className="w-5 h-5" />,
     },
     {
       title: "عدد المحطـــــــــــــــات",
@@ -90,7 +90,7 @@ export const ServiceDistributerDashboard = () => {
     {
       title: "عدد العمــــــــــال",
       value: "1250",
-      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="petrol station" className="w-5 h-5" />,
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="user group" className="w-5 h-5" />,
       type: "oil"
     },
     {
@@ -112,7 +112,7 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="petrol station" className="w-5 h-5" />,
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="user group" className="w-5 h-5" />,
     }
   ];
 
