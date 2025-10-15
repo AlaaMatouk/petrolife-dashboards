@@ -4,7 +4,7 @@ import { UserRound, ChartNoAxesCombined } from "lucide-react";
 import { fetchFinancialReportData } from "../../../../services/firestore";
 import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
 import { useAuth } from "../../../../hooks/useGlobalState";
-import { exportDataTable } from "../../../../services/exportService";
+import { exportFinancialReport, getFilteredFinancialData, FinancialReportData, FinancialReportFilters } from "../../../../services/exportService";
 import { useToast } from "../../../../context/ToastContext";
 
 const clientData = {
@@ -271,37 +271,25 @@ export const DataTableSection = (): JSX.Element => {
     reportType: "تحليلي",
   });
 
-  // Handle export
+  // Handle export with detailed/summary report logic
   const handleExport = async (format: string) => {
     try {
-      // Define columns for export
-      const exportColumns = [
-        { key: 'city', label: 'المدينة' },
-        { key: 'stationName', label: 'اسم المحطة' },
-        { key: 'date', label: 'التاريخ' },
-        { key: 'operationNumber', label: 'رقم العملية' },
-        { key: 'quantity', label: 'الكمية' },
-        { key: 'productName', label: 'اسم المنتج' },
-        { key: 'productNumber', label: 'رقم المنتج' },
-        { key: 'productType', label: 'نوع المنتج' },
-        { key: 'driverName', label: 'اسم السائق' },
-        { key: 'driverCode', label: 'كود السائق' },
-      ];
-
       // Get filtered data for export
-      const dataToExport = filteredTableData;
+      const filteredData = getFilteredFinancialData(
+        transformedTableData as FinancialReportData[],
+        filters as FinancialReportFilters
+      );
 
-      await exportDataTable(
-        dataToExport,
-        exportColumns,
-        'financial-report',
-        format as 'excel' | 'pdf',
-        'التقارير المالية'
+      // Export using the new financial report export function
+      await exportFinancialReport(
+        filteredData,
+        filters as FinancialReportFilters,
+        format as 'excel' | 'pdf'
       );
 
       addToast({
         title: 'نجح التصدير',
-        message: `تم تصدير التقرير المالي بنجاح`,
+        message: `تم تصدير التقرير المالي ${filters.reportType === 'تحليلي' ? 'التفصيلي' : 'الإجمالي'} بنجاح`,
         type: 'success',
       });
     } catch (error) {
