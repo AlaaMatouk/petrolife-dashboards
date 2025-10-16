@@ -43,9 +43,6 @@ const NotFound = () => (
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* Main Dashboard */}
-      <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-
       {/* Admin Dashboard */}
       <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
 
