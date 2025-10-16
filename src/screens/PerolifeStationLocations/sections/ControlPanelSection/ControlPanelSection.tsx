@@ -100,39 +100,18 @@ const dummyStationData: StationData[] = [
   },
 ];
 
-interface ToggleSwitchProps {
-  isOn: boolean;
-  onToggle: () => void;
-  ariaLabel: string;
+
+interface ControlPanelSectionProps {
+  currentPage: number;
+  setTotalPages: (pages: number) => void;
 }
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
-  isOn,
-  onToggle,
-  ariaLabel,
-}) => {
-  return (
-    <button
-      onClick={onToggle}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-        isOn ? 'bg-green-600' : 'bg-gray-200'
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          isOn ? 'translate-x-5' : 'translate-x-0.5'
-        }`}
-      />
-    </button>
-  );
-};
-
-export const ControlPanelSection = (): JSX.Element => {
+export const ControlPanelSection = ({ currentPage, setTotalPages }: ControlPanelSectionProps): JSX.Element => {
   const [stationData, setStationData] = useState<StationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [stationStates, setStationStates] = useState<Record<string, boolean>>({});
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch car stations with consumption data
   useEffect(() => {
@@ -156,15 +135,9 @@ export const ControlPanelSection = (): JSX.Element => {
 
         setStationData(transformedStations);
         
-        // Initialize station states
-        const initialStates = transformedStations.reduce(
-          (acc, station) => {
-            acc[station.id] = station.isAvailable;
-            return acc;
-          },
-          {} as Record<string, boolean>,
-        );
-        setStationStates(initialStates);
+        // Update total pages
+        const pages = Math.ceil(transformedStations.length / ITEMS_PER_PAGE);
+        setTotalPages(pages);
       } catch (err) {
         console.error('Error loading stations:', err);
         setError('فشل في تحميل بيانات المحطات');
@@ -175,13 +148,6 @@ export const ControlPanelSection = (): JSX.Element => {
 
     loadStations();
   }, []);
-
-  const handleToggle = (stationId: string) => {
-    setStationStates((prev) => ({
-      ...prev,
-      [stationId]: !prev[stationId],
-    }));
-  };
 
   const tableColumns = [
     {
@@ -211,7 +177,13 @@ export const ControlPanelSection = (): JSX.Element => {
     },
   ];
 
-  const tableData = stationData.map((station) => ({
+  // Calculate pagination
+  const totalPagesCalc = Math.ceil(stationData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedStations = stationData.slice(startIndex, endIndex);
+
+  const tableData = paginatedStations.map((station) => ({
     ...station,
     status: (
       <span className="w-[98px] h-[19px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] relative font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">

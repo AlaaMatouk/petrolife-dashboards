@@ -1,14 +1,142 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, FileChartColumnIncreasing } from "lucide-react";
-import { Table, TimeFilter, ExportButton } from "../../../../components/shared";
+import { Table, TimeFilter, ExportButton, Pagination, LoadingSpinner } from "../../../../components/shared";
+import { fetchWalletChargeRequests } from "../../../../services/firestore";
+
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return '-';
+  
+  try {
+    if (date.toDate && typeof date.toDate === 'function') {
+      return new Date(date.toDate()).toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return new Date(date).toLocaleString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to get status in Arabic
+const getStatusText = (status: string): { text: string; type: string } => {
+  const statusLower = status?.toLowerCase() || '';
+  
+  if (statusLower.includes('done') || statusLower.includes('completed') || statusLower === 'مكتمل') {
+    return { text: 'مكتمل', type: 'completed' };
+  }
+  if (statusLower.includes('pending') || statusLower.includes('review') || statusLower === 'جاري المراجعة') {
+    return { text: 'جاري المراجعة', type: 'reviewing' };
+  }
+  if (statusLower.includes('cancel') || statusLower.includes('reject') || statusLower === 'ملغي') {
+    return { text: 'ملغي', type: 'cancelled' };
+  }
+  
+  return { text: status, type: 'unknown' };
+};
 
 export const RequestHistorySection = (): JSX.Element => {
   const navigate = useNavigate();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const ITEMS_PER_PAGE = 10;
 
-  const timeFilters = ["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"];
+  // Fetch wallet charge requests (money refund requests)
+  useEffect(() => {
+    const loadRequests = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchWalletChargeRequests();
+        
+        // Sort by date descending (newest first)
+        const sortedData = [...data].sort((a, b) => {
+          const dateA = a.requestDate?.toDate ? a.requestDate.toDate() : new Date(a.requestDate || a.createdDate || 0);
+          const dateB = b.requestDate?.toDate ? b.requestDate.toDate() : new Date(b.requestDate || b.createdDate || 0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        // Transform to request format
+        const transformedRequests = sortedData.map((request) => {
+          const statusInfo = getStatusText(request.status);
+          
+          return {
+            id: request.id || '-',
+            status: statusInfo.text,
+            statusType: statusInfo.type,
+            amount: String(request.value || request.amount || 0),
+            date: formatDate(request.requestDate || request.createdDate),
+            rawDate: request.requestDate || request.createdDate, // Store raw date for filtering
+          };
+        });
+        
+        setRequests(transformedRequests);
+      } catch (error) {
+        console.error('Error loading money refund requests:', error);
+        setRequests([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadRequests();
+  }, []);
+
+  // Apply time filter
+  const filteredRequests = requests.filter(request => {
+    if (selectedTimeFilter === 'الكل') {
+      return true;
+    }
+    
+    const now = new Date();
+    const requestDate = request.rawDate?.toDate 
+      ? request.rawDate.toDate() 
+      : new Date(request.rawDate || 0);
+    
+    let startDate = new Date();
+    
+    switch (selectedTimeFilter) {
+      case 'اخر اسبوع':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'اخر 30 يوم':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case 'اخر 6 شهور':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'اخر 12 شهر':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return true;
+    }
+    
+    return requestDate >= startDate;
+  });
 
   const tableColumns = [
     {
@@ -59,80 +187,11 @@ export const RequestHistorySection = (): JSX.Element => {
     },
   ];
 
-  const requestData = [
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "جاري المراجعة",
-      statusType: "reviewing",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "ملغي",
-      statusType: "cancelled",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-    {
-      id: "21A254",
-      status: "مكتمل",
-      statusType: "completed",
-      amount: "1500",
-      date: "21 فبراير 2025 - 5:05 ص",
-    },
-  ];
-
-  const paginationNumbers = [1, 2, 3, 4, 5, 6, 7, "...", 20];
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = filteredRequests.slice(startIndex, endIndex);
 
   const getStatusBadge = (status: string, statusType: string) => {
     const baseClasses =
@@ -209,102 +268,31 @@ export const RequestHistorySection = (): JSX.Element => {
       </header>
 
       <main className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-        <div className="w-full">
-          <Table
-            columns={tableColumns}
-            data={requestData}
-            className="w-full"
-          />
-        </div>
+        {isLoading ? (
+          <LoadingSpinner size="lg" message="جاري التحميل..." />
+        ) : filteredRequests.length === 0 ? (
+          <div className="w-full text-center text-gray-500 py-12">
+            <p className="text-lg [direction:rtl]">لا توجد طلبات استرداد</p>
+          </div>
+        ) : (
+          <div className="w-full">
+            <Table
+              columns={tableColumns}
+              data={paginatedData}
+              className="w-full"
+            />
+          </div>
+        )}
       </main>
 
-      <nav
-        className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-        aria-label="Pagination"
-      >
-        <div className="inline-flex items-start gap-2 relative flex-[0_0_auto]">
-          <button
-            className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-            aria-label="Next page"
-          >
-            <img
-              className="relative w-4 h-4"
-              alt=""
-              src="/img/icon-16-arrow-right.svg"
-            />
-
-            <div className="relative w-fit font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-              التالي
-            </div>
-          </button>
-
-          {paginationNumbers.map((pageNum, index) => (
-            <button
-              key={index}
-              onClick={() =>
-                typeof pageNum === "number" && setCurrentPage(pageNum)
-              }
-              disabled={pageNum === "..."}
-              className={`flex flex-col w-8 h-8 items-center justify-center gap-2.5 px-2 py-0 relative rounded overflow-hidden ${
-                pageNum === currentPage
-                  ? "bg-color-mode-surface-primary-blue"
-                  : "bg-color-mode-surface-bg-screen border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-              } ${pageNum === "..." ? "cursor-default" : "cursor-pointer"}`}
-              aria-label={
-                pageNum === "..." ? undefined : `Go to page ${pageNum}`
-              }
-              aria-current={pageNum === currentPage ? "page" : undefined}
-            >
-              <div className="flex flex-col w-[22px] h-[22px] items-center justify-center gap-2.5 p-2.5 relative ml-[-3.00px] mr-[-3.00px] rounded-sm">
-                <div
-                  className={`relative w-fit mt-[-11.00px] mb-[-9.00px] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap ${
-                    pageNum === currentPage
-                      ? "font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-btn-negative font-subtitle-subtitle-3 text-[length:var(--subtitle-subtitle-3-font-size)] [font-style:var(--subtitle-subtitle-3-font-style)]"
-                      : "font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec font-body-body-2 text-[length:var(--body-body-2-font-size)] [font-style:var(--body-body-2-font-style)]"
-                  } ${
-                    pageNum === 20
-                      ? "ml-[-6.50px] mr-[-6.50px]"
-                      : pageNum === "..."
-                        ? "ml-[-5.00px] mr-[-5.00px]"
-                        : pageNum === 7
-                          ? "ml-[-2.00px] mr-[-2.00px]"
-                          : pageNum === 6
-                            ? "ml-[-3.00px] mr-[-3.00px]"
-                            : pageNum === 5
-                              ? "ml-[-3.00px] mr-[-3.00px]"
-                              : pageNum === 4
-                                ? "ml-[-3.00px] mr-[-3.00px]"
-                                : pageNum === 3
-                                  ? "ml-[-2.50px] mr-[-2.50px]"
-                                  : pageNum === 2
-                                    ? "ml-[-2.50px] mr-[-2.50px]"
-                                    : pageNum === 1
-                                      ? "ml-[-2.00px] mr-[-2.00px]"
-                                      : ""
-                  }`}
-                >
-                  {pageNum}
-                </div>
-              </div>
-            </button>
-          ))}
-
-          <button
-            className="flex w-[72px] h-8 items-center justify-center gap-[5px] px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder"
-            aria-label="Previous page"
-          >
-            <div className="relative w-fit ml-[-3.50px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] [direction:rtl] font-body-body-2 whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-              السابق
-            </div>
-
-            <img
-              className="mr-[-3.50px] relative w-4 h-4"
-              alt=""
-              src="/img/icon-16-arrow-left.svg"
-            />
-          </button>
-        </div>
-      </nav>
+      {!isLoading && filteredRequests.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+        />
+      )}
     </section>
   );
 };

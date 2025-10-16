@@ -4,6 +4,8 @@ import { Table, Pagination, TimeFilter, ExportButton, LoadingSpinner } from "../
 import { CirclePlus, WalletMinimal } from "lucide-react";
 import { useAuth } from "../../../../hooks/useGlobalState";
 import { fetchOrders, calculateFuelStatistics } from "../../../../services/firestore";
+import { exportDataTable } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 
 // Helper function to format date
 const formatDate = (date: any): string => {
@@ -70,6 +72,7 @@ const convertOrdersToTransactions = (orders: any[]): any[] => {
       date: formatDate(order.orderDate || order.createdDate),
       amount: order.totalPrice || 0,
       cumulative: cumulative,
+      rawDate: order.orderDate || order.createdDate, // Store raw date for filtering
     };
   });
 };
@@ -77,6 +80,7 @@ const convertOrdersToTransactions = (orders: any[]): any[] => {
 export const TransactionListSection = (): JSX.Element => {
   const navigate = useNavigate();
   const { company } = useAuth();
+  const { addToast } = useToast();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
   const [currentPage, setCurrentPage] = useState(1);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -118,13 +122,128 @@ export const TransactionListSection = (): JSX.Element => {
     loadData();
   }, []);
 
+  // Handle export all transactions
+  const handleExport = async (format: string) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'id', label: 'رقم العملية' },
+        { key: 'type', label: 'نوع العملية' },
+        { key: 'driver', label: 'اسم السائق' },
+        { key: 'date', label: 'تاريخ العملية' },
+        { key: 'amount', label: 'قيمة العملية' },
+        { key: 'cumulative', label: 'تراكمي العمليات (ر.س)' },
+      ];
+
+      await exportDataTable(
+        filteredTransactions,
+        exportColumns,
+        'wallet-transactions',
+        format as 'excel' | 'pdf',
+        'تقرير المعاملات المالية'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير المعاملات المالية بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
+  // Handle export single row
+  const handleExportRow = async (row: any) => {
+    try {
+      // Define columns for export
+      const exportColumns = [
+        { key: 'id', label: 'رقم العملية' },
+        { key: 'type', label: 'نوع العملية' },
+        { key: 'driver', label: 'اسم السائق' },
+        { key: 'date', label: 'تاريخ العملية' },
+        { key: 'amount', label: 'قيمة العملية' },
+        { key: 'cumulative', label: 'تراكمي العمليات (ر.س)' },
+      ];
+
+      // Export single row as an array with one item
+      await exportDataTable(
+        [row],
+        exportColumns,
+        `wallet-transaction-${row.id}`,
+        'excel',
+        'تقرير المعاملة المالية'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير المعاملة رقم ${row.id} بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
+  // Apply time filter to transactions
+  const filteredTransactions = transactions.filter(transaction => {
+    if (selectedTimeFilter === 'الكل') {
+      return true;
+    }
+    
+    const now = new Date();
+    const transactionDate = transaction.rawDate?.toDate 
+      ? transaction.rawDate.toDate() 
+      : new Date(transaction.rawDate || 0);
+    
+    let startDate = new Date();
+    
+    switch (selectedTimeFilter) {
+      case 'اخر اسبوع':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'اخر 30 يوم':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case 'اخر 6 شهور':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'اخر 12 شهر':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return true;
+    }
+    
+    return transactionDate >= startDate;
+  });
+
   // Define table columns for transactions
   const transactionColumns = [
     {
       key: "export",
-      label: "",
+      label: "تصدير",
       width: "min-w-[100px]",
-      render: () => <ExportButton className="!border-0 inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors" />,
+      render: (_value: any, row: any) => (
+        <ExportButton
+          onExport={() => handleExportRow(row)}
+          buttonText="تصدير"
+          showExcel={true}
+          showPDF={false}
+          showCSV={false}
+          className="!border-0 !p-0"
+        />
+      ),
     },
     {
       key: "cumulative",
@@ -272,7 +391,7 @@ export const TransactionListSection = (): JSX.Element => {
                 </div>
             </button>
 
-               <ExportButton />
+               <ExportButton onExport={handleExport} />
 
               <TimeFilter
                 selectedFilter={selectedTimeFilter}
@@ -292,7 +411,7 @@ export const TransactionListSection = (): JSX.Element => {
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
           {isLoading ? (
             <LoadingSpinner size="lg" message="جاري التحميل..." />
-          ) : transactions.length === 0 ? (
+          ) : filteredTransactions.length === 0 ? (
             <div className="w-full text-center text-gray-500 py-12">
               <p className="text-lg [direction:rtl]">لا توجد معاملات مالية</p>
             </div>
@@ -301,14 +420,14 @@ export const TransactionListSection = (): JSX.Element => {
               <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
                 <Table
                   columns={transactionColumns}
-                  data={transactions}
+                  data={filteredTransactions.slice((currentPage - 1) * 10, currentPage * 10)}
                   className="relative self-stretch w-full flex-[0_0_auto]"
                 />
               </div>
 
               <Pagination
                 currentPage={currentPage}
-                totalPages={Math.ceil(transactions.length / 10) || 1}
+                totalPages={Math.ceil(filteredTransactions.length / 10) || 1}
                 onPageChange={setCurrentPage}
               />
             </>

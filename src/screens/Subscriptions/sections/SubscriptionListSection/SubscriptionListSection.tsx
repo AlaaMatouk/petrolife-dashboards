@@ -1,16 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Star, FileText } from "lucide-react";
 import { Table, Pagination, ExportButton } from "../../../../components/shared";
-
-const currentSubscriptionData = {
-  price: "150",
-  paymentMethod: "محفظة",
-  vehicleCount: "15",
-  packageType: "سنوى",
-  expiryDate: "12 فبراير 2026",
-  packageName: "الباقة البرونزية",
-  subscriptionDate: "12 فبراير 2025"
-};
+import { fetchUserSubscriptions } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
+import { useAuth } from "../../../../hooks/useGlobalState";
 
 const historyTableData = [
   {
@@ -118,7 +111,98 @@ const paginationData = [
 ];
 
 export const SubscriptionListSection = (): JSX.Element => {
-  const [currentPage, setCurrentPage] = useState(3);
+  const { company } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const ITEMS_PER_PAGE = 10;
+
+  // Extract current subscription from company data
+  const currentSubscription = company?.selectedSubscription;
+  
+  // Format dates for current subscription
+  const formatDate = (date: any): string => {
+    if (!date) return 'N/A';
+    try {
+      const dateObj = date.toDate ? date.toDate() : new Date(date);
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  // Calculate expiry date from createdDate + periodValueInDays
+  const calculateExpiryDate = (): string => {
+    const createdDate = currentSubscription?.createdDate;
+    const periodValueInDays = currentSubscription?.periodValueInDays;
+    
+    if (!createdDate || !periodValueInDays) return 'N/A';
+    
+    try {
+      const startDate = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+      const expiryDate = new Date(startDate);
+      expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
+      return formatDate(expiryDate);
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const currentSubscriptionData = {
+    packageName: currentSubscription?.title?.ar || currentSubscription?.title?.en || 'N/A',
+    packageType: currentSubscription?.periodName?.ar || 
+                currentSubscription?.periodName?.en || 
+                (typeof currentSubscription?.periodName === 'string' ? currentSubscription?.periodName : 'N/A'),
+    price: String(currentSubscription?.price || 0),
+    vehicleCount: String(company?.maxCarNumber || 
+                        company?.numberOfVehicles || 
+                        company?.vehicleCount || 
+                        company?.carsLimit || 
+                        currentSubscription?.maxCarNumber || 
+                        0),
+    subscriptionDate: formatDate(currentSubscription?.createdDate),
+    expiryDate: calculateExpiryDate(),
+    paymentMethod: company?.paymentMethod || 'محفظة',
+  };
+
+  console.log('\n📋 Current Subscription Data (Subscriptions Screen):');
+  console.log('===================================================');
+  console.log('Company:', company?.name);
+  console.log('Company Data - Checking all possible vehicle count fields:');
+  console.log('  maxCarNumber:', company?.maxCarNumber);
+  console.log('  numberOfVehicles:', company?.numberOfVehicles);
+  console.log('  vehicleCount:', company?.vehicleCount);
+  console.log('  carsLimit:', company?.carsLimit);
+  console.log('  selectedSubscription.maxCarNumber:', currentSubscription?.maxCarNumber);
+  console.log('Period Name:', currentSubscription?.periodName);
+  console.log('Created Date:', currentSubscription?.createdDate);
+  console.log('Period Value in Days:', currentSubscription?.periodValueInDays);
+  console.log('Current Subscription:', currentSubscriptionData);
+  console.log('===================================================\n');
+
+  // Fetch subscriptions on mount
+  useEffect(() => {
+    const loadSubscriptions = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchUserSubscriptions();
+        setSubscriptions(data);
+      } catch (err) {
+        console.error('Error loading subscriptions:', err);
+        setError('فشل في تحميل بيانات الاشتراكات');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSubscriptions();
+  }, []);
 
   const tableColumns = [
     {
@@ -158,6 +242,23 @@ export const SubscriptionListSection = (): JSX.Element => {
     setCurrentPage(page);
     console.log(`Navigate to page ${page}`);
   };
+
+  // Transform subscriptions for table display
+  const transformedTableData = subscriptions.map(sub => ({
+    id: sub.id,
+    packageCode: sub.id.substring(0, 6).toUpperCase(),
+    packageName: sub.planName,
+    subscriptionDate: sub.createdDate,
+    expiryDate: sub.expiryDate,
+    operationType: 'نشط', // Active status
+    subscriptionCost: String(sub.price),
+  }));
+
+  // Calculate pagination
+  const totalPages = Math.ceil(transformedTableData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = transformedTableData.slice(startIndex, endIndex);
 
   return (
     <section className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4" role="main" aria-label="قسم قائمة الاشتراكات">
@@ -288,20 +389,36 @@ export const SubscriptionListSection = (): JSX.Element => {
 </div>
 </div>
 <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-<Table
-  columns={tableColumns}
-  data={historyTableData}
-  className="w-full"
-  headerClassName="bg-color-mode-surface-bg-icon-gray"
-  rowClassName="hover:bg-gray-50"
-  cellClassName="text-right [direction:rtl] whitespace-nowrap"
-/>
-<Pagination
-  currentPage={currentPage}
-  totalPages={20}
-  onPageChange={handlePageChange}
-  className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-/>
+{isLoading ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <LoadingSpinner message="جاري تحميل الاشتراكات..." />
+  </div>
+) : error ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+  </div>
+) : transformedTableData.length === 0 ? (
+  <div className="flex items-center justify-center w-full min-h-[400px]">
+    <p className="text-gray-500 text-center [direction:rtl]">لا توجد اشتراكات سابقة</p>
+  </div>
+) : (
+  <>
+    <Table
+      columns={tableColumns}
+      data={paginatedData}
+      className="w-full"
+      headerClassName="bg-color-mode-surface-bg-icon-gray"
+      rowClassName="hover:bg-gray-50"
+      cellClassName="text-right [direction:rtl] whitespace-nowrap"
+    />
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPageChange={handlePageChange}
+      className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+    />
+  </>
+)}
 </div>
 </article>
 </section>

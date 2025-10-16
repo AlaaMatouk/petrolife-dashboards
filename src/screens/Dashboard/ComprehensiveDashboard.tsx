@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
-import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics } from "../../services/firestore";
+import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics, calculateFuelConsumptionByCities } from "../../services/firestore";
+import { exportDataTable } from "../../services/exportService";
+import { useToast } from "../../context/ToastContext";
+import { useNavigation } from "../../hooks/useNavigation";
+import { ROUTES } from "../../constants/routes";
+import { Map } from "../PerolifeStationLocations/sections/map/Map";
 
 // Banner Section Component
 const BannerSection = () => {
@@ -49,15 +52,55 @@ const StatsCardsSection = () => {
     totalCost: number;
   }>({ sizes: [], totalOrders: 0, totalCost: 0 });
   
-  // Get balance from company data, fallback to 0 if not available
-  const walletBalance = company?.balance || 0;
+  const [oilStats, setOilStats] = useState<{
+    totalLitres: number;
+  }>({ totalLitres: 0 });
+  
+  const [batteryStats, setBatteryStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    totalOrders: number;
+  }>({ sizes: [], totalOrders: 0 });
+  
+  const [tireStats, setTireStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    totalOrders: number;
+  }>({ sizes: [], totalOrders: 0 });
+  
+  const [batteryReplacementStats, setBatteryReplacementStats] = useState<{
+    totalCost: number;
+    replacedCount: number;
+    requestedCount: number;
+  }>({ totalCost: 0, replacedCount: 0, requestedCount: 0 });
+  
+  const [driverStats, setDriverStats] = useState<{
+    active: number;
+    inactive: number;
+    total: number;
+  }>({ active: 0, inactive: 0, total: 0 });
+  
+  const [carStats, setCarStats] = useState<{
+    sizes: Array<{ name: string; count: number }>;
+    total: number;
+  }>({ sizes: [], total: 0 });
+  
+  const [orderStats, setOrderStats] = useState<{
+    completed: number;
+    cancelled: number;
+    total: number;
+  }>({ completed: 0, cancelled: 0, total: 0 });
+  
+  // Get balance from company data
+  // If company is null, we're still loading
+  // If company.balance is undefined, default to 0
+  const walletBalance = company ? (company.balance ?? 0) : null;
+  const isLoadingBalance = walletBalance === null;
   
   // Format number with thousands separator (English)
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  // Fetch orders and calculate fuel and car wash statistics
+  // Fetch orders and calculate fuel, car wash, oil, battery, driver, car, and order statistics
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -67,6 +110,27 @@ const StatsCardsSection = () => {
         
         const carWashData = calculateCarWashStatistics(orders);
         setCarWashStats(carWashData);
+        
+        const oilData = calculateOilChangeStatistics(orders);
+        setOilStats(oilData);
+        
+        const batteryData = calculateBatteryChangeStatistics(orders);
+        setBatteryStats(batteryData);
+        
+        const tireData = calculateTireChangeStatistics(orders);
+        setTireStats(tireData);
+        
+        const batteryReplacementData = calculateBatteryReplacementStatistics(orders);
+        setBatteryReplacementStats(batteryReplacementData);
+        
+        const orderData = calculateOrderStatistics(orders);
+        setOrderStats(orderData);
+        
+        const driverData = await calculateDriverStatistics();
+        setDriverStats(driverData);
+        
+        const carData = await calculateCarStatistics();
+        setCarStats(carData);
       } catch (error) {
         console.error('Error loading statistics:', error);
       }
@@ -103,26 +167,32 @@ const StatsCardsSection = () => {
     },
     {
       title: "رصيد محفظتي",
-      amount: formatNumber(walletBalance),
+      amount: isLoadingBalance ? null : formatNumber(walletBalance ?? 0),
       currency: "ر.س",
       icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "wallet",
+      isLoading: isLoadingBalance,
     },
     {
       title: "تغييرات الزيوت",
-      amount: "250",
+      amount: formatNumber(Math.round(oilStats.totalLitres)),
       unit: "لتر",
       icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
       type: "oil",
     },
     {
       title: "عمليات تغيير الإطارات",
-      categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
-      ],
+      categories: tireStats.sizes.length > 0 
+        ? tireStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
@@ -142,53 +212,69 @@ const StatsCardsSection = () => {
     },
     {
       title: "استبدال البطاريات",
-      cost: "14,210",
+      cost: formatNumber(Math.round(batteryReplacementStats.totalCost)),
       currency: "ر.س",
-      replaced: "250",
-      requested: "845",
+      replaced: formatNumber(batteryReplacementStats.replacedCount),
+      requested: formatNumber(batteryReplacementStats.requestedCount),
       icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "عمليات تغيير البطاريات",
-      categories: [
-        { name: "صغيرة", count: 425 },
-        { name: "متوسطة", count: 4536 },
-        { name: "كبيرة", count: 3250 },
-        { name: "VIP", count: 1250 },
-      ],
+      categories: batteryStats.sizes.length > 0 
+        ? batteryStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "اجمالي تكلفة الوقود",
-      total: "الاجمالي 13700",
-      breakdown: [
-        { type: "ديزل", amount: "6500", color: "text-color-mode-text-icons-t-orange" },
-        { type: "بنزين 95", amount: "5000", color: "text-color-mode-text-icons-t-red" },
-        { type: "بنزين 91", amount: "2200", color: "text-color-mode-text-icons-t-green" },
-      ],
+      total: `الاجمالي ${formatNumber(Math.round(fuelStats.totalCost))}`,
+      breakdown: fuelStats.fuelTypes.length > 0
+        ? fuelStats.fuelTypes.map(fuel => ({
+            type: fuel.type,
+            amount: formatNumber(Math.round(fuel.totalCost)),
+            color: fuel.color,
+          }))
+        : [
+            { type: "ديزل", amount: "0", color: "text-color-mode-text-icons-t-orange" },
+            { type: "بنزين 95", amount: "0", color: "text-color-mode-text-icons-t-red" },
+            { type: "بنزين 91", amount: "0", color: "text-color-mode-text-icons-t-green" },
+          ],
       icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "الطلبات المكتملة / الملغية",
-      completed: 12,
-      cancelled: 10,
+      completed: orderStats.completed,
+      cancelled: orderStats.cancelled,
       icon: <FileText className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "السيارات",
-      total: 85,
-      categories: [
-        { name: "صغيرة", count: 10 },
-        { name: "متوسطة", count: 30 },
-        { name: "كبيرة", count: 25 },
-        { name: "VIP", count: 20 },
-      ],
+      total: carStats.total,
+      categories: carStats.sizes.length > 0 
+        ? carStats.sizes.map(size => ({
+            name: size.name,
+            count: size.count,
+          }))
+        : [
+            { name: "صغيرة", count: 0 },
+            { name: "متوسطة", count: 0 },
+            { name: "كبيرة", count: 0 },
+            { name: "VIP", count: 0 },
+          ],
       icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
     {
       title: "السائقين النشطين / المعطلين",
-      active: 54,
-      inactive: 14,
+      active: driverStats.active,
+      inactive: driverStats.inactive,
       icon: <Users className="w-5 h-5" style={{ color: '#E76500' }} />,
     },
   ];
@@ -296,6 +382,11 @@ const StatsCardsSection = () => {
                 <span className="text-gray-400 mx-1">/</span>
                 <span className="text-blue-600">{stat.active}</span>
               </p>
+            ) : stat.isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-500">جاري التحميل...</span>
+              </div>
             ) : (
               <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
                 {stat.amount} <span className="text-base">{stat.currency || stat.unit}</span>
@@ -311,6 +402,69 @@ const StatsCardsSection = () => {
 
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
+  const { company } = useAuth();
+  
+  // Extract current subscription from company data
+  const currentSubscription = company?.selectedSubscription;
+  
+  // Get subscription details using correct field names:
+  // نوع الباقة = periodName (extract Arabic text from object)
+  const packageType = currentSubscription?.periodName?.ar || 
+                     currentSubscription?.periodName?.en || 
+                     (typeof currentSubscription?.periodName === 'string' ? currentSubscription?.periodName : 'N/A');
+  
+  // عدد المركبات = maxCarNumber (with fallbacks)
+  const vehicleCount = company?.maxCarNumber || 
+                      company?.numberOfVehicles || 
+                      company?.vehicleCount || 
+                      company?.carsLimit || 
+                      currentSubscription?.maxCarNumber || 
+                      0;
+  
+  // اسم الباقة
+  const packageName = currentSubscription?.title?.ar || currentSubscription?.title?.en || 'N/A';
+  
+  // Calculate days remaining using createdDate + periodValueInDays
+  const calculateDaysRemaining = () => {
+    const createdDate = currentSubscription?.createdDate;
+    const periodValueInDays = currentSubscription?.periodValueInDays;
+    
+    if (!createdDate || !periodValueInDays) return 0;
+    
+    try {
+      const startDate = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+      const expiryDate = new Date(startDate);
+      expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
+      
+      const now = new Date();
+      const diffTime = expiryDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  const daysRemaining = calculateDaysRemaining();
+
+  console.log('\n📅 Dashboard Subscription Data:');
+  console.log('==============================');
+  console.log('Company:', company?.name);
+  console.log('Company Data - Checking all possible vehicle count fields:');
+  console.log('  maxCarNumber:', company?.maxCarNumber);
+  console.log('  numberOfVehicles:', company?.numberOfVehicles);
+  console.log('  vehicleCount:', company?.vehicleCount);
+  console.log('  carsLimit:', company?.carsLimit);
+  console.log('  selectedSubscription.maxCarNumber:', currentSubscription?.maxCarNumber);
+  console.log('Final Vehicle Count:', vehicleCount);
+  console.log('Period Name:', currentSubscription?.periodName);
+  console.log('Package Type (extracted):', packageType);
+  console.log('Package Name:', packageName);
+  console.log('Created Date:', currentSubscription?.createdDate);
+  console.log('Period Value in Days:', currentSubscription?.periodValueInDays);
+  console.log('Days Remaining:', daysRemaining);
+  console.log('==============================\n');
+
   return (
     <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* Subscription Card */}
@@ -327,13 +481,13 @@ const SubscriptionAndLocationsSection = () => {
           {/* Package Type Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
             <div className="text-lg font-bold text-purple-800 mb-1">نوع الباقة</div>
-            <div className="text-xs text-purple-800">سنوي</div>
+            <div className="text-xs text-purple-800">{packageType}</div>
           </div>
           
           {/* Number of Vehicles Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
             <div className="text-lg font-bold text-purple-800 mb-1">عدد المركبات</div>
-            <div className="text-xs text-purple-800">120</div>
+            <div className="text-xs text-purple-800">{vehicleCount}</div>
           </div>
         </div>
         
@@ -357,47 +511,19 @@ const SubscriptionAndLocationsSection = () => {
           
           {/* Countdown Numbers */}
           <div className="text-2xl font-bold text-orange-500 mb-2 [direction:rtl] text-center">
-            24 : 152 : 245
+            {daysRemaining} يوم
           </div>
           
-          {/* Time Unit Labels */}
-          <div className="flex justify-center gap-6 text-xs text-gray-700 [direction:rtl]">
-            <span>يوم</span>
-            <span>ساعة</span>
-            <span>دقيقة</span>
+          {/* Package Name */}
+          <div className="text-sm text-gray-600 mt-2 [direction:rtl] text-center">
+            {packageName}
           </div>
         </div>
       </div>
 
       {/* Station Locations Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-1.5">
-            <h3 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-              مواقع محطات بترولايف
-            </h3>
-            <MapPin className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-        
-        <div className="h-48 rounded-lg overflow-hidden relative">
-          <img
-            src="/img/vector-map.svg"
-            alt="World map with Petrolife station locations"
-            className="w-full h-full object-cover"
-          />
-          
-          {/* Map Markers */}
-          <div className="absolute top-[83.20%] left-[86.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[86.89%] left-[93.55%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[32.17%] left-[12.70%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[41.80%] left-[15.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[19.88%] left-[50.88%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[45.90%] left-[66.21%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[40.78%] left-[82.32%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[14.96%] left-[56.74%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[36.07%] left-[50.10%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-        </div>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm lg:col-span-2 overflow-hidden">
+        <Map />
       </div>
     </section>
   );
@@ -556,11 +682,80 @@ const ConsumptionSection = () => {
 
 // Fuel Delivery Requests Section
 const FuelDeliveryRequestsSection = () => {
+  const [deliveryStats, setDeliveryStats] = useState<{
+    completed: number;
+    cancelled: number;
+    total: number;
+    completionPercentage: number;
+  }>({ completed: 0, cancelled: 0, total: 0, completionPercentage: 0 });
+
+  useEffect(() => {
+    const loadDeliveryStats = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Filter for fuel delivery orders
+        const fuelDeliveryOrders = orders.filter(order => {
+          const titleAr = order.service?.title?.ar || '';
+          const titleEn = order.service?.title?.en || '';
+          const descAr = order.service?.desc?.ar || '';
+          const descEn = order.service?.desc?.en || '';
+
+          return (titleAr === 'توصيل الوقود' || titleEn === 'Fuel Delivery') ||
+                 (descAr === 'عند الطلب وفي أي وقت وفي أي مكان' || descEn === 'On-demand, anytime anywhere.');
+        });
+
+        // Count completed and cancelled
+        let completed = 0;
+        let cancelled = 0;
+
+        fuelDeliveryOrders.forEach(order => {
+          const status = order.status?.toLowerCase().trim() || '';
+          
+          if (status === 'completed' || status === 'done' || status === 'delivered' || 
+              status === 'مكتمل' || status === 'تم التوصيل') {
+            completed++;
+          } else if (status === 'cancelled' || status === 'canceled' || status === 'rejected' || 
+                     status === 'ملغي' || status === 'مرفوض') {
+            cancelled++;
+          }
+        });
+
+        const total = fuelDeliveryOrders.length;
+        const completionPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        console.log('\n⛽ Fuel Delivery Requests Stats:');
+        console.log('========================');
+        console.log('Total Fuel Delivery Orders:', total);
+        console.log('Completed:', completed);
+        console.log('Cancelled:', cancelled);
+        console.log('Completion Rate:', completionPercentage + '%');
+        console.log('========================\n');
+
+        setDeliveryStats({
+          completed,
+          cancelled,
+          total,
+          completionPercentage,
+        });
+      } catch (error) {
+        console.error('Error loading delivery stats:', error);
+      }
+    };
+
+    loadDeliveryStats();
+  }, []);
+
+  // Calculate stroke-dasharray for the progress circle
+  // Circle circumference = 2 * π * r = 2 * 3.14159 * 45 ≈ 283
+  const circumference = 283;
+  const progressLength = (deliveryStats.completionPercentage / 100) * circumference;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          المكتملة 20 / الملغية 22
+          المكتملة {deliveryStats.completed} / الملغية {deliveryStats.cancelled}
         </div>
         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
           طلبات توصيل الوقود
@@ -588,7 +783,7 @@ const FuelDeliveryRequestsSection = () => {
               fill="none"
               stroke="#5A66C1"
               strokeWidth="6"
-              strokeDasharray={`${49 * 2.83} 283`}
+              strokeDasharray={`${progressLength} ${circumference}`}
               strokeLinecap="round"
             />
           </svg>
@@ -596,7 +791,7 @@ const FuelDeliveryRequestsSection = () => {
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-base text-gray-500 mb-1 [direction:rtl]">الطلبات المكتملة</div>
-            <div className="text-4xl font-bold text-gray-900">49%</div>
+            <div className="text-4xl font-bold text-gray-900">{deliveryStats.completionPercentage}%</div>
           </div>
         </div>
       </div>
@@ -606,18 +801,73 @@ const FuelDeliveryRequestsSection = () => {
 
 // My Cars Section
 const MyCarsSection = () => {
-  const carCategories = [
-    { name: "سيارات صغيرة", count: 20, total: 85 },
-    { name: "سيارات متوسطة", count: 25, total: 85 },
-    { name: "سيارات كبيرة", count: 30, total: 85 },
-    { name: "سيارات VIP", count: 10, total: 85 },
-  ];
+  const [carsData, setCarsData] = useState<{
+    total: number;
+    categories: Array<{ name: string; count: number }>;
+  }>({ total: 0, categories: [] });
+
+  useEffect(() => {
+    const loadCarsData = async () => {
+      try {
+        const carStats = await calculateCarStatistics();
+        
+        console.log('\n🚗 My Cars Section Data:');
+        console.log('========================');
+        console.log('Total Cars:', carStats.total);
+        console.log('By Size:', carStats.sizes);
+        console.log('========================\n');
+
+        // Map size names to full names for display
+        const categories = carStats.sizes.map(size => {
+          let fullName = '';
+          switch (size.name) {
+            case 'صغيرة':
+              fullName = 'سيارات صغيرة';
+              break;
+            case 'متوسطة':
+              fullName = 'سيارات متوسطة';
+              break;
+            case 'كبيرة':
+              fullName = 'سيارات كبيرة';
+              break;
+            case 'VIP':
+              fullName = 'سيارات VIP';
+              break;
+            default:
+              fullName = `سيارات ${size.name}`;
+          }
+          return {
+            name: fullName,
+            count: size.count,
+          };
+        });
+
+        setCarsData({
+          total: carStats.total,
+          categories: categories,
+        });
+      } catch (error) {
+        console.error('Error loading cars data:', error);
+      }
+    };
+
+    loadCarsData();
+  }, []);
+
+  const carCategories = carsData.categories.length > 0 
+    ? carsData.categories 
+    : [
+        { name: "سيارات صغيرة", count: 0 },
+        { name: "سيارات متوسطة", count: 0 },
+        { name: "سيارات كبيرة", count: 0 },
+        { name: "سيارات VIP", count: 0 },
+      ];
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          اجمالي السيارات 85
+          اجمالي السيارات {carsData.total}
         </div>
         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
           سياراتي
@@ -627,11 +877,11 @@ const MyCarsSection = () => {
       {/* Car Categories */}
       <div className="space-y-6">
         {carCategories.map((category, index) => {
-          const percentage = (category.count / category.total) * 100;
+          const percentage = carsData.total > 0 ? (category.count / carsData.total) * 100 : 0;
           return (
             <div key={index} className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{category.total}/{category.count}</span>
+                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{carsData.total}/{category.count}</span>
                 <span className="text-sm font-medium text-gray-900 [direction:rtl]">{category.name}</span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 flex justify-end">
@@ -653,29 +903,76 @@ const MyCarsSection = () => {
 
 // Fuel Consumption by Cities Section
 const FuelConsumptionByCitiesSection = () => {
+  const { addToast } = useToast();
   const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
+  const [citiesData, setCitiesData] = useState<Array<{ name: string; consumption: number; stationCount?: number }>>([]);
+  const [loading, setLoading] = useState(true);
 
-  const citiesData = [
-    { name: "الرياض", consumption: 15 },
-    { name: "جدة", consumption: 70 },
-    { name: "مكة", consumption: 45 },
-    { name: "الرياض", consumption: 60 },
-    { name: "الرياض", consumption: 75 },
-    { name: "الرياض", consumption: 80 },
-    { name: "الرياض", consumption: 65 },
-    { name: "الرياض", consumption: 20 },
-    { name: "الرياض", consumption: 85 },
-    { name: "الرياض", consumption: 90 },
-    { name: "الرياض", consumption: 95 },
-  ];
+  // Fetch cities data from Firestore
+  useEffect(() => {
+    const loadCitiesData = async () => {
+      try {
+        setLoading(true);
+        const data = await calculateFuelConsumptionByCities();
+        setCitiesData(data);
+      } catch (error) {
+        console.error('Error loading cities data:', error);
+        addToast({
+          title: 'خطأ',
+          message: 'فشل في تحميل بيانات المدن',
+          type: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const maxConsumption = Math.max(...citiesData.map(city => city.consumption));
+    loadCitiesData();
+  }, [addToast]);
+
+  const maxConsumption = citiesData.length > 0 
+    ? Math.max(...citiesData.map(city => city.consumption))
+    : 0;
+  
+  // Handle export
+  const handleExport = async () => {
+    try {
+      const exportColumns = [
+        { key: 'name', label: 'المدينة' },
+        { key: 'consumption', label: 'الاستهلاك (لتر)' },
+      ];
+
+      await exportDataTable(
+        citiesData,
+        exportColumns,
+        'fuel-consumption-by-cities',
+        'excel',
+        'استهلاك الوقود للمدن'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: 'تم تصدير بيانات استهلاك الوقود بنجاح',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <Download className="w-4 h-4" />
             <span className="text-sm font-medium [direction:rtl]">تصدير</span>
           </button>
@@ -689,58 +986,233 @@ const FuelConsumptionByCitiesSection = () => {
         </h3>
       </div>
       
+      {/* Loading State */}
+      {loading && (
+        <div className="h-80 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 [direction:rtl]">جاري تحميل البيانات...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Empty State */}
+      {!loading && citiesData.length === 0 && (
+        <div className="h-80 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 [direction:rtl] text-lg font-medium">لا توجد بيانات لعرضها</p>
+            <p className="text-gray-500 [direction:rtl] text-sm mt-2">لم يتم العثور على استهلاك وقود في أي مدينة</p>
+          </div>
+        </div>
+      )}
+      
       {/* Bar Chart */}
-      <div className="h-80 flex items-end justify-between gap-1">
-        {citiesData.map((city, index) => {
-          const height = (city.consumption / maxConsumption) * 100;
-          return (
-            <div key={index} className="flex flex-col items-center flex-1">
-              {/* Bar */}
-              <div className="relative w-6 mb-3">
-                <div className="w-full bg-gray-100 rounded-full" style={{ height: '240px' }}>
-                    <div
-                      className="w-full rounded-full transition-all duration-700"
-                      style={{ 
-                        height: `${height}%`,
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: '#5A66C1'
-                      }}
-                    ></div>
+      {!loading && citiesData.length > 0 && (
+        <div className="h-80 flex items-end justify-between gap-1">
+          {citiesData.map((city, index) => {
+            const height = maxConsumption > 0 ? (city.consumption / maxConsumption) * 100 : 0;
+            return (
+              <div key={index} className="flex flex-col items-center flex-1">
+                {/* Litres Consumed - On Top */}
+                <div className="text-xs font-bold text-gray-700 [direction:rtl] text-center mb-2" style={{ minHeight: '20px' }}>
+                  {city.consumption.toFixed(1)} .L
+                </div>
+                
+                {/* Bar */}
+                <div className="relative w-6 mb-3">
+                  <div className="w-full bg-gray-100 rounded-full" style={{ height: '220px' }}>
+                      <div
+                        className="w-full rounded-full transition-all duration-700 hover:opacity-80"
+                        style={{ 
+                          height: `${height}%`,
+                          position: 'absolute',
+                          bottom: 0,
+                          backgroundColor: '#5A66C1'
+                        }}
+                        title={`${city.name}: ${city.consumption.toFixed(1)} لتر`}
+                      ></div>
+                  </div>
+                </div>
+                
+                {/* City Name - At Bottom */}
+                <div className="text-xs text-gray-600 [direction:rtl] text-center font-medium max-w-[60px] truncate" title={city.name}>
+                  {city.name}
                 </div>
               </div>
-              {/* City Name */}
-              <div className="text-xs text-gray-600 [direction:rtl] text-center font-medium">
-                {city.name}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
 // Most Used Stations and Drivers Section
 const MostUsedSection = () => {
-  const [selectedStationsFilter, setSelectedStationsFilter] = useState("اخر 12 شهر");
-  const [selectedDriversFilter, setSelectedDriversFilter] = useState("اخر 12 شهر");
+  const [topDrivers, setTopDrivers] = useState<any[]>([]);
+  const [topStations, setTopStations] = useState<any[]>([]);
 
-  const stationsData = [
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-  ];
+  useEffect(() => {
+    const loadTopData = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Group orders by driver and calculate total fuel consumption and cost
+        const driverConsumption: Record<string, {
+          name: string;
+          phone: string;
+          totalFuel: number;
+          totalCost: number;
+          fuelType: string;
+        }> = {};
 
-  const driversData = [
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-  ];
+        // Group orders by station and calculate usage
+        const stationUsage: Record<string, {
+          name: string;
+          address: string;
+          totalFuel: number;
+          totalPrice: number;
+          fuelType: string;
+        }> = {};
+
+        orders.forEach(order => {
+          // Process drivers
+          const driverName = order.assignedDriver?.name;
+          const driverPhone = order.assignedDriver?.phoneNumber || order.assignedDriver?.phone || 'N/A';
+          
+          if (driverName) {
+            if (!driverConsumption[driverName]) {
+              driverConsumption[driverName] = {
+                name: driverName,
+                phone: driverPhone,
+                totalFuel: 0,
+                totalCost: 0,
+                fuelType: '',
+              };
+            }
+
+            // Add fuel litres
+            const fuel = parseFloat(order.totalLitre || order.quantity || 0);
+            driverConsumption[driverName].totalFuel += fuel;
+
+            // Add cost
+            const cost = parseFloat(order.totalPrice || 0);
+            driverConsumption[driverName].totalCost += cost;
+
+            // Get fuel type (use the most common one)
+            const fuelType = order.selectedOption?.name?.ar || 
+                           order.selectedOption?.label || 
+                           order.service?.title?.ar ||
+                           'وقود';
+            if (!driverConsumption[driverName].fuelType) {
+              driverConsumption[driverName].fuelType = fuelType;
+            }
+          }
+
+          // Process stations
+          const stationName = order.carStation?.name || order.station?.name;
+          const stationAddress = order.carStation?.address || 
+                                order.carStation?.formattedLocation?.address?.formatted ||
+                                order.station?.address ||
+                                'N/A';
+          
+          if (stationName) {
+            if (!stationUsage[stationName]) {
+              stationUsage[stationName] = {
+                name: stationName,
+                address: typeof stationAddress === 'string' ? stationAddress : 'N/A',
+                totalFuel: 0,
+                totalPrice: 0,
+                fuelType: '',
+              };
+            }
+
+            // Add fuel litres
+            const fuel = parseFloat(order.totalLitre || order.quantity || 0);
+            stationUsage[stationName].totalFuel += fuel;
+
+            // Add price
+            const price = parseFloat(order.totalPrice || 0);
+            stationUsage[stationName].totalPrice += price;
+
+            // Get fuel type
+            const fuelType = order.selectedOption?.name?.ar || 
+                           order.selectedOption?.label || 
+                           order.service?.title?.ar ||
+                           'وقود';
+            if (!stationUsage[stationName].fuelType) {
+              stationUsage[stationName].fuelType = fuelType;
+            }
+          }
+        });
+
+        // Convert to array and sort by total cost (descending)
+        const sortedDrivers = Object.values(driverConsumption)
+          .sort((a, b) => b.totalCost - a.totalCost)
+          .slice(0, 5); // Top 5 drivers
+
+        console.log('\n👥 Top 5 Most Consuming Drivers:');
+        console.log('========================');
+        sortedDrivers.forEach((driver, index) => {
+          console.log(`Driver ${index + 1}:`, {
+            name: driver.name,
+            totalFuel: Math.round(driver.totalFuel),
+            totalCost: Math.round(driver.totalCost),
+            fuelType: driver.fuelType,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform drivers to table format
+        const transformedDrivers = sortedDrivers.map(driver => ({
+          name: driver.name,
+          phone: driver.phone,
+          cost: Math.round(driver.totalCost),
+          fuel: Math.round(driver.totalFuel).toString(),
+          type: driver.fuelType,
+        }));
+
+        setTopDrivers(transformedDrivers);
+
+        // Sort stations by total price (descending)
+        const sortedStations = Object.values(stationUsage)
+          .sort((a, b) => b.totalPrice - a.totalPrice)
+          .slice(0, 5); // Top 5 stations
+
+        console.log('\n⛽ Top 5 Most Used Stations:');
+        console.log('========================');
+        sortedStations.forEach((station, index) => {
+          console.log(`Station ${index + 1}:`, {
+            name: station.name,
+            address: station.address,
+            totalFuel: Math.round(station.totalFuel),
+            totalPrice: Math.round(station.totalPrice),
+            fuelType: station.fuelType,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform stations to table format
+        const transformedStations = sortedStations.map(station => ({
+          name: station.name,
+          address: station.address,
+          price: Math.round(station.totalPrice),
+          fuel: Math.round(station.totalFuel).toString(),
+          type: station.fuelType,
+        }));
+
+        setTopStations(transformedStations);
+      } catch (error) {
+        console.error('Error loading top data:', error);
+      }
+    };
+
+    loadTopData();
+  }, []);
+
+  const stationsData = topStations;
+  const driversData = topDrivers;
 
   // Table columns for stations
   const stationsColumns = [
@@ -839,19 +1311,13 @@ const MostUsedSection = () => {
       {/* Most Used Stations */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="mb-6">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
                 المحطات الأكثر استخداما
               </h3>
               <Fuel className="w-5 h-5 text-gray-500" />
             </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedStationsFilter}
-              onFilterChange={setSelectedStationsFilter}
-            />
           </div>
         </div>
 
@@ -866,19 +1332,13 @@ const MostUsedSection = () => {
       {/* Most Consuming Drivers */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="mb-6">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
                 السائقين الأكثر استهلاكا
               </h3>
               <Users className="w-5 h-5 text-gray-500" />
             </div>
-          </div>
-          <div className="flex justify-start">
-            <TimeFilter
-              selectedFilter={selectedDriversFilter}
-              onFilterChange={setSelectedDriversFilter}
-            />
           </div>
         </div>
 
@@ -895,15 +1355,79 @@ const MostUsedSection = () => {
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
-  const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const { goTo } = useNavigation();
 
-  const ordersData = [
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "200" },
-    { code: "21A254", type: "منتج", driver: "--", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "180" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "160" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "140" },
-    { code: "21A254", type: "وقود 91", driver: "احمد محمد", date: "21 فبراير 2025 - 5:05 ص", value: "20", cumulative: "120" },
-  ];
+  useEffect(() => {
+    const loadRecentOrders = async () => {
+      try {
+        const orders = await fetchOrders();
+        
+        // Sort by createdDate (most recent first) and take top 5
+        const sortedOrders = orders
+          .sort((a, b) => {
+            const dateA = a.createdDate?.toDate ? a.createdDate.toDate() : new Date(a.createdDate || 0);
+            const dateB = b.createdDate?.toDate ? b.createdDate.toDate() : new Date(b.createdDate || 0);
+            return dateB.getTime() - dateA.getTime();
+          })
+          .slice(0, 5);
+
+        console.log('\n📋 Latest Orders (Top 5):');
+        console.log('========================');
+        sortedOrders.forEach((order, index) => {
+          console.log(`Order ${index + 1}:`, {
+            id: order.id,
+            date: order.createdDate,
+            driver: order.assignedDriver?.name,
+            type: order.service?.title?.ar || order.selectedOption?.name?.ar,
+            value: order.totalPrice,
+          });
+        });
+        console.log('========================\n');
+
+        // Transform orders to table format with cumulative totals
+        let cumulativeTotal = 0;
+        const transformedOrders = sortedOrders.map(order => {
+          const value = parseFloat(order.totalPrice) || 0;
+          cumulativeTotal += value;
+
+          // Format date
+          let formattedDate = 'N/A';
+          if (order.createdDate) {
+            const date = order.createdDate?.toDate ? order.createdDate.toDate() : new Date(order.createdDate);
+            formattedDate = new Intl.DateTimeFormat('ar-SA', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }).format(date);
+          }
+
+          return {
+            code: order.id || order.refId || 'N/A',
+            type: order.service?.title?.ar || 
+                  order.selectedOption?.name?.ar || 
+                  order.selectedOption?.label ||
+                  order.service?.title?.en ||
+                  'منتج',
+            driver: order.assignedDriver?.name || '--',
+            date: formattedDate,
+            value: Math.round(value).toString(),
+            cumulative: Math.round(cumulativeTotal).toString(),
+          };
+        });
+
+        setRecentOrders(transformedOrders);
+      } catch (error) {
+        console.error('Error loading recent orders:', error);
+      }
+    };
+
+    loadRecentOrders();
+  }, []);
+
+  const ordersData = recentOrders;
 
   // Table columns for orders
   const ordersColumns = [
@@ -972,7 +1496,10 @@ const LatestOrdersSection = () => {
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <button className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+        <button 
+          onClick={() => goTo(ROUTES.WALLET)}
+          className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
           <span className="text-sm font-medium [direction:rtl]">عرض المزيد</span>
         </button>
         <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
@@ -995,51 +1522,33 @@ const LatestOrdersSection = () => {
 // Main Dashboard Component
 export const ComprehensiveDashboard = (): JSX.Element => {
   return (
-    <LayoutSimple
-      headerProps={{
-        title: "لوحة التحكم",
-        titleIconSrc: <BarChart3 className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "بحث برقم العميل / العملية السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
-        },
-      }}
-      sidebarProps={{
-        sections: navigationMenuData.sections,
-        topItems: navigationMenuData.topItems,
-        bottomItems: navigationMenuData.bottomItems,
-        userInfo: userInfo,
-      }}
-    >
-      <div className="space-y-8">
-        {/* Banner Section */}
-        <BannerSection />
+    <div className="space-y-8">
+      {/* Banner Section */}
+      <BannerSection />
 
-        {/* All Cards - 4 rows of 3 cards each */}
-        <StatsCardsSection />
+      {/* All Cards - 4 rows of 3 cards each */}
+      <StatsCardsSection />
 
-        {/* Subscription and Locations */}
-        <SubscriptionAndLocationsSection />
+      {/* Subscription and Locations */}
+      <SubscriptionAndLocationsSection />
 
-        {/* Consumption Section */}
-        <ConsumptionSection />
+      {/* Consumption Section */}
+      <ConsumptionSection />
 
-        {/* New Dashboard Sections */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <FuelDeliveryRequestsSection />
-          <MyCarsSection />
-        </section>
+      {/* New Dashboard Sections */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <FuelDeliveryRequestsSection />
+        <MyCarsSection />
+      </section>
 
-        {/* Fuel Consumption by Cities */}
-        <FuelConsumptionByCitiesSection />
+      {/* Fuel Consumption by Cities */}
+      <FuelConsumptionByCitiesSection />
 
-        {/* Most Used Section */}
-        <MostUsedSection />
+      {/* Most Used Section */}
+      <MostUsedSection />
 
-        {/* Latest Orders */}
-        <LatestOrdersSection />
-      </div>
-    </LayoutSimple>
+      {/* Latest Orders */}
+      <LatestOrdersSection />
+    </div>
   );
 };

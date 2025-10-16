@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { Pagination } from "../../../../components/shared/Pagination/Pagination";
 
-export const PaginationSection = (): JSX.Element => {
-  const [currentPage, setCurrentPage] = useState(3);
-  const totalPages = 20;
+interface PaginationSectionProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
+export const PaginationSection = ({ currentPage, totalPages, onPageChange }: PaginationSectionProps): JSX.Element => {
   return (
     <Pagination
       currentPage={currentPage}
       totalPages={totalPages}
-      onPageChange={handlePageChange}
+      onPageChange={onPageChange}
       className="w-full justify-center"
     />
   );

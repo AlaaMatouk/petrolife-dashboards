@@ -118,15 +118,6 @@ export const CarDriversSection = ({ carData }: CarDriversSectionProps): JSX.Elem
     loadCarDrivers();
   }, [carData]);
 
-  const handleToggleStatus = (driverId: string) => {
-    setDrivers(prevDrivers => 
-      prevDrivers.map(driver => 
-        driver.id === driverId 
-          ? { ...driver, accountStatus: driver.accountStatus === 'active' ? 'inactive' : 'active' }
-          : driver
-      )
-    );
-  };
 
   const handleContextMenu = (e: React.MouseEvent, driverId: string) => {
     e.preventDefault();
@@ -357,25 +348,11 @@ export const CarDriversSection = ({ carData }: CarDriversSectionProps): JSX.Elem
       width: '120px',
       render: (_, row) => (
         <div className="flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleToggleStatus(row.id)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                row.accountStatus === 'active' ? 'bg-green-600' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  row.accountStatus === 'active' ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`text-sm font-medium ${
-              row.accountStatus === 'active' ? 'text-green-700' : 'text-gray-500'
-            }`}>
-              {row.accountStatus === 'active' ? 'مفعل' : 'غير مفعل'}
-            </span>
-          </div>
+          <span className={`text-sm font-medium ${
+            row.accountStatus === 'active' ? 'text-green-700' : 'text-gray-500'
+          }`}>
+            {row.accountStatus === 'active' ? 'مفعل' : 'غير مفعل'}
+          </span>
         </div>
       )
     },

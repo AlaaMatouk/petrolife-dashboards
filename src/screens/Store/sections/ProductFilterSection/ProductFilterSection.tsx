@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Star, ShoppingCart, Store } from "lucide-react";
 import { fetchProducts } from "../../../../services/firestore";
 import { LoadingSpinner } from "../../../../components/shared";
+import { useGlobalState } from "../../../../context/GlobalStateContext";
+import { useToast } from "../../../../hooks/useToast";
 
 const filterCategories = [
   { id: "accessories", label: "اكسسوارات" },
@@ -14,6 +16,9 @@ const filterCategories = [
 ];
 
 const ProductCard = ({ product }: { product: any }) => {
+  const { dispatch } = useGlobalState();
+  const { addToast } = useToast();
+
   // Extract product details with proper handling of nested objects
   // Based on Firestore structure: title.ar/en, desc.ar/en, image (string), price (number)
   const getTitleText = (prod: any): string => {
@@ -50,6 +55,25 @@ const ProductCard = ({ product }: { product: any }) => {
   const rating = product.rating || 4.5;
   const reviews = product.reviews || product.reviewsCount || 0;
   const price = product.price || product.salePrice || 0;
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: `cart-${product.id}-${Date.now()}`, // Unique cart item ID
+      productId: product.id,
+      title: title,
+      price: price,
+      quantity: 1,
+      image: image,
+      category: category,
+    };
+
+    dispatch({ type: 'ADD_TO_CART', payload: cartItem });
+    addToast({ 
+      title: "نجح", 
+      message: "تمت إضافة المنتج إلى السلة", 
+      type: "success" 
+    });
+  };
 
   return (
     <article className="flex flex-col items-start gap-2.5 p-2.5 relative w-full bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-medium)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
@@ -106,11 +130,18 @@ const ProductCard = ({ product }: { product: any }) => {
           </div>
 
           <div className="flex items-center gap-[var(--corner-radius-medium)] relative self-stretch w-full flex-[0_0_auto]">
-            <div className="flex items-center justify-center w-[42px] h-[42px] bg-gray-100 rounded-[var(--corner-radius-small)]">
+            <button 
+              onClick={handleAddToCart}
+              className="flex items-center justify-center w-[42px] h-[42px] bg-gray-100 hover:bg-orange-100 rounded-[var(--corner-radius-small)] transition-colors cursor-pointer"
+              aria-label="إضافة إلى السلة"
+            >
               <ShoppingCart className="w-[18px] h-[18px] text-orange-500" />
-            </div>
+            </button>
 
-            <button className="items-center justify-center pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 flex-1 grow bg-color-mode-surface-primary-blue flex flex-col gap-2.5 relative rounded-[var(--corner-radius-small)]">
+            <button 
+              onClick={handleAddToCart}
+              className="items-center justify-center pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 flex-1 grow bg-color-mode-surface-primary-blue hover:bg-blue-700 flex flex-col gap-2.5 relative rounded-[var(--corner-radius-small)] transition-colors cursor-pointer"
+            >
               <div className="justify-center self-stretch w-full flex items-center gap-[var(--corner-radius-small)] relative flex-[0_0_auto]">
                 <div className="w-fit mt-[-1.00px] font-[number:var(--subtitle-subtitle-3-font-weight)] text-color-mode-text-icons-t-btn-negative text-[length:var(--subtitle-subtitle-3-font-size)] text-left tracking-[var(--subtitle-subtitle-3-letter-spacing)] leading-[var(--subtitle-subtitle-3-line-height)] whitespace-nowrap [direction:rtl] relative font-subtitle-subtitle-3 [font-style:var(--subtitle-subtitle-3-font-style)]">
                   شراء الآن

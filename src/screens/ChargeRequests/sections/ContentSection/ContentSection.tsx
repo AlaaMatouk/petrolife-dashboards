@@ -11,6 +11,7 @@ interface TableRow {
   oldBalance: string;
   orderType: string;
   orderNumber: string;
+  rawDate?: any; // Raw date for filtering
 }
 
 // Helper function to format date
@@ -76,7 +77,14 @@ const getRequestType = (request: any): string => {
 
 // Convert Firestore data to table format
 const convertRequestsToTableData = (requests: any[]): TableRow[] => {
-  return requests.map((request) => ({
+  // Sort by date descending (newest first)
+  const sortedRequests = [...requests].sort((a, b) => {
+    const dateA = a.requestDate?.toDate ? a.requestDate.toDate() : new Date(a.requestDate || a.createdDate || 0);
+    const dateB = b.requestDate?.toDate ? b.requestDate.toDate() : new Date(b.requestDate || b.createdDate || 0);
+    return dateB.getTime() - dateA.getTime();
+  });
+  
+  return sortedRequests.map((request) => ({
     orderNumber: request.requestId || request.id || '-',
     orderType: getRequestType(request),
     oldBalance: formatNumber(request.oldBalance),
@@ -84,13 +92,22 @@ const convertRequestsToTableData = (requests: any[]): TableRow[] => {
     date: formatDate(request.requestDate || request.createdDate),
     status: getStatus(request.status),
     id: request.id,
+    rawDate: request.requestDate || request.createdDate, // Store raw date for filtering
   }));
 };
 
-export const ContentSection = (): JSX.Element => {
+interface ContentSectionProps {
+  currentPage: number;
+  setTotalPages: (pages: number) => void;
+  selectedTimeFilter: string;
+}
+
+export const ContentSection = ({ currentPage, setTotalPages, selectedTimeFilter }: ContentSectionProps): JSX.Element => {
   const [requests, setRequests] = useState<TableRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch wallet charge requests on mount
   useEffect(() => {
@@ -113,6 +130,45 @@ export const ContentSection = (): JSX.Element => {
     
     loadRequests();
   }, []);
+
+  // Apply time filter
+  const filteredRequests = requests.filter(request => {
+    if (selectedTimeFilter === 'الكل') {
+      return true;
+    }
+    
+    const now = new Date();
+    const requestDate = request.rawDate?.toDate 
+      ? request.rawDate.toDate() 
+      : new Date(request.rawDate || 0);
+    
+    let startDate = new Date();
+    
+    switch (selectedTimeFilter) {
+      case 'اخر اسبوع':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'اخر 30 يوم':
+        startDate.setDate(now.getDate() - 30);
+        break;
+      case 'اخر 6 شهور':
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'اخر 12 شهر':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return true;
+    }
+    
+    return requestDate >= startDate;
+  });
+
+  // Update total pages when filtered requests change
+  useEffect(() => {
+    const pages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+    setTotalPages(pages || 1);
+  }, [filteredRequests.length, setTotalPages]);
 
   const tableColumns = [
     {
@@ -232,7 +288,7 @@ export const ContentSection = (): JSX.Element => {
     );
   }
 
-  if (requests.length === 0) {
+  if (filteredRequests.length === 0) {
     return (
       <div className="w-full bg-white rounded-lg border border-gray-200 p-12">
         <div className="text-center text-gray-500">
@@ -244,10 +300,15 @@ export const ContentSection = (): JSX.Element => {
     );
   }
 
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
   return (
     <Table
       columns={tableColumns}
-      data={requests}
+      data={paginatedRequests}
       className="w-full"
     />
   );

@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, Pagination, ExportButton, RTLSelect } from "../../../../components/shared";
 import { UserRound, ChartNoAxesCombined } from "lucide-react";
+import { fetchFinancialReportData } from "../../../../services/firestore";
+import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
+import { useAuth } from "../../../../hooks/useGlobalState";
+import { exportFinancialReport, getFilteredFinancialData, FinancialReportData, FinancialReportFilters } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 
 const clientData = {
   phone: "00966254523658",
@@ -249,6 +254,15 @@ const tableColumns = [
 ];
 
 export const DataTableSection = (): JSX.Element => {
+  const { company } = useAuth();
+  const { addToast } = useToast();
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 10;
+  
   const [filters, setFilters] = useState({
     timePeriod: "الكل",
     driverCode: "الكل",
@@ -257,12 +271,243 @@ export const DataTableSection = (): JSX.Element => {
     reportType: "تحليلي",
   });
 
+  // Handle export with detailed/summary report logic
+  const handleExport = async (format: string) => {
+    try {
+      // Get filtered data for export
+      const filteredData = getFilteredFinancialData(
+        transformedTableData as FinancialReportData[],
+        filters as FinancialReportFilters
+      );
+
+      // Export using the new financial report export function
+      await exportFinancialReport(
+        filteredData,
+        filters as FinancialReportFilters,
+        format as 'excel' | 'pdf'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير التقرير المالي ${filters.reportType === 'تحليلي' ? 'التفصيلي' : 'الإجمالي'} بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
+  };
+
+  // Fetch financial report data
+  useEffect(() => {
+    const loadReportData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchFinancialReportData();
+        setReportData(data);
+      } catch (err) {
+        console.error('Error loading financial report data:', err);
+        setError('فشل في تحميل بيانات التقارير المالية');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReportData();
+  }, []);
+
   const handleFilterChange = (filterKey: string, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterKey]: value
     }));
   };
+
+  // Format date for display
+  const formatDate = (date: any): string => {
+    if (!date) return '-';
+    
+    try {
+      let dateObj: Date;
+      
+      if (date.toDate && typeof date.toDate === 'function') {
+        // Firestore Timestamp
+        dateObj = date.toDate();
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        return '-';
+      }
+      
+      // Format in Arabic
+      return dateObj.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return '-';
+    }
+  };
+
+  // Sort report data by date descending (newest first)
+  const sortedReportData = [...reportData].sort((a, b) => {
+    try {
+      const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date || 0);
+      const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
+      return dateB.getTime() - dateA.getTime();
+    } catch (error) {
+      return 0;
+    }
+  });
+
+  // Transform report data to table format
+  const transformedTableData = sortedReportData.map(item => ({
+    city: item.city,
+    stationName: item.stationName,
+    date: formatDate(item.date),
+    operationNumber: item.operationNumber,
+    quantity: String(item.quantity),
+    productName: item.productName,
+    productNumber: item.productNumber,
+    productType: item.productType,
+    driverName: item.driverName,
+    driverCode: item.driverCode,
+    rawDate: item.date, // Store raw date for filtering
+  }));
+
+  // Extract unique values for filter options
+  const uniqueProductTypes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.productType).filter(Boolean)))];
+  const uniqueDriverCodes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.driverCode).filter(Boolean)))];
+  const uniqueCities = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.city).filter(Boolean)))];
+
+  // Apply filters to data
+  const filteredTableData = transformedTableData.filter(item => {
+    // Filter by time period
+    if (filters.timePeriod !== 'الكل') {
+      const now = new Date();
+      const itemDate = item.rawDate?.toDate ? item.rawDate.toDate() : new Date(item.rawDate || 0);
+      
+      let startDate = new Date();
+      
+      switch (filters.timePeriod) {
+        case 'اخر اسبوع':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'اخر 30 يوم':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case 'اخر 6 شهور':
+          startDate.setMonth(now.getMonth() - 6);
+          break;
+        case 'اخر 12 شهر':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+        default:
+          startDate = new Date(0);
+      }
+      
+      if (itemDate < startDate) {
+        return false;
+      }
+    }
+
+    // Filter by driver code
+    if (filters.driverCode !== 'الكل' && item.driverCode !== filters.driverCode) {
+      return false;
+    }
+
+    // Filter by city
+    if (filters.city !== 'الكل' && item.city !== filters.city) {
+      return false;
+    }
+
+    // Filter by product type
+    if (filters.productType !== 'الكل' && item.productType !== filters.productType) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Extract client info from company data (Step 2)
+  const clientInfo = {
+    // المدينة = formattedLocation.address.city
+    city: company?.formattedLocation?.address?.city || clientData.city,
+    
+    // الرقم الضريبي = vatNumber
+    taxNumber: company?.vatNumber || clientData.taxNumber,
+    
+    // كود العميل = uId
+    clientCode: company?.uId || clientData.clientCode,
+    
+    // رقم الهاتف = phoneNumber
+    phone: company?.phoneNumber || clientData.phone,
+    
+    // السجل التجاري = commercialRegistrationNumber
+    commercialRecord: company?.commercialRegistrationNumber || clientData.commercialRecord,
+    
+    // اسم العميل = name (or brandName)
+    clientName: company?.name || company?.brandName || clientData.clientName,
+  };
+
+  // Update filter options with dynamic values
+  const dynamicFilterOptions = [
+    { 
+      label: "الفترة الزمنية", 
+      value: filters.timePeriod, 
+      icon: "/img/side-icons-16.svg",
+      options: [
+        { value: "الكل", label: "الكل" },
+        { value: "اخر اسبوع", label: "اخر اسبوع" },
+        { value: "اخر 30 يوم", label: "اخر 30 يوم" },
+        { value: "اخر 6 شهور", label: "اخر 6 شهور" },
+        { value: "اخر 12 شهر", label: "اخر 12 شهر" }
+      ]
+    },
+    {
+      label: "كود الســـــــــائق",
+      value: filters.driverCode,
+      icon: "/img/side-icons-17.svg",
+      options: uniqueDriverCodes.map(code => ({ value: code, label: code }))
+    },
+    {
+      label: "المديــــــــــــنة",
+      value: filters.city,
+      icon: "/img/side-icons-18.svg",
+      options: uniqueCities.map(city => ({ value: city, label: city }))
+    },
+    { 
+      label: "نوع المنتج", 
+      value: filters.productType, 
+      icon: "/img/side-icons-19.svg",
+      options: uniqueProductTypes.map(type => ({ value: type, label: type }))
+    },
+    { 
+      label: "نوع التقرير", 
+      value: filters.reportType, 
+      icon: "/img/side-icons-20.svg",
+      options: [
+        { value: "تحليلي", label: "تحليلي" },
+        { value: "تفصيلي", label: "تفصيلي" },
+        { value: "ملخص", label: "ملخص" }
+      ]
+    },
+  ];
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTableData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = filteredTableData.slice(startIndex, endIndex);
+
   return (
     <section
       className="flex flex-col w-full max-w-[1200px] mx-auto gap-5 px-4"
@@ -287,7 +532,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] relative w-fit font-body-body-2 text-[length:var(--body-body-2-font-size)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.phone}
+                      {clientInfo.phone}
                     </span>
                   </div>
                 </div>
@@ -300,7 +545,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                      {clientData.city}
+                      {clientInfo.city}
                     </span>
                   </div>
                 </div>
@@ -315,7 +560,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.commercialRecord}
+                      {clientInfo.commercialRecord}
                     </span>
                   </div>
                 </div>
@@ -328,7 +573,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.taxNumber}
+                      {clientInfo.taxNumber}
                     </span>
                   </div>
                 </div>
@@ -343,7 +588,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="flex flex-col items-end justify-center gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-icon-gray rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="relative w-fit mt-[-1.00px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-                      {clientData.clientName}
+                      {clientInfo.clientName}
                     </span>
                   </div>
                 </div>
@@ -356,7 +601,7 @@ export const DataTableSection = (): JSX.Element => {
                 <div className="items-end justify-center pt-[var(--corner-radius-small)] pr-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-small)] bg-color-mode-surface-bg-icon-gray flex flex-col gap-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-[var(--corner-radius-small)]">
                   <div className="flex items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                     <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [font-style:var(--body-body-2-font-style)]">
-                      {clientData.clientCode}
+                      {clientInfo.clientCode}
                     </span>
                   </div>
                 </div>
@@ -369,7 +614,7 @@ export const DataTableSection = (): JSX.Element => {
       <article className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <div className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
           <header className="items-center justify-between self-stretch w-full flex-[0_0_auto] flex relative">
-            <ExportButton />
+            <ExportButton onExport={handleExport} />
 
             <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
               <h2 className="relative w-[103px] h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
@@ -386,7 +631,7 @@ export const DataTableSection = (): JSX.Element => {
             role="group"
             aria-label="مرشحات البحث"
           >
-            {filterOptions.map((filter, index) => (
+            {dynamicFilterOptions.map((filter, index) => (
               <RTLSelect
                 key={index}
                 label={filter.label}
@@ -394,13 +639,16 @@ export const DataTableSection = (): JSX.Element => {
                               filter.label === "كود الســـــــــائق" ? "driverCode" :
                               filter.label === "المديــــــــــــنة" ? "city" :
                               filter.label === "نوع المنتج" ? "productType" : "reportType"]}
-                onChange={(value) => handleFilterChange(
-                  filter.label === "الفترة الزمنية" ? "timePeriod" : 
-                  filter.label === "كود الســـــــــائق" ? "driverCode" :
-                  filter.label === "المديــــــــــــنة" ? "city" :
-                  filter.label === "نوع المنتج" ? "productType" : "reportType", 
-                  value
-                )}
+                onChange={(value) => {
+                  handleFilterChange(
+                    filter.label === "الفترة الزمنية" ? "timePeriod" : 
+                    filter.label === "كود الســـــــــائق" ? "driverCode" :
+                    filter.label === "المديــــــــــــنة" ? "city" :
+                    filter.label === "نوع المنتج" ? "productType" : "reportType", 
+                    value
+                  );
+                  setCurrentPage(1); // Reset to first page when filter changes
+                }}
                 options={filter.options}
                 placeholder={filter.value}
               />
@@ -408,20 +656,40 @@ export const DataTableSection = (): JSX.Element => {
           </div>
 
           <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
-            <Table
-              columns={tableColumns}
-              data={tableData}
-              className="w-full"
-              headerClassName="bg-color-mode-surface-bg-icon-gray"
-              rowClassName="hover:bg-gray-50"
-              cellClassName="text-right [direction:rtl] whitespace-nowrap"
-            />
-            <Pagination
-              currentPage={3}
-              totalPages={20}
-              onPageChange={(page) => console.log(`Navigate to page ${page}`)}
-              className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <LoadingSpinner message="جاري تحميل التقارير المالية..." />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <p className="text-red-500 text-center [direction:rtl]">{error}</p>
+              </div>
+            ) : filteredTableData.length === 0 ? (
+              <div className="flex items-center justify-center w-full min-h-[400px]">
+                <p className="text-gray-500 text-center [direction:rtl]">
+                  {transformedTableData.length === 0 
+                    ? 'لا توجد بيانات متاحة' 
+                    : 'لا توجد نتائج تطابق المرشحات المحددة'}
+                </p>
+              </div>
+            ) : (
+              <>
+                <Table
+                  columns={tableColumns}
+                  data={paginatedData}
+                  className="w-full"
+                  headerClassName="bg-color-mode-surface-bg-icon-gray"
+                  rowClassName="hover:bg-gray-50"
+                  cellClassName="text-right [direction:rtl] whitespace-nowrap"
+                />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
+                />
+              </>
+            )}
           </div>
         </div>
       </article>

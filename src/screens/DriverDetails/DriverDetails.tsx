@@ -5,14 +5,7 @@ import { FrameWrapperSubsection } from "./sections/FrameWrapperSubsection/FrameW
 import { GraphSubsection } from "./sections/GraphSubsection";
 import { GroupSubsection } from "./sections/GroupSubsection";
 import { DriverInfo } from "./sections/DriverInfo/DriverInfo";
-import { Layout } from "../../components/shared";
-import {
-  navigationIcons,
-  navigationMenuData,
-  userInfo,
-} from "../../constants/data";
 import { UsedStations } from "../UsedStations/UsedStations";
-import { UserRound } from "lucide-react";
 import { fetchDriverById } from "../../services/firestore";
 
 export const DriverDetails = (): JSX.Element => {
@@ -104,77 +97,32 @@ export const DriverDetails = (): JSX.Element => {
     //   </div>
     // </div>
 
-    <Layout
-      headerProps={{
-        title: "الســـــــــــــــائقين / تفاصيل السائق",
-        titleIconSrc: <UserRound className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
-      }}
-      sidebarProps={{
-        sections: navigationMenuData.sections,
-        topItems: navigationMenuData.topItems,
-        bottomItems: navigationMenuData.bottomItems,
-        userInfo: userInfo,
-      }}
-    >
-      {/* <div
-        className="flex flex-col  items-start gap-5 relative"
-        data-model-id="1:14891"
-      >
-        <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-          <DriverInfo />
-          <GraphSubsection />
-          <UsedStations />
+    <div className="flex flex-col gap-2">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">جاري تحميل بيانات السائق...</p>
+          </div>
         </div>
-      </div> */}
-      <div className="flex flex-col gap-2">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">جاري تحميل بيانات السائق...</p>
-            </div>
-          </div>
-        )}
+      )}
 
-        {/* Error State */}
-        {error && !isLoading && (
-          <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 text-center [direction:rtl]">
-              خطأ: {error}
-            </p>
-          </div>
-        )}
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800 text-center [direction:rtl]">
+            خطأ: {error}
+          </p>
+        </div>
+      )}
 
-        {/* Driver Info - Only show when data is loaded */}
-        {!isLoading && !error && driverData && (
-          <>
-            <DriverInfo driverData={driverData} />
-
-            <div
-              className="flex flex-col  items-start gap-5 relative"
-              data-model-id="1:14891"
-            >
-              <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-                <GraphSubsection />
-              </div>
-            </div>
-
-            <div
-              className="flex flex-col  items-start gap-5 relative"
-              data-model-id="1:14891"
-            >
-              <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
-                <UsedStations />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </Layout>
+      {/* Driver Info - Only show when data is loaded */}
+      {!isLoading && !error && driverData && (
+        <>
+          <DriverInfo driverData={driverData} />
+        </>
+      )}
+    </div>
   );
 };
