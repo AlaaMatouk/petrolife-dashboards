@@ -1,6 +1,41 @@
-import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, where } from 'firebase/firestore';
+import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, where, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../config/firebase';
+
+/**
+ * Normalize car size to standard Arabic format
+ * Converts English (small/middle/big) and Arabic variations to standard Arabic
+ * @param size - Car size in any format
+ * @returns Normalized Arabic car size
+ */
+export const normalizeCarSize = (size: any): string => {
+  if (!size) return '-';
+  
+  const sizeStr = String(size).toLowerCase().trim();
+  
+  // Small (صغيرة)
+  if (sizeStr === 'small' || sizeStr === 'صغيرة' || sizeStr.includes('صغير')) {
+    return 'صغيرة';
+  }
+  
+  // Medium/Middle (متوسطة)
+  if (sizeStr === 'medium' || sizeStr === 'middle' || sizeStr === 'متوسطة' || sizeStr.includes('متوسط')) {
+    return 'متوسطة';
+  }
+  
+  // Large/Big (كبيرة)
+  if (sizeStr === 'large' || sizeStr === 'big' || sizeStr === 'كبيرة' || sizeStr.includes('كبير')) {
+    return 'كبيرة';
+  }
+  
+  // VIP
+  if (sizeStr === 'vip' || sizeStr.includes('vip')) {
+    return 'VIP';
+  }
+  
+  // Return original if no match
+  return size;
+};
 
 /**
  * Fetch companies-drivers data from Firestore
@@ -11,7 +46,7 @@ export const fetchCompaniesDrivers = async () => {
     // console.log('Fetching companies-drivers data from Firestore...');
     
     const companiesDriversRef = collection(db, 'companies-drivers');
-    const q = query(companiesDriversRef);
+    const q = query(companiesDriversRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const companiesDriversData: any[] = [];
@@ -81,7 +116,8 @@ export const fetchCollection = async (collectionName: string) => {
     // console.log(`Fetching data from collection: ${collectionName}...`);
     
     const collectionRef = collection(db, collectionName);
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(collectionRef);
+    const q = query(collectionRef, orderBy('createdDate', 'desc'));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const data: any[] = [];
     
@@ -114,7 +150,7 @@ export const fetchCompaniesDriversTransfer = async () => {
     // console.log('Fetching data from companies-drivers-transfer collection...\n');
     
     const companiesDriversTransferRef = collection(db, 'companies-drivers-transfer');
-    const q = query(companiesDriversTransferRef);
+    const q = query(companiesDriversTransferRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allTransferData: any[] = [];
@@ -176,33 +212,33 @@ export const fetchCompaniesDriversTransfer = async () => {
       return emailMatch;
     });
     
-    // console.log('✅ FILTERED COMPANIES-DRIVERS-TRANSFER DATA:');
-    // console.log('========================================');
-    // console.log(`📌 Total Transfers for ${userEmail}:`, filteredTransfers.length);
-    // console.log('========================================\n');
+    console.log('✅ FILTERED COMPANIES-DRIVERS-TRANSFER DATA:');
+    console.log('========================================');
+    console.log(`📌 Total Transfers for ${userEmail}:`, filteredTransfers.length);
+    console.log('========================================\n');
     
-    // if (filteredTransfers.length === 0) {
-    //   console.log('⚠️ NO MATCHING TRANSFERS FOUND!');
-    //   console.log('========================================');
-    //   console.log('Debugging Info:');
-    //   console.log('- Looking for createdUser.email =', userEmail);
-    //   console.log('\n📋 All createdUser.email values in collection:');
-    //   const uniqueEmails = [...new Set(allTransferData.map(t => t.createdUser?.email).filter(Boolean))];
-    //   console.log(uniqueEmails);
-    //   console.log('========================================\n');
-    // } else {
-    //   console.log('📋 FILTERED TRANSFER DATA:');
-    //   console.log('========================================');
-    //   console.dir(filteredTransfers, { depth: null, colors: true });
-    //   console.log('\n📊 FILTERED TABLE VIEW:');
-    //   console.table(filteredTransfers.map(doc => ({
-    //     id: doc.id,
-    //     'createdUser.email': doc.createdUser?.email,
-    //     'createdUser.brandName': doc.createdUser?.brandName,
-    //     'createdUser.balance': doc.createdUser?.balance,
-    //   })));
-    //   console.log('========================================\n');
-    // }
+    if (filteredTransfers.length === 0) {
+      console.log('⚠️ NO MATCHING TRANSFERS FOUND!');
+      console.log('========================================');
+      console.log('Debugging Info:');
+      console.log('- Looking for createdUser.email =', userEmail);
+      console.log('\n📋 All createdUser.email values in collection:');
+      const uniqueEmails = [...new Set(allTransferData.map(t => t.createdUser?.email).filter(Boolean))];
+      console.log(uniqueEmails);
+      console.log('========================================\n');
+    } else {
+      console.log('📋 FILTERED TRANSFER DATA:');
+      console.log('========================================');
+      console.dir(filteredTransfers, { depth: null, colors: true });
+      console.log('\n📊 FILTERED TABLE VIEW:');
+      console.table(filteredTransfers.map(doc => ({
+        id: doc.id,
+        'createdUser.email': doc.createdUser?.email,
+        'createdUser.brandName': doc.createdUser?.brandName,
+        'createdUser.balance': doc.createdUser?.balance,
+      })));
+      console.log('========================================\n');
+    }
     
     return filteredTransfers;
   } catch (error) {
@@ -224,7 +260,7 @@ export const fetchOrders = async () => {
     console.log('========================================');
     
     const ordersRef = collection(db, 'orders');
-    const q = query(ordersRef);
+    const q = query(ordersRef, orderBy('orderDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allOrdersData: any[] = [];
@@ -360,6 +396,28 @@ export const createDeliveryOrder = async (orderData: {
       // Fuel details
       fuelType: orderData.fuelType,
       totalLitre: orderData.quantity,
+      
+      // Selected option - maps to product/fuel type
+      selectedOption: {
+        name: {
+          ar: orderData.fuelType,
+          en: orderData.fuelType === 'بنزين 91' ? 'Gasoline 91' : 
+              orderData.fuelType === 'بنزين 95' ? 'Gasoline 95' : 
+              orderData.fuelType === 'ديزل' ? 'Diesel' : orderData.fuelType
+        }
+      },
+      
+      // Service type - identifies this as a Fuel Delivery order
+      service: {
+        title: {
+          ar: 'توصيل الوقود',
+          en: 'Fuel Delivery'
+        },
+        desc: {
+          ar: 'عند الطلب وفي أي وقت وفي أي مكان',
+          en: 'On-demand, anytime anywhere.'
+        }
+      },
       
       // Costs
       fuelCost: orderData.fuelCost,
@@ -622,6 +680,584 @@ export const calculateCarWashStatistics = (orders: any[]): {
 };
 
 /**
+ * Calculate oil change statistics from filtered orders
+ * Filters orders by oil service names and sums total litres
+ * @param orders - Array of order documents
+ * @returns Object with total litres of oil
+ */
+export const calculateOilChangeStatistics = (orders: any[]): { totalLitres: number } => {
+  console.log('\n🛢️ ========================================');
+  console.log('CALCULATING OIL CHANGE STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches oil change keywords
+  const oilOrders = orders.filter(order => {
+    // Check all possible service/category field paths for oil keywords
+    const checkOilService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('زيت بترولايف') ||
+             str.includes('Petrolife Oil') ||
+             str.includes('زيت محرك موبيل') ||
+             str.includes('Mobil motor oil') ||
+             str.toLowerCase().includes('oil') ||
+             str.includes('زيت');
+    };
+
+    return checkOilService(order.service?.title?.ar) ||
+           checkOilService(order.service?.title?.en) ||
+           checkOilService(order.service?.name?.ar) ||
+           checkOilService(order.service?.name?.en) ||
+           checkOilService(order.category?.ar) ||
+           checkOilService(order.category?.en) ||
+           checkOilService(order.selectedOption?.title?.ar) ||
+           checkOilService(order.selectedOption?.title?.en) ||
+           checkOilService(order.selectedOption?.name?.ar) ||
+           checkOilService(order.selectedOption?.name?.en) ||
+           checkOilService(order.selectedOption?.label);
+  });
+
+  console.log('Oil orders found:', oilOrders.length);
+
+  // Log sample oil orders for debugging
+  if (oilOrders.length > 0) {
+    console.log('\n📋 Sample Oil Orders (first 3):');
+    oilOrders.slice(0, 3).forEach((order, index) => {
+      console.log(`\nOil Order ${index + 1}:`);
+      console.log('  Service Title AR:', order.service?.title?.ar);
+      console.log('  Service Title EN:', order.service?.title?.en);
+      console.log('  Total Litre:', order.totalLitre);
+      console.log('  Quantity:', order.quantity);
+      console.log('  Cart Items:', order.cartItems?.[0]?.quantity);
+    });
+  }
+
+  // Sum total litres from oil orders
+  let totalLitres = 0;
+  
+  oilOrders.forEach(order => {
+    // Try different field paths for quantity/litres
+    const litres = order.totalLitre || 
+                   order.quantity || 
+                   order.cartItems?.[0]?.quantity || 
+                   0;
+    
+    totalLitres += parseFloat(litres) || 0;
+  });
+
+  console.log('\n🛢️ Oil Change Statistics:');
+  console.log('========================');
+  console.log('Total Oil Orders:', oilOrders.length);
+  console.log('Total Litres:', totalLitres);
+  console.log('========================\n');
+
+  return { totalLitres };
+};
+
+/**
+ * Calculate battery change statistics from filtered orders
+ * Filters orders by battery service names and groups by car size
+ * @param orders - Array of order documents
+ * @returns Object with battery orders grouped by car size
+ */
+export const calculateBatteryChangeStatistics = (orders: any[]): { 
+  sizes: Array<{ name: string; count: number }>;
+  totalOrders: number;
+} => {
+  console.log('\n🔋 ========================================');
+  console.log('CALCULATING BATTERY CHANGE STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches battery keywords
+  const batteryOrders = orders.filter(order => {
+    // Check all possible service/category field paths for battery keywords
+    const checkBatteryService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير وفحص البطارية') ||
+             str.includes('Change and check the Battery') ||
+             str.includes('تغيير البطارية') ||
+             str.includes('Change the battery') ||
+             str.includes('بريميوم بطارية') ||
+             str.includes('Premium Battrey') ||
+             str.includes('بوش') ||
+             str.includes('Bosch') ||
+             str.includes('AGM بطارية') ||
+             str.includes('AGM Battrey') ||
+             str.includes('ايه سي ديلكو') ||
+             str.includes('ACDelco') ||
+             str.includes('بطارية قياسي') ||
+             str.includes('Standard Battrey') ||
+             str.includes('فارتا') ||
+             str.includes('Varta') ||
+             str.toLowerCase().includes('battery') ||
+             str.includes('بطارية');
+    };
+
+    return checkBatteryService(order.service?.title?.ar) ||
+           checkBatteryService(order.service?.title?.en) ||
+           checkBatteryService(order.service?.name?.ar) ||
+           checkBatteryService(order.service?.name?.en) ||
+           checkBatteryService(order.category?.ar) ||
+           checkBatteryService(order.category?.en) ||
+           checkBatteryService(order.selectedOption?.title?.ar) ||
+           checkBatteryService(order.selectedOption?.title?.en) ||
+           checkBatteryService(order.selectedOption?.name?.ar) ||
+           checkBatteryService(order.selectedOption?.name?.en) ||
+           checkBatteryService(order.selectedOption?.label);
+  });
+
+  console.log('Battery orders found:', batteryOrders.length);
+
+  // Log sample battery orders for debugging
+  if (batteryOrders.length > 0) {
+    console.log('\n📋 Sample Battery Orders (first 3):');
+    batteryOrders.slice(0, 3).forEach((order, index) => {
+      console.log(`\nBattery Order ${index + 1}:`);
+      console.log('  Service Title AR:', order.service?.title?.ar);
+      console.log('  Service Title EN:', order.service?.title?.en);
+      console.log('  Car Size:', order.car?.size);
+      console.log('  Order Size:', order.size);
+    });
+  }
+
+  // Group by car size
+  const sizeMap: Record<string, number> = {
+    'صغيرة': 0,
+    'متوسطة': 0,
+    'كبيرة': 0,
+    'VIP': 0,
+  };
+
+  batteryOrders.forEach(order => {
+    // Extract car size from multiple possible paths
+    let carSize = order.car?.size || order.size || '';
+    
+    if (carSize) {
+      console.log(`Processing order - Raw car size: "${carSize}"`);
+      
+      // Use normalizeCarSize helper function
+      const normalizedSize = normalizeCarSize(carSize);
+      
+      // Increment count for normalized size
+      if (sizeMap.hasOwnProperty(normalizedSize)) {
+        sizeMap[normalizedSize]++;
+        console.log('  → Mapped to:', normalizedSize);
+      } else {
+        console.log(`  ⚠️ Unknown size format: "${carSize}"`);
+      }
+    } else {
+      console.log('⚠️ WARNING: No car.size found for this battery order');
+    }
+  });
+
+  // Convert to array format
+  const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+    name,
+    count,
+  }));
+
+  const totalOrders = batteryOrders.length;
+
+  console.log('\n🔋 Battery Change Statistics:');
+  console.log('========================');
+  console.log('Total Orders:', totalOrders);
+  console.log('By Size:');
+  sizes.forEach(size => {
+    console.log(`  ${size.name}: ${size.count} orders`);
+  });
+  console.log('========================\n');
+
+  return { sizes, totalOrders };
+};
+
+/**
+ * Calculate tire change statistics
+ * Filters orders by tire service names and groups by car size
+ * @param orders - Array of orders to process
+ * @returns Object with sizes array and total tire change count
+ */
+export const calculateTireChangeStatistics = (orders: any[]): { 
+  sizes: Array<{ name: string; count: number }>;
+  totalOrders: number;
+} => {
+  // console.log('\n🚗 ========================================');
+  // console.log('CALCULATING TIRE CHANGE STATISTICS');
+  // console.log('========================================');
+  // console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches tire keywords
+  const tireOrders = orders.filter(order => {
+    // Check all possible service/category field paths for tire keywords
+    const checkTireService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير الإطارات') ||
+             str.includes('Tire Change') ||
+             str.includes('تغيير إطار') ||
+             str.includes('Change Tire') ||
+             str.includes('إطارات') ||
+             str.includes('Tires') ||
+             str.toLowerCase().includes('tire') ||
+             str.toLowerCase().includes('tyre');
+    };
+
+    return checkTireService(order.service?.title?.ar) ||
+           checkTireService(order.service?.title?.en) ||
+           checkTireService(order.service?.name?.ar) ||
+           checkTireService(order.service?.name?.en) ||
+           checkTireService(order.category?.ar) ||
+           checkTireService(order.category?.en) ||
+           checkTireService(order.selectedOption?.title?.ar) ||
+           checkTireService(order.selectedOption?.title?.en) ||
+           checkTireService(order.selectedOption?.name?.ar) ||
+           checkTireService(order.selectedOption?.name?.en) ||
+           checkTireService(order.selectedOption?.label);
+  });
+
+  // console.log('Tire change orders found:', tireOrders.length);
+
+  // Group by car size
+  const sizeMap: Record<string, number> = {
+    'صغيرة': 0,
+    'متوسطة': 0,
+    'كبيرة': 0,
+    'VIP': 0,
+  };
+
+  tireOrders.forEach(order => {
+    // Extract car size from multiple possible paths
+    let carSize = order.car?.size || order.size || '';
+    
+    if (carSize) {
+      // Use normalizeCarSize helper function
+      const normalizedSize = normalizeCarSize(carSize);
+      
+      // Increment count for normalized size
+      if (sizeMap.hasOwnProperty(normalizedSize)) {
+        sizeMap[normalizedSize]++;
+      }
+    }
+  });
+
+  // Convert to array format
+  const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+    name,
+    count,
+  }));
+
+  const totalOrders = tireOrders.length;
+
+  // console.log('\n🚗 Tire Change Statistics:');
+  // console.log('========================');
+  // console.log('Total Orders:', totalOrders);
+  // console.log('By Size:');
+  // sizes.forEach(size => {
+  //   console.log(`  ${size.name}: ${size.count} orders`);
+  // });
+  // console.log('========================\n');
+
+  return { sizes, totalOrders };
+};
+
+/**
+ * Calculate battery replacement statistics
+ * Filters orders by battery replacement keywords and calculates cost and counts
+ * @param orders - Array of orders to process
+ * @returns Object with total cost, replaced count, and requested count
+ */
+export const calculateBatteryReplacementStatistics = (orders: any[]): { 
+  totalCost: number;
+  replacedCount: number;
+  requestedCount: number;
+} => {
+  // console.log('\n🔋 ========================================');
+  // console.log('CALCULATING BATTERY REPLACEMENT STATISTICS');
+  // console.log('========================================');
+  // console.log('Total orders to process:', orders.length);
+
+  // Filter orders where service or category matches battery keywords
+  const batteryOrders = orders.filter(order => {
+    // Check all possible service/category field paths for battery keywords
+    const checkBatteryService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === 'string' ? value : '';
+      return str.includes('تغيير وفحص البطارية') ||
+             str.includes('Change and check the Battery') ||
+             str.includes('تغيير البطارية') ||
+             str.includes('Change the battery') ||
+             str.includes('بريميوم بطارية') ||
+             str.includes('Premium Battrey') ||
+             str.includes('بوش') ||
+             str.includes('Bosch') ||
+             str.includes('AGM بطارية') ||
+             str.includes('AGM Battrey') ||
+             str.includes('ايه سي ديلكو') ||
+             str.includes('ACDelco') ||
+             str.includes('بطارية قياسي') ||
+             str.includes('Standard Battrey') ||
+             str.includes('فارتا') ||
+             str.includes('Varta') ||
+             str.includes('استبدال البطارية') ||
+             str.includes('Battery Replacement') ||
+             str.toLowerCase().includes('battery') ||
+             str.includes('بطارية');
+    };
+
+    return checkBatteryService(order.service?.title?.ar) ||
+           checkBatteryService(order.service?.title?.en) ||
+           checkBatteryService(order.service?.name?.ar) ||
+           checkBatteryService(order.service?.name?.en) ||
+           checkBatteryService(order.category?.ar) ||
+           checkBatteryService(order.category?.en) ||
+           checkBatteryService(order.selectedOption?.title?.ar) ||
+           checkBatteryService(order.selectedOption?.title?.en) ||
+           checkBatteryService(order.selectedOption?.name?.ar) ||
+           checkBatteryService(order.selectedOption?.name?.en) ||
+           checkBatteryService(order.selectedOption?.label);
+  });
+
+  // console.log('Battery replacement orders found:', batteryOrders.length);
+
+  // Calculate statistics
+  let totalCost = 0;
+  let replacedCount = 0;
+  let requestedCount = batteryOrders.length;
+
+  batteryOrders.forEach(order => {
+    // Calculate total cost
+    const orderCost = parseFloat(order.totalCost || order.total || order.price || 0);
+    totalCost += orderCost;
+
+    // Count replaced batteries (status = done or completed)
+    const status = order.status?.toLowerCase() || '';
+    if (status === 'done' || status === 'completed' || status === 'مكتمل') {
+      replacedCount++;
+    }
+  });
+
+  // console.log('\n🔋 Battery Replacement Statistics:');
+  // console.log('========================');
+  // console.log('Total Cost:', totalCost);
+  // console.log('Replaced Count:', replacedCount);
+  // console.log('Requested Count:', requestedCount);
+  // console.log('========================\n');
+
+  return { totalCost, replacedCount, requestedCount };
+};
+
+/**
+ * Calculate driver statistics (active vs inactive)
+ * Fetches companies-drivers and counts by isActive status
+ * @returns Object with active and inactive driver counts
+ */
+export const calculateDriverStatistics = async (): Promise<{ 
+  active: number; 
+  inactive: number;
+  total: number;
+}> => {
+  try {
+    console.log('\n👥 ========================================');
+    console.log('CALCULATING DRIVER STATISTICS');
+    console.log('========================================');
+    
+    // Fetch companies-drivers data (already filtered by current user)
+    const drivers = await fetchCompaniesDrivers();
+    
+    console.log('Total drivers for current company:', drivers.length);
+
+    // Count active and inactive drivers
+    let activeCount = 0;
+    let inactiveCount = 0;
+
+    drivers.forEach(driver => {
+      const isActive = driver.isActive === true || driver.isActive === 'true';
+      
+      if (isActive) {
+        activeCount++;
+      } else {
+        inactiveCount++;
+      }
+      
+      // Debug logging for first 3 drivers
+      if (activeCount + inactiveCount <= 3) {
+        console.log(`\nDriver ${activeCount + inactiveCount}:`);
+        console.log('  Name:', driver.name);
+        console.log('  isActive:', driver.isActive);
+        console.log('  Status:', isActive ? 'Active' : 'Inactive');
+      }
+    });
+
+    console.log('\n👥 Driver Statistics:');
+    console.log('========================');
+    console.log('Active Drivers:', activeCount);
+    console.log('Inactive Drivers:', inactiveCount);
+    console.log('Total Drivers:', drivers.length);
+    console.log('========================\n');
+
+    return {
+      active: activeCount,
+      inactive: inactiveCount,
+      total: drivers.length,
+    };
+  } catch (error) {
+    console.error('Error calculating driver statistics:', error);
+    return { active: 0, inactive: 0, total: 0 };
+  }
+};
+
+/**
+ * Calculate car statistics grouped by size
+ * Fetches companies-cars and counts by size/category
+ * @returns Object with cars grouped by size and total count
+ */
+export const calculateCarStatistics = async (): Promise<{ 
+  sizes: Array<{ name: string; count: number }>;
+  total: number;
+}> => {
+  try {
+    console.log('\n🚗 ========================================');
+    console.log('CALCULATING CAR STATISTICS');
+    console.log('========================================');
+    
+    // Fetch companies-cars data (already filtered by current user)
+    const cars = await fetchCompaniesCars();
+    
+    console.log('Total cars for current company:', cars.length);
+
+    // Initialize size map
+    const sizeMap: Record<string, number> = {
+      'صغيرة': 0,
+      'متوسطة': 0,
+      'كبيرة': 0,
+      'VIP': 0,
+    };
+
+    // Count cars by size
+    cars.forEach((car, index) => {
+      // Extract car size from multiple possible paths
+      let carSize = car.size || car.category?.name || car.category || '';
+      
+      if (carSize) {
+        // Debug logging for first 3 cars
+        if (index < 3) {
+          console.log(`\nCar ${index + 1}:`);
+          console.log('  Name:', car.name);
+          console.log('  Plate Number:', car.plateNumber);
+          console.log('  Raw Size:', carSize);
+        }
+        
+        // Use normalizeCarSize helper function
+        const normalizedSize = normalizeCarSize(carSize);
+        
+        // Increment count for normalized size
+        if (sizeMap.hasOwnProperty(normalizedSize)) {
+          sizeMap[normalizedSize]++;
+          if (index < 3) console.log('  → Mapped to:', normalizedSize);
+        } else {
+          if (index < 3) console.log(`  ⚠️ Unknown size format: "${carSize}"`);
+        }
+      } else {
+        if (index < 3) console.log('⚠️ WARNING: No size found for this car');
+      }
+    });
+
+    // Convert to array format
+    const sizes = Object.entries(sizeMap).map(([name, count]) => ({
+      name,
+      count,
+    }));
+
+    console.log('\n🚗 Car Statistics:');
+    console.log('========================');
+    console.log('Total Cars:', cars.length);
+    console.log('By Size:');
+    sizes.forEach(size => {
+      console.log(`  ${size.name}: ${size.count} cars`);
+    });
+    console.log('========================\n');
+
+    return {
+      sizes,
+      total: cars.length,
+    };
+  } catch (error) {
+    console.error('Error calculating car statistics:', error);
+    return { sizes: [], total: 0 };
+  }
+};
+
+/**
+ * Calculate order statistics (completed vs cancelled)
+ * Counts orders by status from filtered orders
+ * @param orders - Array of order documents
+ * @returns Object with completed and cancelled order counts
+ */
+export const calculateOrderStatistics = (orders: any[]): { 
+  completed: number; 
+  cancelled: number;
+  total: number;
+} => {
+  console.log('\n📊 ========================================');
+  console.log('CALCULATING ORDER STATISTICS');
+  console.log('========================================');
+  console.log('Total orders to process:', orders.length);
+
+  // Count completed and cancelled orders
+  let completedCount = 0;
+  let cancelledCount = 0;
+
+  orders.forEach((order, index) => {
+    const status = order.status?.toLowerCase().trim() || '';
+    
+    // Debug logging for first 5 orders
+    if (index < 5) {
+      console.log(`\nOrder ${index + 1}:`);
+      console.log('  ID:', order.id);
+      console.log('  Status:', order.status);
+      console.log('  Status (normalized):', status);
+    }
+    
+    // Check for completed status variations
+    if (status === 'completed' || 
+        status === 'done' || 
+        status === 'delivered' || 
+        status === 'مكتمل' ||
+        status === 'تم التوصيل') {
+      completedCount++;
+      if (index < 5) console.log('  → Counted as: Completed');
+    } 
+    // Check for cancelled status variations
+    else if (status === 'cancelled' || 
+             status === 'canceled' || 
+             status === 'rejected' || 
+             status === 'ملغي' ||
+             status === 'مرفوض') {
+      cancelledCount++;
+      if (index < 5) console.log('  → Counted as: Cancelled');
+    } else {
+      if (index < 5) console.log('  → Status:', status || 'unknown');
+    }
+  });
+
+  console.log('\n📊 Order Statistics:');
+  console.log('========================');
+  console.log('Completed Orders:', completedCount);
+  console.log('Cancelled Orders:', cancelledCount);
+  console.log('Other Orders:', orders.length - completedCount - cancelledCount);
+  console.log('Total Orders:', orders.length);
+  console.log('========================\n');
+
+  return {
+    completed: completedCount,
+    cancelled: cancelledCount,
+    total: orders.length,
+  };
+};
+
+/**
  * Fetch and filter orders by car wash category
  * Prints filtered orders to console in their raw Firestore format
  */
@@ -731,13 +1367,39 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
     });
 
     console.log('\n🏢 Car Stations fetched:', carStations.length);
+    
+    // Debug: Show first 3 stations
+    console.log('\n📍 Sample Car Stations:');
+    carStations.slice(0, 3).forEach((station, i) => {
+      console.log(`Station ${i + 1}:`, {
+        city: station.city,
+        company: station.company,
+        email: station.email
+      });
+    });
 
     // Step 2: Fetch orders filtered by current user
     const orders = await fetchOrders();
-    console.log('📦 Orders fetched for current user:', orders.length);
+    console.log('\n📦 Orders fetched for current user:', orders.length);
+    
+    // Debug: Show first 3 orders
+    if (orders.length > 0) {
+      console.log('\n📍 Sample Orders:');
+      orders.slice(0, 3).forEach((order, i) => {
+        console.log(`Order ${i + 1}:`, {
+          id: order.id || order.refId,
+          carStationEmail: order.carStation?.email || order.stationEmail || 'NO EMAIL',
+          totalLitre: order.totalLitre,
+          quantity: order.quantity
+        });
+      });
+    }
 
     // Step 3: Match orders to stations and calculate consumption
-    orders.forEach(order => {
+    let matchedCount = 0;
+    let unmatchedCount = 0;
+    
+    orders.forEach((order, index) => {
       const orderStationEmail = order.carStation?.email || order.stationEmail;
       
       if (orderStationEmail) {
@@ -752,11 +1414,31 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
                           0;
           
           station.totalLitersConsumed += quantity;
+          matchedCount++;
           
-          console.log(`✅ Matched order ${order.refId} to station ${station.company} - Added ${quantity}L`);
+          if (index < 5) {
+            console.log(`✅ Order ${index + 1} matched to "${station.company}" (${station.city}) - Added ${quantity}L`);
+          }
+        } else {
+          unmatchedCount++;
+          if (index < 5) {
+            console.log(`⚠️ Order ${index + 1} - No station found with email: ${orderStationEmail}`);
+          }
+        }
+      } else {
+        unmatchedCount++;
+        if (index < 5) {
+          console.log(`⚠️ Order ${index + 1} - No carStation.email in order`);
         }
       }
     });
+    
+    console.log('\n🔗 MATCHING SUMMARY:');
+    console.log('===================');
+    console.log(`Total orders: ${orders.length}`);
+    console.log(`Matched to stations: ${matchedCount}`);
+    console.log(`Unmatched: ${unmatchedCount}`);
+    console.log('===================\n');
 
     // Log summary
     console.log('\n📊 Car Stations Summary:');
@@ -776,6 +1458,376 @@ export const fetchCarStationsWithConsumption = async (): Promise<any[]> => {
 };
 
 /**
+ * Fetch orders and transform them for financial reports
+ * @returns Promise with formatted financial report data
+ */
+export const fetchFinancialReportData = async (): Promise<any[]> => {
+  try {
+    const orders = await fetchOrders();
+    
+    console.log('\n📊 Processing Financial Report Data');
+    console.log('===================================');
+    console.log('Total orders:', orders.length);
+    
+    // Transform each order to financial report format
+    const reportData = orders.map((order, index) => {
+      // Extract city from city.name
+      const city = order.city?.name || '-';
+      
+      // Extract station name from carStation.name
+      const stationName = order.carStation?.name || '-';
+      
+      // Extract date from createdDate
+      const date = order.createdDate || order.orderDate || null;
+      
+      // Extract operation number from id
+      const operationNumber = order.id || order.refId || '-';
+      
+      // Extract quantity from cartItems[0].quantity
+      const quantity = order.cartItems?.[0]?.quantity || 
+                      order.totalLitre ||
+                      order.quantity ||
+                      0;
+      
+      // Extract product name from cartItems[0].name.ar
+      const productName = order.cartItems?.[0]?.name?.ar ||
+                         order.cartItems?.[0]?.name?.en ||
+                         order.selectedOption?.name?.ar ||
+                         order.selectedOption?.name?.en ||
+                         order.selectedOption?.title?.ar ||
+                         order.selectedOption?.title?.en ||
+                         '-';
+      
+      // Extract product number from cartItems[0].onyxProductId
+      const productNumber = order.cartItems?.[0]?.onyxProductId ||
+                           order.selectedOption?.onyxProductId ||
+                           '-';
+      
+      // Extract product type from service name (نوع المنتج)
+      const productType = order.service?.title?.ar ||
+                         order.service?.title?.en ||
+                         order.service?.name?.ar ||
+                         order.service?.name?.en ||
+                         order.cartItems?.[0]?.category?.majorTypeEnum ||
+                         order.selectedOption?.category?.majorTypeEnum ||
+                         '-';
+      
+      // Extract driver name from assignedDriver.name
+      const driverName = order.assignedDriver?.name ||
+                        order.enrichedDriverName ||
+                        '-';
+      
+      // Extract driver code from assignedDriver.id
+      const driverCode = order.assignedDriver?.id ||
+                        order.assignedDriver?.email ||
+                        order.assignedDriver?.uId ||
+                        '-';
+      
+      if (index < 3) {
+        console.log(`\n--- Order ${index + 1} ---`);
+        console.log('City:', city);
+        console.log('Station Name:', stationName);
+        console.log('Date:', date);
+        console.log('Operation Number:', operationNumber);
+        console.log('Quantity:', quantity);
+        console.log('Product Name:', productName);
+        console.log('Product Number:', productNumber);
+        console.log('Product Type:', productType);
+        console.log('Driver Name:', driverName);
+        console.log('Driver Code:', driverCode);
+      }
+      
+      return {
+        city,
+        stationName,
+        date,
+        operationNumber,
+        quantity,
+        productName,
+        productNumber,
+        productType,
+        driverName,
+        driverCode,
+        // Keep original order data for reference
+        originalOrder: order
+      };
+    });
+    
+    console.log('\n✅ Financial report data processed:', reportData.length);
+    console.log('===================================\n');
+    
+    return reportData;
+  } catch (error) {
+    console.error('Error fetching financial report data:', error);
+    return [];
+  }
+};
+
+/**
+ * Calculate fuel consumption by cities from car stations data
+ * Uses fetchCarStationsWithConsumption() which calculates consumption from orders
+ * Groups stations by city and sums consumption
+ * @returns Promise with array of cities and their fuel consumption
+ */
+export const calculateFuelConsumptionByCities = async () => {
+  try {
+    console.log('\n🏙️ ========================================');
+    console.log('📊 CALCULATING FUEL CONSUMPTION BY CITIES');
+    console.log('📍 Using fetchCarStationsWithConsumption()');
+    console.log('========================================\n');
+
+    // Fetch car stations WITH consumption calculated from orders
+    // This function matches orders to stations and calculates totalLitersConsumed
+    const stations = await fetchCarStationsWithConsumption();
+    
+    if (!stations || stations.length === 0) {
+      console.log('⚠️ No stations found');
+      return [];
+    }
+
+    console.log(`📦 Total stations fetched: ${stations.length}`);
+
+    // Debug: Log first 5 stations to see what we got
+    console.log('\n📋 SAMPLE STATIONS WITH CONSUMPTION:');
+    console.log('====================================');
+    stations.slice(0, 5).forEach((station, index) => {
+      console.log(`Station ${index + 1}:`, {
+        city: station.city,
+        company: station.company,
+        totalLitersConsumed: station.totalLitersConsumed
+      });
+    });
+    console.log('====================================\n');
+
+    // Group stations by city and sum consumption
+    const cityConsumption: Record<string, {
+      name: string;
+      totalLitres: number;
+      stationCount: number;
+    }> = {};
+
+    let processedCount = 0;
+    let skippedNoCityCount = 0;
+    let skippedNoConsumptionCount = 0;
+
+    stations.forEach((station, index) => {
+      // Extract city from station (already extracted by fetchCarStationsWithConsumption)
+      const cityName = station.city;
+      
+      // Extract consumption (already calculated by fetchCarStationsWithConsumption)
+      const consumption = station.totalLitersConsumed || 0;
+
+      // Only process stations with valid city and consumption
+      if (!cityName || cityName === 'N/A') {
+        skippedNoCityCount++;
+        if (index < 10) {
+          console.log(`⚠️ Station ${index + 1} (${station.company}) skipped - No valid city`);
+        }
+      } else if (consumption <= 0) {
+        skippedNoConsumptionCount++;
+        if (index < 10) {
+          console.log(`⚠️ Station ${index + 1} (${station.company}) skipped - No consumption (City: ${cityName})`);
+        }
+      } else {
+        // Valid station - add to city totals
+        processedCount++;
+        
+        if (index < 10) {
+          console.log(`✅ Station ${index + 1} (${station.company}) processed - City: ${cityName}, Litres: ${consumption}`);
+        }
+        
+        if (!cityConsumption[cityName]) {
+          cityConsumption[cityName] = {
+            name: cityName,
+            totalLitres: 0,
+            stationCount: 0,
+          };
+        }
+
+        cityConsumption[cityName].totalLitres += consumption;
+        cityConsumption[cityName].stationCount += 1;
+      }
+    });
+
+    console.log('\n📊 PROCESSING SUMMARY:');
+    console.log('====================');
+    console.log(`Total stations: ${stations.length}`);
+    console.log(`Processed: ${processedCount}`);
+    console.log(`Skipped (no city): ${skippedNoCityCount}`);
+    console.log(`Skipped (no consumption): ${skippedNoConsumptionCount}`);
+    console.log('====================\n');
+
+    // Convert to array and sort by consumption (highest first)
+    const citiesArray = Object.values(cityConsumption)
+      .sort((a, b) => b.totalLitres - a.totalLitres)
+      .map(city => ({
+        name: city.name,
+        consumption: Math.round(city.totalLitres * 100) / 100, // Round to 2 decimal places
+        stationCount: city.stationCount,
+      }));
+
+    console.log('\n✅ FUEL CONSUMPTION BY CITIES:');
+    console.log('========================================');
+    console.table(citiesArray);
+    console.log(`📍 Total cities: ${citiesArray.length}`);
+    console.log('========================================\n');
+
+    return citiesArray;
+  } catch (error) {
+    console.error('❌ Error calculating fuel consumption by cities:', error);
+    return [];
+  }
+};
+
+/**
+ * Fetch subscriptions for current user and calculate expiry dates
+ * @returns Promise with subscription data including expiry dates
+ */
+export const fetchUserSubscriptions = async (): Promise<any[]> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error('No authenticated user');
+      return [];
+    }
+
+    console.log('\n📋 Fetching User Subscriptions');
+    console.log('==============================');
+    console.log('Current User UID:', user.uid);
+
+    // First, get the current company
+    const company = await fetchCurrentCompany();
+    if (!company) {
+      console.error('No company found for current user');
+      return [];
+    }
+
+    console.log('Current Company ID:', company.id);
+    console.log('Current User Email:', user.email);
+    console.log('Current Company Email:', company.email);
+
+    // Fetch subscriptions from subscriptions-payment collection
+    const subscriptionsCollection = collection(db, 'subscriptions-payment');
+    
+    // Query by company email
+    const companyEmail = company.email;
+    if (!companyEmail) {
+      console.error('No company email found');
+      return [];
+    }
+
+    console.log('Fetching subscriptions-payment filtered by company email:', companyEmail);
+    
+    // Query by company.email (nested field)
+    const q = query(subscriptionsCollection, where('company.email', '==', companyEmail));
+    const subscriptionsSnapshot = await getDocs(q);
+
+    console.log('Total subscriptions found (filtered by company.email):', subscriptionsSnapshot.docs.length);
+
+    // If we found subscriptions, log the first one's structure to help debug
+    if (subscriptionsSnapshot.docs.length > 0) {
+      console.log('\n🔍 First subscription document structure:');
+      console.log('Document ID:', subscriptionsSnapshot.docs[0].id);
+      console.log('Available fields:', Object.keys(subscriptionsSnapshot.docs[0].data()));
+      console.log('Full document data:', subscriptionsSnapshot.docs[0].data());
+    } else {
+      console.log('\n❌ No documents found in subscriptions-payment collection');
+      console.log('Please check:');
+      console.log('1. Does the subscriptions-payment collection exist?');
+      console.log('2. Do documents have email field matching:', company.email);
+      console.log('3. Check Firebase Console for actual field names');
+    }
+
+    // Transform each subscription
+    const subscriptions = subscriptionsSnapshot.docs.map((doc, index) => {
+      const data = doc.data();
+
+      // Extract fields from the document structure
+      const selectedSubscription = data.selectedSubscription || {};
+      const planName = selectedSubscription.title?.ar || selectedSubscription.title?.en || 'N/A';
+      const price = selectedSubscription.price || 0;
+      const subscriptionStartDate = data.subscriptionStartDate || data.createdDate;
+      const subscriptionEndDate = data.subscriptionEndDate;
+      const periodValueInDays = selectedSubscription.periodValueInDays || 30;
+      const isPaid = data.isPaid !== undefined ? data.isPaid : true;
+
+      // Format dates as DD/MM/YYYY
+      const formatDate = (date: any): string => {
+        if (!date) return 'N/A';
+        try {
+          const dateObj = date.toDate ? date.toDate() : new Date(date);
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const year = dateObj.getFullYear();
+          return `${day}/${month}/${year}`;
+        } catch (error) {
+          return 'N/A';
+        }
+      };
+
+      const createdDateFormatted = formatDate(subscriptionStartDate);
+      const expiryDateFormatted = formatDate(subscriptionEndDate);
+
+      if (index < 3) {
+        console.log(`\n--- Subscription ${index + 1} ---`);
+        console.log('Plan Name:', planName);
+        console.log('Price:', price);
+        console.log('Start Date:', createdDateFormatted);
+        console.log('End Date:', expiryDateFormatted);
+        console.log('Period (days):', periodValueInDays);
+        console.log('Is Paid:', isPaid);
+      }
+
+      return {
+        id: doc.id,
+        planName,
+        price,
+        createdDate: createdDateFormatted,
+        expiryDate: expiryDateFormatted,
+        periodValueInDays,
+        isPaid,
+        // Keep original data for reference
+        originalData: data
+      };
+    });
+
+    // If still no subscriptions found, check if they're stored in the company document itself
+    if (subscriptions.length === 0) {
+      console.log('\n⚠️ No subscriptions found in subscriptions-payment collection');
+      console.log('Checking if subscriptions are stored in company document...');
+      
+      if (company.subscriptionsHistory && Array.isArray(company.subscriptionsHistory)) {
+        console.log('Found subscriptionsHistory in company document:', company.subscriptionsHistory.length);
+        // Return the subscriptions from company document
+        return company.subscriptionsHistory.map((sub: any, index: number) => ({
+          id: sub.id || `company-sub-${index}`,
+          planName: sub.planName || sub.title?.ar || sub.title?.en || 'N/A',
+          price: sub.price || 0,
+          createdDate: sub.createdDate || 'N/A',
+          expiryDate: sub.expiryDate || 'N/A',
+          periodValueInDays: sub.periodValueInDays || 30,
+          originalData: sub
+        }));
+      }
+      
+      console.log('⚠️ No subscriptions found in company document either');
+      console.log('Please check:');
+      console.log('1. Are subscriptions being created in the database?');
+      console.log('2. What is the correct field name to query by?');
+      console.log('3. Check Firebase Console to see subscription documents structure');
+    }
+
+    console.log('\n✅ Subscriptions processed:', subscriptions.length);
+    console.log('==============================\n');
+
+    return subscriptions;
+  } catch (error) {
+    console.error('Error fetching user subscriptions:', error);
+    return [];
+  }
+};
+
+/**
  * Fetch all products from Firestore
  * @returns Promise with products data
  */
@@ -784,7 +1836,8 @@ export const fetchProducts = async (): Promise<any[]> => {
     // console.log('Fetching products from Firestore...');
     
     const productsCollection = collection(db, 'products');
-    const productsSnapshot = await getDocs(productsCollection);
+    const q = query(productsCollection, orderBy('createdDate', 'desc'));
+    const productsSnapshot = await getDocs(q);
     
     const products = productsSnapshot.docs.map(doc => ({
       id: doc.id,
@@ -810,7 +1863,7 @@ export const fetchWalletChargeRequests = async () => {
     // console.log('\n🔄 Fetching companies-wallets-requests...');
     
     const requestsRef = collection(db, 'companies-wallets-requests');
-    const q = query(requestsRef);
+    const q = query(requestsRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allRequestsData: any[] = [];
@@ -866,7 +1919,7 @@ export const fetchWalletChargeRequests = async () => {
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */
-export const fetchCurrentCompany = async () => {
+export const fetchCurrentCompany = async (): Promise<any> => {
   try {
     const currentUser = auth.currentUser;
 
@@ -912,7 +1965,7 @@ export const fetchCurrentCompany = async () => {
     const companyData = {
       id: companyDoc.id,
       ...companyDoc.data()
-    };
+    } as any;
 
     // console.log('\n✅ CURRENT COMPANY DATA FOUND:');
     // console.log('========================================');
@@ -1489,7 +2542,7 @@ export const fetchCompaniesCars = async () => {
     // console.log('Fetching companies-cars data from Firestore...');
     
     const companiesCarsRef = collection(db, 'companies-cars');
-    const q = query(companiesCarsRef);
+    const q = query(companiesCarsRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const companiesCarsData: any[] = [];
@@ -1545,6 +2598,153 @@ export const fetchCompaniesCars = async () => {
     }
   } catch (error) {
     console.error('Error fetching companies-cars data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch notifications from Firestore notifications collection
+ * Filtered by current company ID in the companies array
+ * @returns Promise with filtered notifications data
+ */
+export const fetchNotifications = async () => {
+  try {
+    console.log('🔔 Fetching notifications from Firestore...');
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      console.log('❌ No user is currently logged in.');
+      return [];
+    }
+
+    // First, get the current company data
+    const companyData = await fetchCurrentCompany();
+    
+    if (!companyData || !companyData.id) {
+      console.log('❌ No company found for current user.');
+      return [];
+    }
+
+    const companyId = companyData.id;
+    console.log('✅ Current Company ID:', companyId);
+
+    // Fetch all notifications
+    const notificationsRef = collection(db, 'notifications');
+    const q = query(notificationsRef, orderBy('createdDate', 'desc'));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    const allNotifications: any[] = [];
+    querySnapshot.forEach((doc) => {
+      allNotifications.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    console.log('📋 Total notifications in collection:', allNotifications.length);
+
+    // Filter notifications where companies array contains current company ID
+    const filteredNotifications = allNotifications.filter((notification) => {
+      const companies = notification.companies || [];
+      const isForCompany = companies.includes(companyId);
+      
+      if (isForCompany) {
+        console.log('✅ Notification matched for company:', {
+          id: notification.id,
+          body: notification.body?.substring(0, 50),
+          createdDate: notification.createdDate
+        });
+      }
+      
+      return isForCompany;
+    });
+
+    console.log('✅ Filtered notifications for current company:', filteredNotifications.length);
+
+    // Sort by createdDate (most recent first)
+    filteredNotifications.sort((a, b) => {
+      const dateA = a.createdDate?.toDate?.() || new Date(a.createdDate || 0);
+      const dateB = b.createdDate?.toDate?.() || new Date(b.createdDate || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return filteredNotifications;
+  } catch (error) {
+    console.error('❌ Error fetching notifications:', error);
+    throw error;
+  }
+};
+
+/**
+ * Interface for fuel station data
+ */
+export interface FuelStation {
+  id: string;
+  stationName: string;
+  cityName: string;
+  latitude: number;
+  longitude: number;
+  formattedLocation?: {
+    name?: string;
+    lat?: number;
+    lng?: number;
+    address?: {
+      city?: string;
+    };
+  };
+}
+
+/**
+ * Fetch fuel stations from Firestore (carstations collection)
+ * @returns Promise with array of fuel stations
+ */
+export const fetchFuelStations = async (): Promise<FuelStation[]> => {
+  try {
+    console.log('📍 Fetching fuel stations from Firestore (carstations)...');
+    
+    const carStationsRef = collection(db, 'carstations');
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(carStationsRef);
+    
+    const fuelStations: FuelStation[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      
+      // Extract location data from formattedLocation or direct fields
+      const formattedLocation = data.formattedLocation || {};
+      const stationName = data.name || data.email || formattedLocation.name || 'Unknown Station';
+      const cityName = formattedLocation.address?.city || data.address?.city || data.city || 'Unknown City';
+      const latitude = formattedLocation.lat || data.latitude || 0;
+      const longitude = formattedLocation.lng || data.longitude || 0;
+      
+      console.log(`Station ${doc.id}:`, {
+        name: stationName,
+        city: cityName,
+        lat: latitude,
+        lng: longitude,
+        hasFormattedLocation: !!data.formattedLocation
+      });
+      
+      // Only add stations with valid coordinates
+      if (latitude !== 0 && longitude !== 0) {
+        fuelStations.push({
+          id: doc.id,
+          stationName,
+          cityName,
+          latitude,
+          longitude,
+          formattedLocation: data.formattedLocation
+        });
+      }
+    });
+    
+    console.log(`✅ Fetched ${fuelStations.length} fuel stations with valid coordinates from carstations collection`);
+    
+    return fuelStations;
+  } catch (error) {
+    console.error('❌ Error fetching fuel stations:', error);
     throw error;
   }
 };

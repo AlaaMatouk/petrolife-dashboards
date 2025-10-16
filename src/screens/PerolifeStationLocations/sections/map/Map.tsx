@@ -1,180 +1,182 @@
-import { Fuel, MapPin } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { MapPin } from 'lucide-react';
+import { fetchFuelStations, FuelStation } from '../../../../services/firestore';
 
-interface MapMarker {
-  id: string;
-  top: string;
-  left: string;
-  hasTooltip?: boolean;
-  tooltipData?: {
-    flag: string;
-    title: string;
-    address: string;
-  };
-}
+// Fix for default marker icon issue in Leaflet with webpack
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Create custom fuel station icon
+const createFuelStationIcon = () => {
+  return L.divIcon({
+    className: 'custom-fuel-marker',
+    html: `
+      <div style="position: relative;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background-color: rgba(239, 68, 68, 0.1); border-radius: 50%;"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background-color: rgba(239, 68, 68, 0.3); border-radius: 50%;"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
+  });
+};
+
+// Component to auto-fit map bounds to show all markers
+const AutoFitBounds: React.FC<{ stations: FuelStation[] }> = ({ stations }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (stations.length > 0) {
+      const bounds = L.latLngBounds(
+        stations.map((station) => [station.latitude, station.longitude])
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [stations, map]);
+
+  return null;
+};
 
 export const Map = (): JSX.Element => {
-  const [activeMarker, setActiveMarker] = useState<string | null>(null);
+  const [stations, setStations] = useState<FuelStation[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const mapMarkers: MapMarker[] = [
-    {
-      id: "marker-1",
-      top: "83.20%",
-      left: "86.43%",
-      hasTooltip: true,
-      tooltipData: {
-        flag: "/img/au.svg",
-        title: "Melbourne, AUS",
-        address: "100 Smith Street\nCollingwood VIC 3066 AU",
-      },
-    },
-    {
-      id: "marker-2",
-      top: "86.89%",
-      left: "93.55%",
-    },
-    {
-      id: "marker-3",
-      top: "32.17%",
-      left: "12.70%",
-    },
-    {
-      id: "marker-4",
-      top: "41.80%",
-      left: "15.43%",
-    },
-    {
-      id: "marker-5",
-      top: "19.88%",
-      left: "50.88%",
-    },
-    {
-      id: "marker-6",
-      top: "45.90%",
-      left: "66.21%",
-    },
-    {
-      id: "marker-7",
-      top: "40.78%",
-      left: "82.32%",
-    },
-    {
-      id: "marker-8",
-      top: "14.96%",
-      left: "56.74%",
-    },
-    {
-      id: "marker-9",
-      top: "36.07%",
-      left: "50.10%",
-    },
-  ];
-
-  const handleMarkerClick = (markerId: string) => {
-    setActiveMarker(activeMarker === markerId ? null : markerId);
-  };
-
-  const renderMapMarker = (marker: MapMarker) => {
-    const isActive = activeMarker === marker.id;
-    const isFirstMarker = marker.id === "marker-1";
-
-    return (
-      <div
-        key={marker.id}
-        className={`absolute w-[3.91%] h-[8.20%] rounded-[27.24px] cursor-pointer`}
-        style={{ top: marker.top, left: marker.left }}
-        onClick={() => handleMarkerClick(marker.id)}
-        role="button"
-        tabIndex={0}
-        aria-label={`Map marker ${marker.id}`}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            handleMarkerClick(marker.id);
+  // Fetch fuel stations from Firestore
+  useEffect(() => {
+    const loadFuelStations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchFuelStations();
+        
+        // Remove duplicate stations based on coordinates
+        const uniqueStations = data.reduce((acc: FuelStation[], current) => {
+          const isDuplicate = acc.some(
+            (station) =>
+              station.latitude === current.latitude &&
+              station.longitude === current.longitude
+          );
+          if (!isDuplicate) {
+            acc.push(current);
           }
-        }}
-      >
-        <div className="absolute top-[calc(50.00%_-_23px)] left-[calc(50.00%_-_23px)] w-[47px] h-[47px] bg-primary-500 rounded-[27.24px] opacity-10" />
-        <div className="absolute top-[calc(50.00%_-_14px)] left-[calc(50.00%_-_14px)] w-[27px] h-[27px] bg-primary-500 rounded-[27.24px] opacity-20" />
-        <div className="absolute top-[calc(50.00%_-_4px)] left-[calc(50.00%_-_4px)] w-2 h-2 bg-primary-500 rounded-[27.24px]" />
+          return acc;
+        }, []);
+        
+        setStations(uniqueStations);
+      } catch (err) {
+        console.error('Error loading fuel stations:', err);
+        setError('فشل تحميل بيانات المحطات');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        {isFirstMarker && (
-          <img
-            className="absolute w-[50.00%] h-[50.00%] top-[-10276.74%] left-[-3475.97%]"
-            alt="Cursor"
-            src="/img/cursor.svg"
-          />
-        )}
+    loadFuelStations();
+  }, []);
 
-        {marker.hasTooltip &&
-          marker.tooltipData &&
-          (isActive || isFirstMarker) && (
-            <div className="inline-flex flex-col items-center absolute left-[calc(50.00%_-_375px)] bottom-[51px] rounded-[7.78px] shadow-[var(--shadow-lg)]">
-              <div className="inline-flex flex-col items-center gap-[7.78px] px-[15.57px] py-[11.68px] relative flex-[0_0_auto] bg-white rounded-[7.78px]">
-                <img
-                  className="relative w-[19.46px] h-[19.46px]"
-                  alt="Flag"
-                  src={marker.tooltipData.flag}
-                />
-
-                <div className="inline-flex flex-col items-center gap-[3.89px] relative flex-[0_0_auto] rounded-[7.78px]">
-                  <div className="relative w-fit mt-[-0.97px] font-inter font-medium text-gray-700 text-[11.7px] text-center tracking-[0] leading-[17.5px] whitespace-nowrap">
-                    {marker.tooltipData.title}
-                  </div>
-
-                  <p className="relative w-fit font-inter font-normal text-gray-500 text-[11.7px] text-center tracking-[0] leading-[17.5px]">
-                    {marker.tooltipData.address
-                      .split("\n")
-                      .map((line, index) => (
-                        <React.Fragment key={index}>
-                          {line}
-                          {index <
-                            marker.tooltipData!.address.split("\n").length -
-                              1 && <br />}
-                        </React.Fragment>
-                      ))}
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative w-[15.57px] h-[5.84px]">
-                <img
-                  className="absolute left-[calc(50.00%_-_1105px)] bottom-[4014px] w-3 h-3"
-                  alt="Bottom center"
-                  src="/img/bottom-center.svg"
-                />
-              </div>
-            </div>
-          )}
-      </div>
-    );
-  };
+  const fuelIcon = createFuelStationIcon();
+  
+  // Default center for Saudi Arabia
+  const defaultCenter: [number, number] = [23.8859, 45.0792]; // Riyadh
+  const defaultZoom = 6;
 
   return (
     <section
-      className="mb-5 h-[359px] flex flex-col bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] overflow-hidden border-[0.3px] border-solid border-[color:var(--color-mode-text-icons-t-placeholder)]"
+      className="mb-5 flex flex-col bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] overflow-hidden border-[0.3px] border-solid border-[color:var(--color-mode-text-icons-t-placeholder)]"
       data-model-id="1:7883"
       role="region"
       aria-label="Petrolife stations map"
     >
-      <header className="text-right inline-flex ml-[700px]  h-5 relative mt-[27px] items-center gap-1.5">
+      <header className="text-right inline-flex justify-end h-5 relative mt-[27px] mr-6 mb-4 items-center gap-1.5">
         <h1 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-          مواقع محطات بترولايف
+          مواقع محطات بترولايف {!loading && `(${stations.length})`}
         </h1>
         <MapPin className="w-5 h-5 text-gray-500" />
       </header>
 
-      <div
-        className="ml-10 w-[996.38px] h-[474.84px] relative"
-        role="img"
-        aria-label="World map with Petrolife station locations"
-      >
-        <img
-          className="absolute w-full h-full top-0 left-0"
-          alt="Vector map"
-          src="/img/vector-map.svg"
-        />
+      <div className="px-6 pb-6" style={{ height: '300px' }}>
+        {loading && (
+          <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">جاري تحميل المحطات...</p>
+            </div>
+          </div>
+        )}
 
-        {mapMarkers.map(renderMapMarker)}
+        {error && (
+          <div className="flex items-center justify-center h-full bg-red-50 rounded-lg">
+            <div className="text-center">
+              <p className="text-red-600 mb-2">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                إعادة المحاولة
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && stations.length === 0 && (
+          <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
+            <div className="text-center">
+              <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">لا توجد محطات لعرضها</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && stations.length > 0 && (
+          <MapContainer
+            center={defaultCenter}
+            zoom={defaultZoom}
+            style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+            scrollWheelZoom={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* Auto-fit bounds to show all stations */}
+            <AutoFitBounds stations={stations} />
+
+            {/* Render markers for each fuel station */}
+            {stations.map((station) => (
+              <Marker
+                key={station.id}
+                position={[station.latitude, station.longitude]}
+                icon={fuelIcon}
+              >
+                <Popup>
+                  <div className="text-right" dir="rtl" style={{ minWidth: '200px' }}>
+                    <div className="font-bold text-lg mb-2 text-gray-800">
+                      {station.stationName}
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>{station.cityName}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      {station.latitude.toFixed(6)}, {station.longitude.toFixed(6)}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        )}
       </div>
     </section>
   );

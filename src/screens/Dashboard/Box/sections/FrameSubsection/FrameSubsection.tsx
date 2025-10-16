@@ -1,9 +1,16 @@
 import React from "react";
+import { useNavigation } from "../../../../../hooks/useNavigation";
+import { ROUTES } from "../../../../../constants/routes";
 
 export const FrameSubsection = (): JSX.Element => {
+  const { goTo } = useNavigation();
+
   return (
     <div className="flex items-center justify-between relative self-stretch w-full flex-[0_0_auto]">
-      <div className="inline-flex flex-col items-start gap-2.5 px-2.5 py-2 relative flex-[0_0_auto] rounded-lg border-[0.8px] border-solid border-[#5a66c1]">
+      <button 
+        onClick={() => goTo(ROUTES.WALLET)}
+        className="inline-flex flex-col items-start gap-2.5 px-2.5 py-2 relative flex-[0_0_auto] rounded-lg border-[0.8px] border-solid border-[#5a66c1] cursor-pointer bg-transparent hover:bg-[#5a66c1]/5 transition-colors"
+      >
         <div className="flex items-center gap-1 relative self-stretch w-full flex-[0_0_auto]">
           <img
             className="relative w-[18px] h-[18px] aspect-[1]"
@@ -17,7 +24,7 @@ export const FrameSubsection = (): JSX.Element => {
             </div>
           </div>
         </div>
-      </div>
+      </button>
 
       <div className="inline-flex items-center gap-[29px] relative flex-[0_0_auto]">
         <div className="mt-[-1.00px] font-extrabold text-[#5a66c1] text-lg text-left tracking-[0.16px] leading-6 [direction:rtl] relative w-fit [font-family:'Tajawal',Helvetica] whitespace-nowrap">

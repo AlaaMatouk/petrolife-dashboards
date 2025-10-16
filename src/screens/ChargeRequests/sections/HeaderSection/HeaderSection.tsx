@@ -1,11 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { TimeFilter, ExportButton } from "../../../../components/shared";
 
-export const HeaderSection = (): JSX.Element => {
+interface HeaderSectionProps {
+  selectedTimeFilter: string;
+  onFilterChange: (filter: string) => void;
+}
+
+export const HeaderSection = ({ selectedTimeFilter, onFilterChange }: HeaderSectionProps): JSX.Element => {
   const navigate = useNavigate();
-  const [selectedTimeFilter, setSelectedTimeFilter] = useState("اخر 12 شهر");
 
   return (
     <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
@@ -23,7 +26,7 @@ export const HeaderSection = (): JSX.Element => {
           
           <TimeFilter
             selectedFilter={selectedTimeFilter}
-            onFilterChange={setSelectedTimeFilter}
+            onFilterChange={onFilterChange}
           />
         </div>
 

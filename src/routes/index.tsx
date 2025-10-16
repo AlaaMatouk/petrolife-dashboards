@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
+import { LayoutWrapper } from '../components/shared/Layout';
 
 // Import all screen components
 import { Drivers } from '../screens/Drivers';
@@ -25,6 +26,7 @@ import { ServiceDistributerDashboard } from '../components/ServiceDistributerDas
 import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
+import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
 import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
 import { FuelStationRequests } from '../screens/FuelStationRequests';
 import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
@@ -43,44 +45,53 @@ const NotFound = () => (
   </div>
 );
 
-// App Router using regular React Router
+// App Router using regular React Router with Layout Wrapper
 export const AppRouter = () => {
   return (
     <Routes>
       {/* Main Dashboard */}
       <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-      
+
+      {/* Admin Dashboard */}
+      <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
+
       {/* Authentication */}
+      {/* Authentication - No Layout */}
       <Route path={ROUTES.LOGIN} element={<LoginAndRegister />} />
       
-      {/* Resource Management */}
-      <Route path={ROUTES.DRIVERS} element={<Drivers />} />
-      <Route path={ROUTES.ADD_DRIVER} element={<AddDriver />} />
-      <Route path={ROUTES.DRIVER_DETAILS} element={<DriverDetails />} />
-      <Route path={ROUTES.CARS} element={<Cars />} />
-      <Route path={ROUTES.ADD_CAR} element={<AddNewCar />} />
-      <Route path={ROUTES.CAR_DETAILS} element={<CarDetails />} />
-      
-      {/* Wallet and Financial */}
-      <Route path={ROUTES.WALLET} element={<Wallet />} />
-      <Route path={ROUTES.CHARGE_WALLET} element={<ChargeWallet />} />
-      <Route path={ROUTES.FINANCIAL_REPORTS} element={<FinancialReports />} />
-      <Route path={ROUTES.WALLET_REPORTS} element={<WalletReports />} />
-      
-      {/* Operations */}
-      <Route path={ROUTES.FUEL_DELIVERY} element={<DeliveryFuelRequests />} />
-      <Route path={ROUTES.CREATE_DELIVERY_REQUEST} element={<CreateDeliveryRequest />} />
-      <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyRefundRequests />} />
-      <Route path={ROUTES.CHARGE_REQUESTS} element={<WalletChargeRequests />} />
-      <Route path={ROUTES.PEROLIFE_STATION_LOCATIONS} element={<PerolifeStationLocations />} />
-      
-      {/* Store and Subscriptions */}
-      <Route path={ROUTES.STORE} element={<StoreScreen />} />
-      <Route path={ROUTES.SUBSCRIPTIONS} element={<SubscriptionsScreen />} />
-      
-      {/* Settings */}
-      <Route path={ROUTES.SETTINGS} element={<NotFound />} />
-      
+      {/* All Protected Routes with Layout Wrapper */}
+      <Route element={<LayoutWrapper />}>
+        {/* Main Dashboard */}
+        <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+        
+        {/* Resource Management */}
+        <Route path={ROUTES.DRIVERS} element={<Drivers />} />
+        <Route path={ROUTES.ADD_DRIVER} element={<AddDriver />} />
+        <Route path={ROUTES.DRIVER_DETAILS} element={<DriverDetails />} />
+        <Route path={ROUTES.CARS} element={<Cars />} />
+        <Route path={ROUTES.ADD_CAR} element={<AddNewCar />} />
+        <Route path={ROUTES.CAR_DETAILS} element={<CarDetails />} />
+        
+        {/* Wallet and Financial */}
+        <Route path={ROUTES.WALLET} element={<Wallet />} />
+        <Route path={ROUTES.CHARGE_WALLET} element={<ChargeWallet />} />
+        <Route path={ROUTES.FINANCIAL_REPORTS} element={<FinancialReports />} />
+        <Route path={ROUTES.WALLET_REPORTS} element={<WalletReports />} />
+        
+        {/* Operations */}
+        <Route path={ROUTES.FUEL_DELIVERY} element={<DeliveryFuelRequests />} />
+        <Route path={ROUTES.CREATE_DELIVERY_REQUEST} element={<CreateDeliveryRequest />} />
+        <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyRefundRequests />} />
+        <Route path={ROUTES.CHARGE_REQUESTS} element={<WalletChargeRequests />} />
+        <Route path={ROUTES.PEROLIFE_STATION_LOCATIONS} element={<PerolifeStationLocations />} />
+        
+        {/* Store and Subscriptions */}
+        <Route path={ROUTES.STORE} element={<StoreScreen />} />
+        <Route path={ROUTES.SUBSCRIPTIONS} element={<SubscriptionsScreen />} />
+        
+        {/* Settings */}
+        <Route path={ROUTES.SETTINGS} element={<NotFound />} />
+        
       {/* Service Distributer  */}
       {/* Service Distributer Dashboard */}
       <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
@@ -94,14 +105,15 @@ export const AppRouter = () => {
       <Route path={ROUTES.SERVICE_DISTRIBUTER_INVOICES} element={<ServiceDistributerInvoices />} />
 
       
-      {/* Test Route - Companies-Drivers-Transfer */}
-      <Route path="/test-transfer" element={<TestTransfer />} />
-      
+        {/* Test Route - Companies-Drivers-Transfer */}
+        <Route path="/test-transfer" element={<TestTransfer />} />
+        
       {/* Developer Tools */}
       <Route path="/icons" element={<IconPreview />} />
       
-      {/* 404 */}
-      <Route path="*" element={<NotFound />} />
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Route>
     </Routes>
   );
 };

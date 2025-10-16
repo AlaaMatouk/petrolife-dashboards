@@ -31,7 +31,7 @@ const MenuItemContent: React.FC<{ item: NavigationItem; isSubItem: boolean; isAc
       <span className={`flex-1 text-sm font-medium text-right whitespace-nowrap transition-colors ${
         isActive 
           ? "text-[var(--form-section-title-color)]" 
-          : "text-[var(--form-readonly-input-text-color)]"
+          : "text-[var(--form-readonly-input-text-color)] group-hover:text-purple-700"
       }`}>
         {item.label}
       </span>
@@ -53,7 +53,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   const baseClasses = `w-full rounded-lg transition-all duration-200 ${
     isActive
       ? "border-2 border-[#5A66C1] shadow-md"
-      : "hover:bg-gray-50 border-2 border-transparent"
+      : "hover:bg-purple-50 hover:border-2 hover:border-purple-200 border-2 border-transparent"
   } ${isSubItem ? "ml-4" : ""}`;
 
   if (item.href) {
@@ -61,7 +61,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       <Link
         to={item.href}
         onClick={() => onClick(item)}
-        className={baseClasses}
+        className={`${baseClasses} group`}
         role="menuitem"
         tabIndex={0}
         aria-current={isActive ? "page" : undefined}
@@ -75,7 +75,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   return (
     <button
       onClick={() => onClick(item)}
-      className={baseClasses}
+      className={`${baseClasses} group`}
       role="menuitem"
       tabIndex={0}
       aria-current={isActive ? "page" : undefined}

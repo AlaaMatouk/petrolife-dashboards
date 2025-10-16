@@ -18,6 +18,7 @@ export interface SidebarNavProps {
   sections: NavigationSection[];
   topItems?: NavigationItem[];
   bottomItems?: NavigationItem[];
+  anotherSections?: NavigationSection[];
   userInfo?: {
     name: string;
     email: string;
@@ -35,6 +36,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   sections,
   topItems = [],
   bottomItems = [],
+  anotherSections = [],
   userInfo,
   onLogout,
   className = "",
@@ -49,7 +51,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const { user } = useAuth();
   const { toggleDropdown, isDropdownOpen } = useDropdowns();
 
-
   const handleMenuItemClick = (item: NavigationItem) => {
     setActiveItem(item.id);
     if (item.onClick) {
@@ -57,13 +58,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     }
   };
 
-
   // Check if item is active based on current pathname
   const isItemActive = (item: NavigationItem) => {
     if (item.href) {
-      return isRouteMatch(item.href, location.pathname) || 
-             location.pathname === item.href || 
-             location.pathname.startsWith(item.href + '/');
+      return (
+        isRouteMatch(item.href, location.pathname) ||
+        location.pathname === item.href ||
+        location.pathname.startsWith(item.href + "/")
+      );
     }
     return item.isActive || activeItem === item.id;
   };
@@ -71,7 +73,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   return (
     <nav
       className={`flex flex-col h-full bg-white border-l border-gray-200 transition-all duration-300 ${
-        sidebarCollapsed ? 'w-16' : 'w-72 md:w-60 sm:w-52'
+        sidebarCollapsed ? "w-16" : "w-72 md:w-60 sm:w-52"
       } ${className}`}
       role="navigation"
       aria-label="Main navigation"
@@ -80,7 +82,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       <Logo {...logo} />
 
       {/* Navigation Menu */}
-      <div className="flex flex-col flex-1 overflow-y-auto px-2 py-2" role="menu">
+      <div
+        className="flex flex-col flex-1 overflow-y-auto px-2 py-2"
+        role="menu"
+      >
         {/* Top Items */}
         <div className="space-y-1 mb-4">
           {topItems.map((item) => (
@@ -96,10 +101,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {/* Sections */}
         {sections.map((section, sectionIndex) => {
           // Check if this section should be a dropdown
-          const isDropdownSection = section.title === "المــــــــــــــــــــــــــــــوارد" || 
-                                   section.title === "التقاريــــــــــــــــــــــــــــــر" ||
-                                   section.title === "موارد المركز";
-          
+          const isDropdownSection =
+            section.title === "المــــــــــــــــــــــــــــــوارد" ||
+            section.title === "التقاريــــــــــــــــــــــــــــــر" ||
+            section.title === "موارد المركز" ||
+            section.title === "المستخدمين" ||
+            section.title === "موارد بترولايف" ||
+            section.title === "الطلبات" ||
+            section.title === "التقارير" ||
+            section.title === "الثوابت" ||
+            section.title === "الدعم الفني" ||
+            section.title === "";
+
           if (isDropdownSection) {
             return (
               <DropdownSection
@@ -112,12 +125,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               />
             );
           }
-          
+
           // Regular section with header
           return (
             <div key={sectionIndex} className="mb-4">
-              {section.title !== "المتجر والاشتراكات" && <SectionHeader title={section.title} />}
-              <div className={`space-y-1 ${section.title === "المتجر والاشتراكات" ? "mt-0" : "mt-2"}`}>
+              {section.title !== "المتجر والاشتراكات" && (
+                <SectionHeader title={section.title} />
+              )}
+              <div
+                className={`space-y-1 ${
+                  section.title === "المتجر والاشتراكات" ? "mt-0" : "mt-2"
+                }`}
+              >
                 {section.items.map((item) => (
                   <MenuItem
                     key={item.id}
@@ -143,6 +162,59 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             />
           ))}
         </div>
+
+        {/* Another Sections (e.g., Technical Support) */}
+        {anotherSections.map((section, sectionIndex) => {
+          // Check if this section should be a dropdown
+          const isDropdownSection =
+            section.title === "المــــــــــــــــــــــــــــــوارد" ||
+            section.title === "التقاريــــــــــــــــــــــــــــــر" ||
+            section.title === "موارد المركز" ||
+            section.title === "المستخدمين" ||
+            section.title === "موارد بترولايف" ||
+            section.title === "الطلبات" ||
+            section.title === "التقارير" ||
+            section.title === "الثوابت" ||
+            section.title === "الدعم الفني" ||
+            section.title === "";
+
+          if (isDropdownSection) {
+            return (
+              <DropdownSection
+                key={`another-${sectionIndex}`}
+                title={section.title}
+                items={section.items}
+                isOpen={isDropdownOpen(section.title)}
+                onToggle={() => toggleDropdown(section.title)}
+                onItemClick={handleMenuItemClick}
+              />
+            );
+          }
+
+          // Regular section with header
+          return (
+            <div key={`another-${sectionIndex}`} className="mb-4">
+              {section.title !== "المتجر والاشتراكات" && (
+                <SectionHeader title={section.title} />
+              )}
+              <div
+                className={`space-y-1 ${
+                  section.title === "المتجر والاشتراكات" ? "mt-0" : "mt-2"
+                }`}
+              >
+                {section.items.map((item) => (
+                  <MenuItem
+                    key={item.id}
+                    item={item}
+                    isSubItem={section.title !== "المتجر والاشتراكات"}
+                    isActive={isItemActive(item)}
+                    onClick={handleMenuItemClick}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
 
         {/* Logout Button */}
         <div className="mt-auto">

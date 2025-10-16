@@ -84,10 +84,6 @@ export const Pagination: React.FC<PaginationProps> = ({
     }
   };
 
-  if (totalPages <= 1) {
-    return null;
-  }
-
   return (
     <nav
       className={`flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto] ${className}`}
@@ -95,20 +91,20 @@ export const Pagination: React.FC<PaginationProps> = ({
       aria-label="تنقل الصفحات"
     >
       <div className="inline-flex items-start gap-2 relative flex-[0_0_auto]">
-        {/* Next Button */}
+        {/* Previous Button - سهم يمين on the LEFT of text */}
         <button
-          onClick={handleNext}
-          disabled={currentPage >= totalPages || disabled}
-          className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="الصفحة التالية"
+          onClick={handlePrevious}
+          disabled={currentPage <= 1 || disabled}
+          className="flex w-[72px] h-8 items-center justify-center gap-[5px] px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="الصفحة السابقة"
         >
           <img
-            className="relative w-4 h-4"
+            className="mr-[-3.50px] relative w-4 h-4"
             alt="سهم يمين"
             src="/img/icon-16-arrow-right.svg"
           />
-          <div className="relative w-fit font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-            {nextLabel}
+          <div className="relative w-fit ml-[-3.50px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+            {previousLabel}
           </div>
         </button>
 
@@ -160,18 +156,18 @@ export const Pagination: React.FC<PaginationProps> = ({
           );
         })}
 
-        {/* Previous Button */}
+        {/* Next Button - سهم يسار on the RIGHT of text */}
         <button
-          onClick={handlePrevious}
-          disabled={currentPage <= 1 || disabled}
-          className="flex w-[72px] h-8 items-center justify-center gap-[5px] px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="الصفحة السابقة"
+          onClick={handleNext}
+          disabled={currentPage >= totalPages || disabled}
+          className="flex w-[72px] h-8 items-center justify-center gap-2 px-2 py-0 relative bg-color-mode-surface-bg-screen rounded overflow-hidden border-[0.5px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="الصفحة التالية"
         >
-          <div className="relative w-fit ml-[-3.50px] font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
-            {previousLabel}
+          <div className="relative w-fit font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+            {nextLabel}
           </div>
           <img
-            className="mr-[-3.50px] relative w-4 h-4"
+            className="relative w-4 h-4"
             alt="سهم يسار"
             src="/img/icon-16-arrow-left.svg"
           />

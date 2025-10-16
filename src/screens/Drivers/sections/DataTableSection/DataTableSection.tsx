@@ -6,6 +6,8 @@ import { useDrivers } from "../../../../hooks/useGlobalState";
 import { driversData as mockDriversData } from "../../../../constants/data";
 import { useNavigate } from "react-router-dom";
 import { fetchCompaniesDrivers } from "../../../../services/firestore";
+import { exportDataTable } from "../../../../services/exportService";
+import { useToast } from "../../../../context/ToastContext";
 import { 
   UserRound, 
   CirclePlus, 
@@ -308,14 +310,50 @@ const ActionMenu = ({ driver }: { driver: Driver }) => {
 };
 
 // Export Menu Component
-const ExportMenu = () => {
+const ExportMenu = ({ drivers }: { drivers: Driver[] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const { addToast } = useToast();
 
-  const handleExport = (format: string) => {
-    console.log(`Exporting as ${format}`);
+  const handleExport = async (format: 'excel' | 'pdf') => {
     setIsOpen(false);
+    
+    try {
+      // Define columns for export (excluding actions column)
+      const exportColumns = [
+        { key: 'driverCode', label: 'كود السائق' },
+        { key: 'driverName', label: 'اسم السائق' },
+        { key: 'phone', label: 'رقم الهاتف' },
+        { key: 'address', label: 'العنوان' },
+        { key: 'fuelType', label: 'نوع الوقود' },
+        { key: 'financialValue', label: 'القيمة المالية' },
+        { key: 'carNumber', label: 'رقم السيارة' },
+        { key: 'carCategory', label: 'تصنيف السيارة' },
+        { key: 'accountStatus', label: 'حالة الحساب' },
+      ];
+
+      await exportDataTable(
+        drivers,
+        exportColumns,
+        'drivers-report',
+        format,
+        'تقرير السائقين'
+      );
+
+      addToast({
+        title: 'نجح التصدير',
+        message: `تم تصدير بيانات السائقين بنجاح`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      addToast({
+        title: 'فشل التصدير',
+        message: 'حدث خطأ أثناء تصدير البيانات',
+        type: 'error',
+      });
+    }
   };
 
   const updateMenuPosition = () => {
@@ -416,7 +454,11 @@ const ExportMenu = () => {
 };
 
 
-export const DataTableSection = (): JSX.Element => {
+interface DataTableSectionProps {
+  searchQuery?: string;
+}
+
+export const DataTableSection = ({ searchQuery = "" }: DataTableSectionProps): JSX.Element => {
   const { 
     drivers, 
     pagination, 
@@ -464,20 +506,28 @@ export const DataTableSection = (): JSX.Element => {
     setCurrentPage(page);
   };
 
-  const handleToggleStatus = (driverId: number) => {
-    const driver = drivers.find(d => d.id === driverId);
-    if (driver) {
-      updateDriver(driverId, {
-        accountStatus: {
-          active: !driver.accountStatus.active,
-          text: !driver.accountStatus.active ? 'مفعل' : 'معطل'
-        }
-      });
+
+  // Filter drivers based on search query
+  const filteredDrivers = drivers.filter(driver => {
+    if (!searchQuery || searchQuery.trim() === '') {
+      return true;
     }
-  };
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Search across multiple fields
+    return (
+      driver.driverName?.toLowerCase().includes(query) ||
+      driver.phone?.toLowerCase().includes(query) ||
+      driver.driverCode?.toLowerCase().includes(query) ||
+      driver.carNumber?.toLowerCase().includes(query) ||
+      driver.address?.toLowerCase().includes(query) ||
+      driver.fuelType?.toLowerCase().includes(query)
+    );
+  });
 
   // Calculate driver statistics based on actual data
-  const driverStats = calculateDriverStats(drivers);
+  const driverStats = calculateDriverStats(filteredDrivers);
 
   // Define table columns for drivers
   const driverColumns = [
@@ -493,27 +543,13 @@ export const DataTableSection = (): JSX.Element => {
       label: "حالة الحساب",
       width: "flex-1 grow min-w-[120px]",
       priority: "high",
-      render: (value: any, row: Driver) => (
+      render: (value: any) => (
         <div className="flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleToggleStatus(row.id)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                value.active ? 'bg-green-600' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  value.active ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`text-sm font-medium ${
-              value.active ? 'text-green-700' : 'text-gray-500'
-            }`}>
-              {value.text}
-            </span>
-          </div>
+          <span className={`text-sm font-medium ${
+            value.active ? 'text-green-700' : 'text-gray-500'
+          }`}>
+            {value.text}
+          </span>
         </div>
       ),
     },
@@ -670,12 +706,12 @@ export const DataTableSection = (): JSX.Element => {
                 </div>
               </button>
 
-              <ExportMenu />
+              <ExportMenu drivers={filteredDrivers} />
             </div>
 
             <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
               <h1 className="relative w-[117px] h-5 mt-[-1.00px] ml-[-7.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
-                عدد السائقين ({drivers.length})
+                عدد السائقين ({filteredDrivers.length})
               </h1>
               <UserRound className="w-5 h-5 text-gray-500" />
             </div>
@@ -688,7 +724,7 @@ export const DataTableSection = (): JSX.Element => {
             <div className="hidden lg:block w-full">
               <Table
                 columns={driverColumns}
-                data={Array.isArray(drivers) ? drivers : []}
+                data={Array.isArray(filteredDrivers) ? filteredDrivers : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -697,7 +733,7 @@ export const DataTableSection = (): JSX.Element => {
             <div className="hidden md:block lg:hidden w-full">
               <Table
                 columns={driverColumns.filter(col => col.priority === 'high' || col.priority === 'medium')}
-                data={Array.isArray(drivers) ? drivers : []}
+                data={Array.isArray(filteredDrivers) ? filteredDrivers : []}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -719,12 +755,16 @@ export const DataTableSection = (): JSX.Element => {
       </div>
 
           {/* No Data Message */}
-          {!isLoading && !error && drivers.length === 0 && (
+          {!isLoading && !error && filteredDrivers.length === 0 && (
             <div className="flex items-center justify-center w-full py-12 bg-white rounded-lg border border-gray-200">
               <div className="text-center">
                 <UserRound className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg [direction:rtl]">لا توجد بيانات سائقين</p>
-                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">قم بإضافة سائق جديد للبدء</p>
+                <p className="text-gray-600 text-lg [direction:rtl]">
+                  {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد بيانات سائقين'}
+                </p>
+                <p className="text-gray-400 text-sm mt-2 [direction:rtl]">
+                  {searchQuery ? 'جرب مصطلح بحث آخر' : 'قم بإضافة سائق جديد للبدء'}
+                </p>
               </div>
             </div>
           )}

@@ -1,9 +1,21 @@
 import React, { ReactNode, useState, useRef, useEffect } from "react";
-import { Bell, Sun, Search, ShoppingCart, User, LogOut } from "lucide-react";
+import { Sun, Search, User, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../../config/firebase";
 import { signOutUser } from "../../../services/auth";
 import { useGlobalState } from "../../../context/GlobalStateContext";
+import { NotificationDropdown } from "../Notification";
+import { CartDropdown } from "../Cart";
+
+// Breadcrumb route mapping
+const breadcrumbRoutes: Record<string, string> = {
+  "لوحة التحكم": "/dashboard",
+  "التقــــــــــــــــارير": "/financialreports",
+  "محفظــــــــــــــتي": "/wallet",
+  "السيــــــــــــــارات": "/cars",
+  "الســـــــــــــــائقين": "/drivers",
+  "الاشتراكـــــــــــات": "/subscriptions",
+};
 
 interface SearchBarProps {
   placeholder?: string;
@@ -18,6 +30,7 @@ export interface HeaderProps {
   searchProps?: SearchBarProps;
   extraContent?: ReactNode;
   className?: string;
+  admin?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -75,7 +88,10 @@ const ProfileDropdown: React.FC = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -87,11 +103,11 @@ const ProfileDropdown: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOutUser();
-      
+
       // Clear global state
-      dispatch({ type: 'SET_USER', payload: null });
-      dispatch({ type: 'SET_AUTHENTICATED', payload: false });
-      
+      dispatch({ type: "SET_USER", payload: null });
+      dispatch({ type: "SET_AUTHENTICATED", payload: false });
+
       console.log("Logout successful ✅");
       navigate("/");
     } catch (error: any) {
@@ -133,7 +149,7 @@ const ProfileDropdown: React.FC = () => {
               {currentUser.email}
             </p>
           </div>
-          
+
           <div className="py-2">
             <button
               onClick={handleLogout}
@@ -149,6 +165,47 @@ const ProfileDropdown: React.FC = () => {
   );
 };
 
+// Breadcrumb Component
+const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({ title, titleIconSrc }) => {
+  const navigate = useNavigate();
+  
+  // Split title by "/" to create breadcrumbs
+  const parts = title.split("/").map(part => part.trim());
+  
+  const handleBreadcrumbClick = (part: string, index: number) => {
+    // First part (index 0) is the parent (clickable)
+    // Last part is the current page (not clickable)
+    if (index < parts.length - 1) {
+      const route = breadcrumbRoutes[part];
+      if (route) {
+        navigate(route);
+      }
+    }
+  };
+  
+  return (
+    <div className="flex items-center gap-2" dir="rtl">
+      {titleIconSrc && <span>{titleIconSrc}</span>}
+      {parts.map((part, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="text-[#5B738B]">/</span>}
+          <button
+            onClick={() => handleBreadcrumbClick(part, index)}
+            className={`text-lg font-normal ${
+              index === parts.length - 1
+                ? "text-[#5B738B] cursor-default"
+                : "text-[#5B738B] hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+            }`}
+            disabled={index === parts.length - 1}
+          >
+            {part}
+          </button>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
 export const Header: React.FC<HeaderProps> = ({
   title,
   titleIconSrc,
@@ -156,6 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
   searchProps,
   extraContent,
   className = "",
+  admin = false,
 }) => {
   return (
     <header
@@ -170,15 +228,13 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label="Main navigation"
         >
           {/* Profile Dropdown - First on the left */}
-          <ProfileDropdown />
+          {!admin && (<ProfileDropdown />)}
 
-          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-            <Bell className="w-4 h-4 text-gray-600" />
-          </button>
+          {/* Notification Dropdown */}
+          <NotificationDropdown />
 
-          <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-            <ShoppingCart className="w-4 h-4 text-gray-600" />
-          </button>
+          {/* Cart Dropdown */}
+          <CartDropdown />
 
           <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-md border border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
             <Sun className="w-4 h-4 text-gray-600" />
@@ -198,11 +254,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Title + Icon */}
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-normal text-[#5B738B]">{title}</h1>
-            {titleIconSrc && <span>{titleIconSrc}</span>}
-          </div>
+          {/* Breadcrumb Title + Icon */}
+          <Breadcrumb title={title} titleIconSrc={titleIconSrc} />
 
           {/* Extra Content */}
           {extraContent && (

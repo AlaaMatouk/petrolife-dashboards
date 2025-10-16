@@ -156,6 +156,8 @@ export const OrderDetailsSection = (): JSX.Element => {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -166,7 +168,22 @@ export const OrderDetailsSection = (): JSX.Element => {
         const firestoreOrders = await fetchOrders();
         console.log('🔍 Firestore Orders in Component:', firestoreOrders);
         
-        const convertedOrders = convertOrdersToTableData(firestoreOrders);
+        // Filter orders to only show Fuel Delivery orders
+        const fuelDeliveryOrders = firestoreOrders.filter(order => {
+          const serviceTitleAr = order.service?.title?.ar;
+          const serviceTitleEn = order.service?.title?.en;
+          const serviceDescAr = order.service?.desc?.ar;
+          const serviceDescEn = order.service?.desc?.en;
+          
+          return serviceTitleAr === 'توصيل الوقود' ||
+                 serviceTitleEn === 'Fuel Delivery' ||
+                 serviceDescAr === 'عند الطلب وفي أي وقت وفي أي مكان' ||
+                 serviceDescEn === 'On-demand, anytime anywhere.';
+        });
+        
+        console.log('🚛 Fuel Delivery Orders Filtered:', fuelDeliveryOrders.length, 'out of', firestoreOrders.length);
+        
+        const convertedOrders = convertOrdersToTableData(fuelDeliveryOrders);
         console.log('📊 Converted Orders:', convertedOrders);
         
         if (convertedOrders.length > 0) {
@@ -295,6 +312,12 @@ export const OrderDetailsSection = (): JSX.Element => {
     setCurrentPage(page);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
@@ -332,7 +355,7 @@ export const OrderDetailsSection = (): JSX.Element => {
       <div className="flex flex-col items-start gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
         <Table
           columns={tableColumns}
-          data={orders}
+          data={paginatedOrders}
           className="w-full"
           headerClassName="bg-color-mode-surface-bg-icon-gray"
           rowClassName="hover:bg-gray-50"
@@ -342,7 +365,7 @@ export const OrderDetailsSection = (): JSX.Element => {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={Math.ceil(orders.length / 10) || 1}
+        totalPages={totalPages || 1}
         onPageChange={handlePageChange}
         className="flex items-center justify-around gap-[46px] relative self-stretch w-full flex-[0_0_auto]"
       />

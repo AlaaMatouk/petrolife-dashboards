@@ -1,10 +1,4 @@
-import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
-import {
-  navigationIcons,
-  navigationMenuData,
-  userInfo,
-} from "../../constants/data";
-import { Car, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CarInformationSection } from "./sections/CarInformationSection/CarInformationSection";
 import { CarDriversSection } from "./sections/CarDriversSection/CarDriversSection";
@@ -44,50 +38,42 @@ export const CarDetails = (): JSX.Element => {
   }, [id]);
 
   return (
-    <LayoutSimple
-      headerProps={{
-        title: "السيــــــــــــارات",
-        titleIconSrc: <Car className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
-        searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
-      }}
-      sidebarProps={{
-        sections: navigationMenuData.sections,
-        topItems: navigationMenuData.topItems,
-        bottomItems: navigationMenuData.bottomItems,
-        userInfo: userInfo,
-      }}
-    >
-      <div className="flex flex-col w-full items-start gap-5">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20 w-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">جاري تحميل بيانات السيارة...</p>
-            </div>
-          </div>
-        )}
+    <div className="flex flex-col w-full items-start gap-5">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/cars')}
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm font-medium">رجوع إلى السيارات</span>
+      </button>
 
-        {/* Error State */}
-        {error && !isLoading && (
-          <div className="p-6 bg-red-50 border border-red-200 rounded-lg w-full">
-            <p className="text-red-800 text-center [direction:rtl]">
-              خطأ: {error}
-            </p>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20 w-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">جاري تحميل بيانات السيارة...</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Car Info - Only show when data is loaded */}
-        {!isLoading && !error && carData && (
-          <>
-            <CarInformationSection carData={carData} />
-            <CarDriversSection carData={carData} />
-          </>
-        )}
-      </div>
-    </LayoutSimple>
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg w-full">
+          <p className="text-red-800 text-center [direction:rtl]">
+            خطأ: {error}
+          </p>
+        </div>
+      )}
+
+      {/* Car Details - Only show when data is loaded */}
+      {!isLoading && !error && carData && (
+        <>
+          <CarInformationSection carData={carData} />
+          <CarDriversSection carId={id || ''} />
+        </>
+      )}
+    </div>
   );
 };
