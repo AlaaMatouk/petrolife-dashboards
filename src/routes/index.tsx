@@ -30,6 +30,7 @@ import { FuelStationRequests } from '../screens/FuelStationRequests';
 import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
 import { ServiceDistributerStationLocations } from '../screens/ServiceDistributerStationLocations';
 import { ServiceDistributerInvoices } from '../screens/ServiceDistributerInvoices';
+import { IconPreview } from '../screens/IconPreview';
 
 
 // 404 Component
@@ -95,6 +96,9 @@ export const AppRouter = () => {
       
       {/* Test Route - Companies-Drivers-Transfer */}
       <Route path="/test-transfer" element={<TestTransfer />} />
+      
+      {/* Developer Tools */}
+      <Route path="/icons" element={<IconPreview />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
