@@ -27,6 +27,12 @@ import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
 import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
+import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
+import { FuelStationRequests } from '../screens/FuelStationRequests';
+import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
+import { ServiceDistributerStationLocations } from '../screens/ServiceDistributerStationLocations';
+import { ServiceDistributerInvoices } from '../screens/ServiceDistributerInvoices';
+import { IconPreview } from '../screens/IconPreview';
 
 
 // 404 Component
@@ -91,12 +97,20 @@ export const AppRouter = () => {
       <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
       {/* Service Distributer Station WOrkers */}
       <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
-      <Route path={ROUTES.STATIONS} element={<Stations     />} />
+      <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
+      <Route path={ROUTES.STATIONS} element={<Stations/>} />
+      <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS} element={<ServiceDistributerFinancialReports/>} />
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS} element={<ServiceDistributerStationLocations />} />
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_INVOICES} element={<ServiceDistributerInvoices />} />
 
       
         {/* Test Route - Companies-Drivers-Transfer */}
         <Route path="/test-transfer" element={<TestTransfer />} />
         
+      {/* Developer Tools */}
+      <Route path="/icons" element={<IconPreview />} />
+      
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Route>

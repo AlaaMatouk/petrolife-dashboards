@@ -1,20 +1,24 @@
-import { DataTableSection } from "../../components/sections/DataTableSection";
-import { serviceDistributerNavigationMenuData, userInfo, stationsData } from "../../constants/data";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
+import {
+  serviceDistributerNavigationMenuData,
+  userInfo,
+  stationsData
+} from "../../constants/data";
 import { Fuel } from "lucide-react";
+import { StationLocationsMap } from "../../components/sections/StationLocationsMap";
+import { DataTableSection } from "../../components/sections/DataTableSection";
 
-// Station interface
+// Station interface for Service Distributer Station Locations
 interface Station {
   id: number;
   stationCode: string;
   stationName: string;
   address: string;
-  phone: string;
   fuelTypes: string[];
   stationStatus: { active: boolean; text: string };
 }
 
-export const Stations = (): JSX.Element => {
+function ServiceDistributerStationLocations() {
   // Define columns for stations table
   const stationColumns = [
     {
@@ -24,7 +28,7 @@ export const Stations = (): JSX.Element => {
       priority: "high"
     },
     {
-      key: "stationStatus", 
+      key: "stationStatus",
       label: "حالة المحطة",
       width: "flex-1 grow min-w-[120px]",
       priority: "high"
@@ -33,24 +37,16 @@ export const Stations = (): JSX.Element => {
       key: "fuelTypes",
       label: "نوع الوقود",
       width: "flex-1 grow min-w-[150px]",
-      priority: "low",
+      priority: "high",
       render: (value: string[]) => (
-        <div className="text-center">
-          {value.join(', ')}
-        </div>
+        <div className="text-center">{value.join(" ")}</div>
       )
     },
     {
       key: "address",
       label: "العنوان",
-      width: "flex-1 grow min-w-[100px]",
+      width: "flex-1 grow min-w-[150px]",
       priority: "medium"
-    },
-    {
-      key: "phone",
-      label: "رقم الهاتف",
-      width: "flex-1 grow min-w-[120px]",
-      priority: "low"
     },
     {
       key: "stationName",
@@ -61,7 +57,7 @@ export const Stations = (): JSX.Element => {
     {
       key: "stationCode",
       label: "كود المحطة",
-      width: "flex-1 grow min-w-[100px]",
+      width: "flex-1 grow min-w-[120px]",
       priority: "high"
     }
   ];
@@ -76,9 +72,8 @@ export const Stations = (): JSX.Element => {
         stationCode: station.stationCode,
         stationName: station.stationName,
         address: station.location,
-        phone: station.phone,
         fuelTypes: station.fuelTypes,
-        stationStatus: station.accountStatus,
+        stationStatus: station.accountStatus
       }))
     );
   };
@@ -88,25 +83,27 @@ export const Stations = (): JSX.Element => {
     console.log(`Toggle status for station ${stationId}`);
     // TODO: Implement actual status toggle API call
   };
-
   return (
     <LayoutSimple
       headerProps={{
-        title: "المحطات",
+        title: "مواقع المحطات",
         titleIconSrc: <Fuel className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
-          onSearch: (query) => console.log("Search:", query),
-        },
+          onSearch: (query) => console.log("Search:", query)
+        }
       }}
       sidebarProps={{
         sections: serviceDistributerNavigationMenuData.sections,
         topItems: serviceDistributerNavigationMenuData.topItems,
         bottomItems: serviceDistributerNavigationMenuData.bottomItems,
-        userInfo: userInfo,
+        userInfo: userInfo
       }}
     >
       <div className="flex flex-col w-full items-start gap-5">
+        <div className="w-full">
+          <StationLocationsMap title="مواقع المحطات (42)"/>
+        </div>
         <DataTableSection<Station>
           title="المحطات"
           entityName="المحطة"
@@ -115,7 +112,7 @@ export const Stations = (): JSX.Element => {
           columns={stationColumns}
           fetchData={fetchStationsData}
           onToggleStatus={handleToggleStatus}
-          addNewRoute="/addstation"
+          addNewRoute="/add-station"
           viewDetailsRoute={(id) => `/station/${id}`}
           loadingMessage="جاري تحميل بيانات المحطات..."
           errorMessage="فشل في تحميل بيانات المحطات. استخدام البيانات التجريبية."
@@ -124,5 +121,6 @@ export const Stations = (): JSX.Element => {
       </div>
     </LayoutSimple>
   );
-};
+}
 
+export default ServiceDistributerStationLocations;

@@ -34,9 +34,14 @@ export const ROUTES = {
   SETTINGS: '/settings',
 
   // Service Distributer Dashboard
-  SERVICE_DISTRIBUTER_DASHBOARD: '/servicedistributer',
-  STATION_WORKERS: '/stationworkers',
-  STATIONS: '/stations',
+  SERVICE_DISTRIBUTER_DASHBOARD: '/service-distributer',
+  STATION_WORKERS: '/service-distributer-station-workers',
+  STATION_WORKER_DETAILS: '/service-distributer-station-worker/:id',
+  STATIONS: '/service-distributer-stations',
+  FUEL_STATION_REQUESTS: '/fuel-station-requests',
+  SERVICE_DISTRIBUTER_FINANCIAL_REPORTS: '/service-distributer-financial-reports',
+  SERVICE_DISTRIBUTER_STATION_LOCATIONS: '/service-distributer-station-locations',
+  SERVICE_DISTRIBUTER_INVOICES: '/service-distributer-invoices',
 
   // Admin Dashboard
   ADMIN_DASHBOARD: '/admin-dashboard',

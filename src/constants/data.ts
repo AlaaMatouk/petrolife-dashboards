@@ -107,11 +107,11 @@ export const serviceDistributerNavigationMenuData = {
     {
       id: "dashboard",
       label: "لوحة التحكم",
-      icon: "/img/side-icons-1.svg",
+      icon: "/src/assets/imgs/icons/dashboard.svg",
       isActive: false,
       hasBackground: false,
-      href: ROUTES.DASHBOARD,
-    },
+      href: ROUTES.SERVICE_DISTRIBUTER_DASHBOARD
+    }
   ],
   sections: [
     {
@@ -120,43 +120,43 @@ export const serviceDistributerNavigationMenuData = {
         {
           id: "workers",
           label: "عمال المحطـــــات",
-          icon: "/img/side-icons-3.svg",
+          icon: "/src/assets/imgs/icons/user-group.svg",
           hasBackground: false,
-          href: ROUTES.DRIVERS,
+          href: ROUTES.STATION_WORKERS
         },
         {
           id: "stations",
           label: "المحطــــــات",
-          icon: "/img/side-icons-7.svg",
-          href: ROUTES.CARS,
-        },
-      ],
+          icon: "/src/assets/imgs/icons/petrol-station.svg",
+          href: ROUTES.STATIONS
+        }
+      ]
     },
   ],
   bottomItems: [
     {
-      id: "fuel-delivery",
+      id: "fuel-station-requests",
       label: "طلبات محطـــات الوقود",
-      icon: "/img/side-icons-7.svg",
-      href: ROUTES.FUEL_DELIVERY,
+      icon: "/src/assets/imgs/icons/document-clock.svg",
+      href: ROUTES.FUEL_STATION_REQUESTS
     },
     {
-      id: "stations",
-      label: "التقارير المالية",
-      icon: "/img/side-icons-8.svg",
-      href: ROUTES.PEROLIFE_STATION_LOCATIONS,
+      id: "financial-reports",
+      label:"التقارير المالية",
+      icon: "/src/assets/imgs/icons/analytics.svg",
+      href: ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS
     },
     {
-      id: "refund-requests",
+      id: "station-locations",
       label: "مواقع المحطات",
-      icon: "/img/side-icons-10.svg",
-      href: ROUTES.REFUND_REQUESTS,
+      icon: "/src/assets/imgs/icons/location-pin.svg",
+      href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS
     },
     {
-      id: "charge-requests",
+      id: "invoices",
       label: "الفواتيــــــــــــر",
-      icon: "/img/side-icons-10.svg",
-      href: ROUTES.CHARGE_REQUESTS,
+      icon: "/src/assets/imgs/icons/invoice.svg",
+      href: ROUTES.SERVICE_DISTRIBUTER_INVOICES
     },
     {
       id: "charge-requests",
@@ -667,7 +667,7 @@ export const stationsData = [
     phone: "00966112345678",
     emailAddress: "riyadh.central@petrolife.com",
     managerName: "عبدالعزيز السعيد",
-    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    fuelTypes: ["بنزين 91", "ديزل"],
     workersCount: 12,
     accountStatus: { active: true, text: "مفعل" },
   },
@@ -693,7 +693,7 @@ export const stationsData = [
     phone: "00966132345678",
     emailAddress: "dammam@petrolife.com",
     managerName: "فهد الخالدي",
-    fuelTypes: ["بنزين 91", "بنزين 95", "ديزل"],
+    fuelTypes: ["بنزين 91", "ديزل"],
     workersCount: 8,
     accountStatus: { active: true, text: "مفعل" },
   },
@@ -1288,6 +1288,367 @@ export const fuelData = [
     color: "text-color-mode-text-icons-t-green",
   },
 ];
+
+// Service Distributer Financial Reports Filter Options
+export const serviceDistributerFinancialReportsFilterOptions = [
+  { 
+    label: "نوع التقرير", 
+    value: "تحليلي", 
+    icon: "/img/side-icons-20.svg",
+    options: [
+      { value: "تحليلي", label: "تحليلي" },
+      { value: "ملخص", label: "ملخص" },
+      { value: "تفصيلي", label: "تفصيلي" }
+    ]
+  },
+  {
+    label: "اسم المنتج",
+    value: "الكل",
+    icon: "/img/side-icons-19.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "بنزين 91", label: "بنزين 91" },
+      { value: "بنزين 95", label: "بنزين 95" },
+      { value: "ديزل", label: "ديزل" },
+      { value: "زيت محرك", label: "زيت محرك" },
+      { value: "سائل تبريد", label: "سائل تبريد" }
+    ]
+  },
+  {
+    label: "قائمة المحطات",
+    value: "الكل",
+    icon: "/img/side-icons-18.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "محطة الرياض المركزية", label: "محطة الرياض المركزية" },
+      { value: "محطة جدة الشمالية", label: "محطة جدة الشمالية" },
+      { value: "محطة الدمام", label: "محطة الدمام" },
+      { value: "محطة مكة", label: "محطة مكة" }
+    ]
+  },
+  {
+    label: "المدينة",
+    value: "الكل",
+    icon: "/img/side-icons-17.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "الرياض", label: "الرياض" },
+      { value: "جدة", label: "جدة" },
+      { value: "الدمام", label: "الدمام" },
+      { value: "مكة", label: "مكة" },
+      { value: "المدينة المنورة", label: "المدينة المنورة" }
+    ]
+  },
+  {
+    label: "رقم العملية",
+    value: "الكل",
+    icon: "/img/side-icons-16.svg",
+    options: [
+      { value: "الكل", label: "الكل" },
+      { value: "21A254", label: "21A254" },
+      { value: "21A255", label: "21A255" },
+      { value: "21A256", label: "21A256" },
+      { value: "21A257", label: "21A257" },
+      { value: "21A258", label: "21A258" }
+    ]
+  }
+];
+
+// Service Distributer Financial Reports Data
+export const serviceDistributerFinancialReportsData = [
+  {
+    id: 1,
+    productType: "وقود",
+    productNumber: "21A254",
+    productName: "بنزين 91",
+    quantity: "20",
+    value: "94",
+    unit: "لتر",
+    operationNumber: "21A254"
+  },
+  {
+    id: 2,
+    productType: "وقود",
+    productNumber: "21A255",
+    productName: "بنزين 95",
+    quantity: "15",
+    value: "78",
+    unit: "لتر",
+    operationNumber: "21A255"
+  },
+  {
+    id: 3,
+    productType: "وقود",
+    productNumber: "21A256",
+    productName: "ديزل",
+    quantity: "25",
+    value: "85",
+    unit: "لتر",
+    operationNumber: "21A256"
+  },
+  {
+    id: 4,
+    productType: "منتج",
+    productNumber: "21A257",
+    productName: "زيت محرك",
+    quantity: "5",
+    value: "120",
+    unit: "لتر",
+    operationNumber: "21A257"
+  },
+  {
+    id: 5,
+    productType: "وقود",
+    productNumber: "21A258",
+    productName: "بنزين 91",
+    quantity: "30",
+    value: "141",
+    unit: "لتر",
+    operationNumber: "21A258"
+  },
+  {
+    id: 6,
+    productType: "وقود",
+    productNumber: "21A259",
+    productName: "ديزل",
+    quantity: "18",
+    value: "61",
+    unit: "لتر",
+    operationNumber: "21A259"
+  },
+  {
+    id: 7,
+    productType: "منتج",
+    productNumber: "21A260",
+    productName: "سائل تبريد",
+    quantity: "8",
+    value: "96",
+    unit: "لتر",
+    operationNumber: "21A260"
+  },
+  {
+    id: 8,
+    productType: "وقود",
+    productNumber: "21A261",
+    productName: "بنزين 95",
+    quantity: "22",
+    value: "115",
+    unit: "لتر",
+    operationNumber: "21A261"
+  },
+  {
+    id: 9,
+    productType: "وقود",
+    productNumber: "21A262",
+    productName: "بنزين 91",
+    quantity: "12",
+    value: "56",
+    unit: "لتر",
+    operationNumber: "21A262"
+  },
+  {
+    id: 10,
+    productType: "منتج",
+    productNumber: "21A263",
+    productName: "زيت ناقل حركة",
+    quantity: "3",
+    value: "75",
+    unit: "لتر",
+    operationNumber: "21A263"
+  }
+];
+
+
+// Invoices Data
+export const invoicesData = [
+  {
+    id: 1,
+    invoiceCode: "INV-2024-001",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-01",
+    vat: "150.00 ر.س",
+    totalWithVat: "1,150.00 ر.س"
+  },
+  {
+    id: 2,
+    invoiceCode: "INV-2024-002",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-05",
+    vat: "75.00 ر.س",
+    totalWithVat: "575.00 ر.س"
+  },
+  {
+    id: 3,
+    invoiceCode: "INV-2024-003",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-10",
+    vat: "300.00 ر.س",
+    totalWithVat: "2,300.00 ر.س"
+  },
+  {
+    id: 4,
+    invoiceCode: "INV-2024-004",
+    invoiceType: "فاتورة مشتريات",
+    creationDate: "2024-10-12",
+    vat: "225.00 ر.س",
+    totalWithVat: "1,725.00 ر.س"
+  },
+  {
+    id: 5,
+    invoiceCode: "INV-2024-005",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-14",
+    vat: "180.00 ر.س",
+    totalWithVat: "1,380.00 ر.س"
+  },
+  {
+    id: 6,
+    invoiceCode: "INV-2024-006",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-15",
+    vat: "90.00 ر.س",
+    totalWithVat: "690.00 ر.س"
+  },
+  {
+    id: 7,
+    invoiceCode: "INV-2024-007",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-16",
+    vat: "135.00 ر.س",
+    totalWithVat: "1,035.00 ر.س"
+  },
+  {
+    id: 8,
+    invoiceCode: "INV-2024-008",
+    invoiceType: "فاتورة مشتريات",
+    creationDate: "2024-10-17",
+    vat: "210.00 ر.س",
+    totalWithVat: "1,610.00 ر.س"
+  },
+  {
+    id: 9,
+    invoiceCode: "INV-2024-009",
+    invoiceType: "فاتورة مبيعات",
+    creationDate: "2024-10-18",
+    vat: "165.00 ر.س",
+    totalWithVat: "1,265.00 ر.س"
+  },
+  {
+    id: 10,
+    invoiceCode: "INV-2024-010",
+    invoiceType: "فاتورة خدمات",
+    creationDate: "2024-10-19",
+    vat: "195.00 ر.س",
+    totalWithVat: "1,495.00 ر.س"
+  }
+];
+
+
+// Fuel Station Requests Data
+export const fuelStationRequestsData = [
+  {
+    id: 1,
+    transactionNumber: "21A254",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 2,
+    transactionNumber: "21A255",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "بنزين 91، بنزين 95",
+    totalLiters: "4",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 3,
+    transactionNumber: "21A256",
+    stationName: "الرياض",
+    clientName: "هشام موسى",
+    workerName: "هشام موسى",
+    fuelType: "بنزين 95",
+    totalLiters: "2",
+    creationDate: "21 فبراير 2025 - 5:05 ص"
+  },
+  {
+    id: 4,
+    transactionNumber: "21A257",
+    stationName: "جدة",
+    clientName: "أحمد محمد",
+    workerName: "محمد أحمد",
+    fuelType: "ديزل",
+    totalLiters: "4",
+    creationDate: "20 فبراير 2025 - 4:30 ص"
+  },
+  {
+    id: 5,
+    transactionNumber: "21A258",
+    stationName: "الدمام",
+    clientName: "علي حسن",
+    workerName: "حسن علي",
+    fuelType: "بنزين 91",
+    totalLiters: "2",
+    creationDate: "20 فبراير 2025 - 3:15 ص"
+  },
+  {
+    id: 6,
+    transactionNumber: "21A259",
+    stationName: "مكة",
+    clientName: "محمود سعد",
+    workerName: "سعد محمود",
+    fuelType: "بنزين 95",
+    totalLiters: "4",
+    creationDate: "19 فبراير 2025 - 6:45 ص"
+  },
+  {
+    id: 7,
+    transactionNumber: "21A260",
+    stationName: "المدينة المنورة",
+    clientName: "يوسف إبراهيم",
+    workerName: "إبراهيم يوسف",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "19 فبراير 2025 - 2:20 ص"
+  },
+  {
+    id: 8,
+    transactionNumber: "21A261",
+    stationName: "الخبر",
+    clientName: "خالد عبدالله",
+    workerName: "عبدالله خالد",
+    fuelType: "بنزين 91، بنزين 95",
+    totalLiters: "4",
+    creationDate: "18 فبراير 2025 - 7:10 ص"
+  },
+  {
+    id: 9,
+    transactionNumber: "21A262",
+    stationName: "الطائف",
+    clientName: "فهد المطيري",
+    workerName: "مطيري فهد",
+    fuelType: "ديزل",
+    totalLiters: "2",
+    creationDate: "18 فبراير 2025 - 1:55 ص"
+  },
+  {
+    id: 10,
+    transactionNumber: "21A263",
+    stationName: "أبها",
+    clientName: "عبدالعزيز السعيد",
+    workerName: "سعيد عبدالعزيز",
+    fuelType: "بنزين 95",
+    totalLiters: "4",
+    creationDate: "17 فبراير 2025 - 8:30 ص"
+  }
+];
+
+
 
 // Time Filters
 export const timeFilters = [

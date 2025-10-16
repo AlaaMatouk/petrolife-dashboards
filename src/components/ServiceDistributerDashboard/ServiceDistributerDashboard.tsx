@@ -5,22 +5,27 @@ import {
   userInfo
 } from "../../constants/data";
 import {
-  BarChart3,
-  Battery,
-  Car,
   Droplets,
-  FileText,
   Fuel,
-  MapPin,
-  Users,
   Wallet
 } from "lucide-react";
+import dashboardIcon from "../../assets/imgs/icons/dashboard.svg";
+
+// Dashboard icon component
+const DashboardIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <img 
+    src={dashboardIcon} 
+    alt="Dashboard" 
+    className={className}
+  />
+);
 import BannerSection from "../sections/BannerSection/BannerSection";
 import ConsumptionSection from "../sections/ConsumptionSection/ConsumptionSection";
 import { SubscriptionAndLocationsSection } from "../sections/SubscriptionAndLocationsSection";
 import FuelConsumptionByCitiesSection from "../sections/FuelConsumptionByCitiesSection";
 import { DeliverySurveySection } from "../sections/DeliverySurveySection";
 import MostUsedSection from "../sections/MostUsedSection/MostUsedSections";
+import { StationLocationsMap } from "../sections/StationLocationsMap";
 
 export const ServiceDistributerDashboard = () => {
   useDataInitialization();
@@ -64,28 +69,28 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/money-bag-orange.svg" alt="money bag" className="w-5 h-5" />,
     },
     {
       title: "اجمالي اللترات",
       content: fuelData,
-      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
+      icon: <img src="/src/assets/imgs/icons/droplet-orange.svg" alt="droplet" className="w-5 h-5" />,
       type: "fuel"
     },
     {
       title: "نوع الخدمة",
       value: "تعبئة وقود",
-      icon: <Wallet className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/dashboard-orange.svg" alt="dashboard" className="w-5 h-5" />,
     },
     {
       title: "عدد المحطـــــــــــــــات",
       value: "42",
-      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/petrol-station-orange.svg" alt="petrol station" className="w-5 h-5" />
     },
     {
       title: "عدد العمــــــــــال",
       value: "1250",
-      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />,
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="user group" className="w-5 h-5" />,
       type: "oil"
     },
     {
@@ -107,7 +112,7 @@ export const ServiceDistributerDashboard = () => {
           color: "text-color-mode-text-icons-t-green"
         }
       ],
-      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />
+      icon: <img src="/src/assets/imgs/icons/user-group-orange.svg" alt="user group" className="w-5 h-5" />,
     }
   ];
 
@@ -132,7 +137,7 @@ export const ServiceDistributerDashboard = () => {
     <LayoutSimple
       headerProps={{
         title: "لوحة التحكم",
-        titleIconSrc: <BarChart3 className="w-5 h-5 text-gray-500" />,
+        titleIconSrc: <DashboardIcon className="w-5 h-5 text-gray-500" />,
         showSearch: false
       }}
       sidebarProps={{
@@ -155,37 +160,7 @@ export const ServiceDistributerDashboard = () => {
       <SubscriptionAndLocationsSection statsData={statsData} />
       <ConsumptionSection />
       <FuelConsumptionByCitiesSection />
-
-      {/* Station Locations Card */}
-      <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-1.5">
-            <h3 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-              مواقع محطات بترولايف
-            </h3>
-            <MapPin className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-        
-        <div className="h-48 rounded-lg overflow-hidden relative">
-          <img
-            src="/img/vector-map.svg"
-            alt="World map with Petrolife station locations"
-            className="w-full h-full object-cover"
-          />
-          
-          {/* Map Markers */}
-          <div className="absolute top-[83.20%] left-[86.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[86.89%] left-[93.55%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[32.17%] left-[12.70%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[41.80%] left-[15.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[19.88%] left-[50.88%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[45.90%] left-[66.21%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[40.78%] left-[82.32%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[14.96%] left-[56.74%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[36.07%] left-[50.10%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-        </div>
-      </div>
+      <StationLocationsMap title="مواقع محطات بترولايف" />
       <DeliverySurveySection />
       <MostUsedSection 
         stationsData={stationsData} 

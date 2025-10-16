@@ -67,7 +67,7 @@ export const Table = <T extends Record<string, any>>({
                     {column.label && (
                       <div className="flex items-center justify-center gap-2">
                         <span>{column.label}</span>
-                        {column.key === "accountStatus" && (
+                        {(column.key === "accountStatus" || column.key === "stationStatus") && (
                           <SlidersHorizontal className="w-4 h-4 text-gray-400" />
                         )}
                       </div>
