@@ -1,4 +1,4 @@
-import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, where } from 'firebase/firestore';
+import { collection, getDocs, query, QuerySnapshot, DocumentData, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, where, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from '../config/firebase';
 
@@ -46,7 +46,7 @@ export const fetchCompaniesDrivers = async () => {
     // console.log('Fetching companies-drivers data from Firestore...');
     
     const companiesDriversRef = collection(db, 'companies-drivers');
-    const q = query(companiesDriversRef);
+    const q = query(companiesDriversRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const companiesDriversData: any[] = [];
@@ -116,7 +116,8 @@ export const fetchCollection = async (collectionName: string) => {
     // console.log(`Fetching data from collection: ${collectionName}...`);
     
     const collectionRef = collection(db, collectionName);
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(collectionRef);
+    const q = query(collectionRef, orderBy('createdDate', 'desc'));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const data: any[] = [];
     
@@ -149,7 +150,7 @@ export const fetchCompaniesDriversTransfer = async () => {
     // console.log('Fetching data from companies-drivers-transfer collection...\n');
     
     const companiesDriversTransferRef = collection(db, 'companies-drivers-transfer');
-    const q = query(companiesDriversTransferRef);
+    const q = query(companiesDriversTransferRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allTransferData: any[] = [];
@@ -259,7 +260,7 @@ export const fetchOrders = async () => {
     console.log('========================================');
     
     const ordersRef = collection(db, 'orders');
-    const q = query(ordersRef);
+    const q = query(ordersRef, orderBy('orderDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allOrdersData: any[] = [];
@@ -1835,7 +1836,8 @@ export const fetchProducts = async (): Promise<any[]> => {
     // console.log('Fetching products from Firestore...');
     
     const productsCollection = collection(db, 'products');
-    const productsSnapshot = await getDocs(productsCollection);
+    const q = query(productsCollection, orderBy('createdDate', 'desc'));
+    const productsSnapshot = await getDocs(q);
     
     const products = productsSnapshot.docs.map(doc => ({
       id: doc.id,
@@ -1861,7 +1863,7 @@ export const fetchWalletChargeRequests = async () => {
     // console.log('\n🔄 Fetching companies-wallets-requests...');
     
     const requestsRef = collection(db, 'companies-wallets-requests');
-    const q = query(requestsRef);
+    const q = query(requestsRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allRequestsData: any[] = [];
@@ -2540,7 +2542,7 @@ export const fetchCompaniesCars = async () => {
     // console.log('Fetching companies-cars data from Firestore...');
     
     const companiesCarsRef = collection(db, 'companies-cars');
-    const q = query(companiesCarsRef);
+    const q = query(companiesCarsRef, orderBy('createdDate', 'desc'));
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const companiesCarsData: any[] = [];
@@ -2630,7 +2632,8 @@ export const fetchNotifications = async () => {
 
     // Fetch all notifications
     const notificationsRef = collection(db, 'notifications');
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(notificationsRef);
+    const q = query(notificationsRef, orderBy('createdDate', 'desc'));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
     
     const allNotifications: any[] = [];
     querySnapshot.forEach((doc) => {
@@ -2702,8 +2705,7 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
     console.log('📍 Fetching fuel stations from Firestore (carstations)...');
     
     const carStationsRef = collection(db, 'carstations');
-    const q = query(carStationsRef);
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(carStationsRef);
     
     const fuelStations: FuelStation[] = [];
     
