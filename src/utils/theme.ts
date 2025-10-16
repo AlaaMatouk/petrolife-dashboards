@@ -50,15 +50,19 @@ export const getSpacing = (key: keyof typeof spacing): string => {
   return spacing[key];
 };
 
-// Common class name generators
-export const createTextClass = (color: keyof typeof themeColors, size?: string) => {
-  return `text-[${themeColors[color]}] ${size || ''}`;
+// Common style object generators (use these instead of dynamic class names)
+export const createTextStyle = (color: keyof typeof themeColors) => {
+  return { color: themeColors[color] };
 };
 
-export const createBorderClass = (color: keyof typeof themeColors, width = '1px') => {
-  return `border-[${width}] border-solid border-[${themeColors[color]}]`;
+export const createBorderStyle = (color: keyof typeof themeColors, width = '1px') => {
+  return {
+    borderWidth: width,
+    borderStyle: 'solid',
+    borderColor: themeColors[color],
+  };
 };
 
-export const createBackgroundClass = (color: keyof typeof themeColors) => {
-  return `bg-[${themeColors[color]}]`;
+export const createBackgroundStyle = (color: keyof typeof themeColors) => {
+  return { backgroundColor: themeColors[color] };
 };

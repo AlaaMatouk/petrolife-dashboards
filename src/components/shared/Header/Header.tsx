@@ -30,6 +30,7 @@ export interface HeaderProps {
   searchProps?: SearchBarProps;
   extraContent?: ReactNode;
   className?: string;
+  admin?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -87,7 +88,10 @@ const ProfileDropdown: React.FC = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -99,11 +103,11 @@ const ProfileDropdown: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOutUser();
-      
+
       // Clear global state
-      dispatch({ type: 'SET_USER', payload: null });
-      dispatch({ type: 'SET_AUTHENTICATED', payload: false });
-      
+      dispatch({ type: "SET_USER", payload: null });
+      dispatch({ type: "SET_AUTHENTICATED", payload: false });
+
       console.log("Logout successful ✅");
       navigate("/");
     } catch (error: any) {
@@ -145,7 +149,7 @@ const ProfileDropdown: React.FC = () => {
               {currentUser.email}
             </p>
           </div>
-          
+
           <div className="py-2">
             <button
               onClick={handleLogout}
@@ -209,6 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
   searchProps,
   extraContent,
   className = "",
+  admin = false,
 }) => {
   return (
     <header
@@ -223,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label="Main navigation"
         >
           {/* Profile Dropdown - First on the left */}
-          <ProfileDropdown />
+          {!admin && (<ProfileDropdown />)}
 
           {/* Notification Dropdown */}
           <NotificationDropdown />

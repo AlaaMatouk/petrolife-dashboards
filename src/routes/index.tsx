@@ -22,7 +22,12 @@ import { SubscriptionsScreen } from '../screens/Subscriptions';
 import { DeliveryFuelRequests } from '../screens/DeliveryFuelRequests';
 import { CreateDeliveryRequest } from '../screens/CreateDeliveryRequest';
 import LoginAndRegister from '../screens/Login And Register/LoginAndRegister';
+import { ServiceDistributerDashboard } from '../components/ServiceDistributerDashboard';
+import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
+import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
+import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
+
 
 // 404 Component
 const NotFound = () => (
@@ -38,6 +43,13 @@ const NotFound = () => (
 export const AppRouter = () => {
   return (
     <Routes>
+      {/* Main Dashboard */}
+      <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+
+      {/* Admin Dashboard */}
+      <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
+
+      {/* Authentication */}
       {/* Authentication - No Layout */}
       <Route path={ROUTES.LOGIN} element={<LoginAndRegister />} />
       
@@ -74,6 +86,14 @@ export const AppRouter = () => {
         {/* Settings */}
         <Route path={ROUTES.SETTINGS} element={<NotFound />} />
         
+      {/* Service Distributer  */}
+      {/* Service Distributer Dashboard */}
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
+      {/* Service Distributer Station WOrkers */}
+      <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
+      <Route path={ROUTES.STATIONS} element={<Stations     />} />
+
+      
         {/* Test Route - Companies-Drivers-Transfer */}
         <Route path="/test-transfer" element={<TestTransfer />} />
         

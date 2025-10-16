@@ -21,7 +21,6 @@ export const ROUTES = {
   // Operations
   FUEL_DELIVERY: '/fuel-delivery',
   CREATE_DELIVERY_REQUEST: '/create-delivery-request',
-  STATIONS: '/stations',
   USED_STATIONS: '/used-stations',
   REFUND_REQUESTS: '/moneyrefundrequests',
   CHARGE_REQUESTS: '/walletchargerequests',
@@ -33,6 +32,41 @@ export const ROUTES = {
   
   // Settings
   SETTINGS: '/settings',
+
+  // Service Distributer Dashboard
+  SERVICE_DISTRIBUTER_DASHBOARD: '/servicedistributer',
+  STATION_WORKERS: '/stationworkers',
+  STATIONS: '/stations',
+
+  // Admin Dashboard
+  ADMIN_DASHBOARD: '/admin-dashboard',
+  SUPERVISORS: '/supervisors',
+  COMPANIES: '/companies',
+  PEOPLE: '/people',
+  SERVICE_PROVIDERS: '/serviceproviders',
+  PETROLIFE_DRIVERS: '/petrolife-drivers',
+  PETROLIFE_REPRESENTATIVES: '/petrolife-representatives',
+  PETROLIFE_CARS: '/petrolife-cars',
+  PETROLIFE_PRODUCTS: '/petrolife-products',
+  PETROLIFE_COUPONS: '/petrolife-coupons',
+  WALLET_REQUESTS: '/wallet-requests',
+  FUEL_DELIVERY_REQUESTS: '/fuel-delivery-requests',
+  ADMIN_FINANCIAL_REPORTS: '/admin-financial-reports',
+  ADMIN_INVOICE_REPORTS: '/admin-invoice-reports',
+  ADMIN_SERVICE_PROVIDER_REPORTS: '/admin-service-provider-reports',
+  ADMIN_REPRESENTATIVE_REPORTS: '/admin-representative-reports',
+  ADMIN_WALLET_REPORTS: '/admin-wallet-reports',
+  ADMIN_COUNTRIES: '/admin-countries',
+  ADMIN_CARS: '/admin-cars',
+  ADMIN_CATEGORIES: '/admin-categories',
+  APPLICATION_SERVICES: '/application-services',
+  DEFAULT_ACCOUNTS: '/default-accounts',
+  ADVERTISEMENTS: '/advertisements',
+  SPECIAL_NOTIFICATIONS: '/special-notifications',
+  ADMIN_SUBSCRIPTIONS: '/admin-subscriptions',
+  ADMIN_COMMUNICATION_POLICIES: '/admin-communication-policies',
+  FAQ: '/faq',
+  CUSTOMER_MESSAGES: '/customer-messages',
 } as const;
 
 // Helper function to generate dynamic routes
