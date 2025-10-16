@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { Table, TimeFilter } from "../../components/shared";
-import { navigationMenuData, userInfo } from "../../constants/data";
 import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
 import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics, calculateFuelConsumptionByCities } from "../../services/firestore";
@@ -1524,46 +1522,33 @@ const LatestOrdersSection = () => {
 // Main Dashboard Component
 export const ComprehensiveDashboard = (): JSX.Element => {
   return (
-    <LayoutSimple
-      headerProps={{
-        title: "لوحة التحكم",
-        titleIconSrc: <BarChart3 className="w-5 h-5 text-gray-500" />,
-      }}
-      sidebarProps={{
-        sections: navigationMenuData.sections,
-        topItems: navigationMenuData.topItems,
-        bottomItems: navigationMenuData.bottomItems,
-        userInfo: userInfo,
-      }}
-    >
-      <div className="space-y-8">
-        {/* Banner Section */}
-        <BannerSection />
+    <div className="space-y-8">
+      {/* Banner Section */}
+      <BannerSection />
 
-        {/* All Cards - 4 rows of 3 cards each */}
-        <StatsCardsSection />
+      {/* All Cards - 4 rows of 3 cards each */}
+      <StatsCardsSection />
 
-        {/* Subscription and Locations */}
-        <SubscriptionAndLocationsSection />
+      {/* Subscription and Locations */}
+      <SubscriptionAndLocationsSection />
 
-        {/* Consumption Section */}
-        <ConsumptionSection />
+      {/* Consumption Section */}
+      <ConsumptionSection />
 
-        {/* New Dashboard Sections */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <FuelDeliveryRequestsSection />
-          <MyCarsSection />
-        </section>
+      {/* New Dashboard Sections */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <FuelDeliveryRequestsSection />
+        <MyCarsSection />
+      </section>
 
-        {/* Fuel Consumption by Cities */}
-        <FuelConsumptionByCitiesSection />
+      {/* Fuel Consumption by Cities */}
+      <FuelConsumptionByCitiesSection />
 
-        {/* Most Used Section */}
-        <MostUsedSection />
+      {/* Most Used Section */}
+      <MostUsedSection />
 
-        {/* Latest Orders */}
-        <LatestOrdersSection />
-      </div>
-    </LayoutSimple>
+      {/* Latest Orders */}
+      <LatestOrdersSection />
+    </div>
   );
 };
