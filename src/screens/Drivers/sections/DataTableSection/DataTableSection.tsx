@@ -117,7 +117,9 @@ const getCarSizeText = (size: string): string => {
   const sizeMap: { [key: string]: string } = {
     'small': 'صغيرة',
     'medium': 'متوسطة',
+    'middle': 'متوسطة',
     'large': 'كبيرة',
+    'big': 'كبيرة',
     'vip': 'VIP',
   };
   return sizeMap[size?.toLowerCase()] || getValueOrDash(size);
