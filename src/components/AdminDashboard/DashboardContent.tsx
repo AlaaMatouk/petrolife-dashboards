@@ -1,14 +1,11 @@
 import { useState } from "react";
 // import { useOutletContext } from "react-router-dom"; // Uncomment when using search functionality
 import { Table, TimeFilter } from "../../components/shared";
-import {
-  MapPin,
-  Fuel,
-  Download,
-} from "lucide-react";
+import { MapPin, Fuel, Download } from "lucide-react";
 import MostUsedSection from "./MostUsedSection";
 import StatsCardsSection from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
+import { Map } from "../../screens/PerolifeStationLocations/sections/map/Map";
 
 // Context type for outlet (uncomment when using search functionality)
 // interface OutletContextType {
@@ -16,49 +13,9 @@ import { statsData, defaultSelectedOptions } from "./statsData";
 //   setSearchQuery: (query: string) => void;
 // }
 
-// Subscription and Locations Section
-const SubscriptionAndLocationsSection = () => {
-  return (
-    <section className="grid grid-cols-1 mb-8">
-      {/* Subscription Card */}
-
-      {/* Station Locations Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm lg:col-span-2">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-1.5">
-            <h3 className="relative text-right h-5 mt-[-1.00px] font-subtitle-subtitle-2 font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-              مواقع محطات بترولايف
-            </h3>
-            <MapPin className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
-
-        <div className="h-48 rounded-lg overflow-hidden relative">
-          <img
-            src="/img/vector-map.svg"
-            alt="World map with Petrolife station locations"
-            className="w-full h-full object-cover"
-          />
-
-          {/* Map Markers */}
-          <div className="absolute top-[83.20%] left-[86.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[86.89%] left-[93.55%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[32.17%] left-[12.70%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[41.80%] left-[15.43%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[19.88%] left-[50.88%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[45.90%] left-[66.21%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[40.78%] left-[82.32%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[14.96%] left-[56.74%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-          <div className="absolute top-[36.07%] left-[50.10%] w-2 h-2 bg-primary-500 rounded-full cursor-pointer" />
-        </div>
-      </div>
-    </section>
-  );
-};
-
 // Consumption Section
 const ConsumptionSection = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("12 شهر");
+  const [selectedPeriod, setSelectedPeriod] = useState("اخر 12 شهر");
 
   const months = [
     "Feb",
@@ -73,13 +30,6 @@ const ConsumptionSection = () => {
     "Nov",
     "Dec",
     "Jan",
-  ];
-
-  const timeOptions = [
-    { id: "week", label: "اسبوع", value: "اسبوع" },
-    { id: "month", label: "30 يوم", value: "30 يوم" },
-    { id: "sixMonths", label: "6 شهور", value: "6 شهور" },
-    { id: "year", label: "12 شهر", value: "12 شهر" },
   ];
 
   const legendItems = [
@@ -152,28 +102,13 @@ const ConsumptionSection = () => {
 
           {/* Title and Time Periods - Right */}
           <div className="flex items-center gap-4">
-            {/* Time Period Buttons */}
-            <div className="flex items-center gap-2">
-              {timeOptions.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setSelectedPeriod(option.value)}
-                  className="px-4 py-2 text-sm rounded-lg transition-all"
-                  style={{
-                    backgroundColor: "white",
-                    color:
-                      selectedPeriod === option.value ? "#5A66C1" : "#6B7280",
-                    border:
-                      selectedPeriod === option.value
-                        ? "2px solid #5A66C1"
-                        : "2px solid #9CA3AF",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            {/* Time Filter with Calendar Icon */}
+            <TimeFilter
+              selectedFilter={selectedPeriod}
+              onFilterChange={setSelectedPeriod}
+              filters={["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"]}
+              showCalendar={true}
+            />
 
             {/* Title */}
             <div className="flex items-center gap-2">
@@ -421,52 +356,52 @@ const companiesData = [
 // Latest Orders Table
 const LatestOrdersSection = () => {
   const [selectedButton, setSelectedButton] = useState(0);
-  
+
   const ordersData = [
     {
       code: "21A254",
       client: "احمد محمد",
-      service:"وقود طوارئ",
+      service: "وقود طوارئ",
       litre: "20",
       totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      status:"جاري المراجعة"
+      status: "جاري المراجعة",
     },
     {
       code: "21A254",
       client: "احمد محمد",
-      service:"وقود طوارئ",
+      service: "وقود طوارئ",
       litre: "20",
       totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      status:"جاري المراجعة"
+      status: "جاري المراجعة",
     },
     {
       code: "21A254",
       client: "احمد محمد",
-      service:"وقود طوارئ",
+      service: "وقود طوارئ",
       litre: "20",
       totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      status:"جاري المراجعة"
+      status: "جاري المراجعة",
     },
     {
       code: "21A254",
       client: "احمد محمد",
-      service:"وقود طوارئ",
+      service: "وقود طوارئ",
       litre: "20",
       totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      status:"جاري المراجعة"
+      status: "جاري المراجعة",
     },
     {
       code: "21A254",
       client: "احمد محمد",
-      service:"وقود طوارئ",
+      service: "وقود طوارئ",
       litre: "20",
       totalCost: "213",
       date: "21 فبراير 2025 - 5:05 ص",
-      status:"جاري المراجعة"
+      status: "جاري المراجعة",
     },
   ];
 
@@ -478,7 +413,8 @@ const LatestOrdersSection = () => {
       width: "min-w-[150px]",
       render: (_: any, order: any) => (
         <div className="text-right font-medium text-sm rounded-[8px] px-[10px] py-2 text-[#E76500] bg-[#FFFCEC] [direction:rtl]">
-         <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#E76500]"></span> {order?.status || "N/A"}
+          <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#E76500]"></span>{" "}
+          {order?.status || "N/A"}
         </div>
       ),
     },
@@ -547,24 +483,23 @@ const LatestOrdersSection = () => {
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <button 
+        <button
           className="flex items-center gap-2 px-3 py-2 bg-white text-[#5A66C1] rounded-lg hover:bg-gray-50 transition-colors"
-          style={{ border: '1px solid #5A66C1' }}
+          style={{ border: "1px solid #5A66C1" }}
         >
           <span className="text-sm font-medium [direction:rtl] ">
             عرض المزيد
           </span>
         </button>
-       
+
         <div className="inline-flex items-center gap-[28px] relative flex-[0_0_auto]">
           <div className="flex gap-3">
             <button
               onClick={() => setSelectedButton(0)}
               className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
               style={{
-                backgroundColor: selectedButton === 0
-                  ? "#F9F3FF"
-                  : "rgba(245, 246, 247, 0.4)",
+                backgroundColor:
+                  selectedButton === 0 ? "#F9F3FF" : "rgba(245, 246, 247, 0.4)",
                 color: selectedButton === 0 ? "#223548" : "#A9B4BE",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -578,9 +513,8 @@ const LatestOrdersSection = () => {
               onClick={() => setSelectedButton(1)}
               className="px-[10px] py-1 rounded-[8px] transition-all duration-200 hover:scale-105"
               style={{
-                backgroundColor: selectedButton === 1
-                  ? "#F9F3FF"
-                  : "rgba(245, 246, 247, 0.4)",
+                backgroundColor:
+                  selectedButton === 1 ? "#F9F3FF" : "rgba(245, 246, 247, 0.4)",
                 color: selectedButton === 1 ? "#223548" : "#A9B4BE",
                 fontSize: "14px",
                 fontWeight: "500",
@@ -612,8 +546,8 @@ export const DashboardContent = (): JSX.Element => {
   return (
     <div className="space-y-8">
       {/* All Cards - 4 rows of 3 cards each */}
-      <StatsCardsSection 
-        statsData={statsData} 
+      <StatsCardsSection
+        statsData={statsData}
         defaultSelectedOptions={defaultSelectedOptions}
       />
 
@@ -623,8 +557,8 @@ export const DashboardContent = (): JSX.Element => {
       {/* Fuel Consumption by Cities */}
       <FuelConsumptionByCitiesSection />
 
-      {/* Subscription and Locations */}
-      <SubscriptionAndLocationsSection />
+      {/* Interactive Map - Petrolife Station Locations */}
+      <Map />
 
       {/* New Dashboard Sections */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
