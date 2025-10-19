@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
+// import { useOutletContext } from "react-router-dom"; // Uncomment when using search functionality
 import { Table, TimeFilter } from "../../components/shared";
-import { adminNavigationMenuData, userInfo } from "../../constants/data";
 import {
   MapPin,
   Fuel,
   Download,
 } from "lucide-react";
-import sideIcons1 from "../../../static/img/side-icons-1.svg";
 import MostUsedSection from "./MostUsedSection";
 import StatsCardsSection from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
+
+// Context type for outlet (uncomment when using search functionality)
+// interface OutletContextType {
+//   searchQuery: string;
+//   setSearchQuery: (query: string) => void;
+// }
 
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
@@ -209,57 +213,57 @@ const ConsumptionSection = () => {
   );
 };
 
-// Fuel Delivery Requests Section
-const FuelDeliveryRequestsSection = () => {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-8">
-        <div className="text-sm text-gray-600 [direction:rtl] text-right">
-          المكتملة 20 / الملغية 22
-        </div>
-        <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
-          طلبات توصيل الوقود
-        </h3>
-      </div>
+// Fuel Delivery Requests Section (Currently unused - uncomment when needed)
+// const FuelDeliveryRequestsSection = () => {
+//   return (
+//     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+//       <div className="flex items-center justify-between mb-8">
+//         <div className="text-sm text-gray-600 [direction:rtl] text-right">
+//           المكتملة 20 / الملغية 22
+//         </div>
+//         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
+//           طلبات توصيل الوقود
+//         </h3>
+//       </div>
 
-      {/* Donut Chart */}
-      <div className="flex justify-center items-center">
-        <div className="relative w-48 h-48">
-          {/* Background Circle */}
-          <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#f1f5f9"
-              strokeWidth="6"
-            />
-            {/* Progress Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#5A66C1"
-              strokeWidth="6"
-              strokeDasharray={`${49 * 2.83} 283`}
-              strokeLinecap="round"
-            />
-          </svg>
+//       {/* Donut Chart */}
+//       <div className="flex justify-center items-center">
+//         <div className="relative w-48 h-48">
+//           {/* Background Circle */}
+//           <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+//             <circle
+//               cx="50"
+//               cy="50"
+//               r="45"
+//               fill="none"
+//               stroke="#f1f5f9"
+//               strokeWidth="6"
+//             />
+//             {/* Progress Circle */}
+//             <circle
+//               cx="50"
+//               cy="50"
+//               r="45"
+//               fill="none"
+//               stroke="#5A66C1"
+//               strokeWidth="6"
+//               strokeDasharray={`${49 * 2.83} 283`}
+//               strokeLinecap="round"
+//             />
+//           </svg>
 
-          {/* Center Text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-base text-gray-500 mb-1 [direction:rtl]">
-              الطلبات المكتملة
-            </div>
-            <div className="text-4xl font-bold text-gray-900">49%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+//           {/* Center Text */}
+//           <div className="absolute inset-0 flex flex-col items-center justify-center">
+//             <div className="text-base text-gray-500 mb-1 [direction:rtl]">
+//               الطلبات المكتملة
+//             </div>
+//             <div className="text-4xl font-bold text-gray-900">49%</div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
 // My Cars Section
 const MyCarsSection = () => {
@@ -599,62 +603,47 @@ const LatestOrdersSection = () => {
 };
 
 // Main Dashboard Component
-export const Index = (): JSX.Element => {
+export const DashboardContent = (): JSX.Element => {
+  // Access search query from outlet context if needed
+  // Uncomment below when you need to use the search query for filtering
+  // const { searchQuery } = useOutletContext<OutletContextType>();
+  // console.log("Current search query:", searchQuery);
+
   return (
-    <LayoutSimple
-      headerProps={{
-        admin: true,
-        title: "لوحة التحكم",
-        titleIconSrc: <img src={sideIcons1} alt="logo" className="w-5 h-5" />,
-        showSearch: true,
-        searchProps: {
-          placeholder: "بحث برقم العميل / العملية / السجل التجاري / رقم الهاتف",
-          onSearch: (query) => console.log("Search:", query),
-        },
-      }}
-      sidebarProps={{
-        sections: adminNavigationMenuData.sections,
-        topItems: adminNavigationMenuData.topItems,
-        bottomItems: adminNavigationMenuData.bottomItems,
-        anotherSections: adminNavigationMenuData.anotherSections,
-        userInfo: userInfo,
-      }}
-    >
-      <div className="space-y-8">
-        {/* All Cards - 4 rows of 3 cards each */}
-        <StatsCardsSection 
-          statsData={statsData} 
-          defaultSelectedOptions={defaultSelectedOptions}
-        />
+    <div className="space-y-8">
+      {/* All Cards - 4 rows of 3 cards each */}
+      <StatsCardsSection 
+        statsData={statsData} 
+        defaultSelectedOptions={defaultSelectedOptions}
+      />
 
-        {/* Consumption Section */}
-        <ConsumptionSection />
+      {/* Consumption Section */}
+      <ConsumptionSection />
 
-        {/* Fuel Consumption by Cities */}
-        <FuelConsumptionByCitiesSection />
+      {/* Fuel Consumption by Cities */}
+      <FuelConsumptionByCitiesSection />
 
-        {/* Subscription and Locations */}
-        <SubscriptionAndLocationsSection />
+      {/* Subscription and Locations */}
+      <SubscriptionAndLocationsSection />
 
-        {/* New Dashboard Sections */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <MyCarsSection />
-          <MyCarsSection />
-        </section>
+      {/* New Dashboard Sections */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <MyCarsSection />
+        <MyCarsSection />
+      </section>
 
-        {/* Most Used Section */}
-        <MostUsedSection
-          stationsData={stationsData}
-          driversData={driversData}
-          companiesData={companiesData}
-          stationsTitle="محطات الوقود الأكثر استخداما"
-          driversTitle="الأفراد الأكثر استهلاكا"
-          companiesTitle="الشركات الأكثر استهلاكا"
-        />
+      {/* Most Used Section */}
+      <MostUsedSection
+        stationsData={stationsData}
+        driversData={driversData}
+        companiesData={companiesData}
+        stationsTitle="محطات الوقود الأكثر استخداما"
+        driversTitle="الأفراد الأكثر استهلاكا"
+        companiesTitle="الشركات الأكثر استهلاكا"
+      />
 
-        {/* Latest Orders */}
-        <LatestOrdersSection />
-      </div>
-    </LayoutSimple>
+      {/* Latest Orders */}
+      <LatestOrdersSection />
+    </div>
   );
 };

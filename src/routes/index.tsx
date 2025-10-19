@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 import { LayoutWrapper } from '../components/shared/Layout';
+import { AdminLayoutWrapper } from '../components/AdminDashboard';
 
 // Import all screen components
 import { Drivers } from '../screens/Drivers';
@@ -27,6 +28,7 @@ import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
 import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
+import { Supervisors } from '../components/AdminDashboard/pages/Supervisors';
 import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
 import { FuelStationRequests } from '../screens/FuelStationRequests';
 import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
@@ -49,12 +51,14 @@ const NotFound = () => (
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* Admin Dashboard */}
-      <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
-
-      {/* Authentication */}
       {/* Authentication - No Layout */}
       <Route path={ROUTES.LOGIN} element={<LoginAndRegister />} />
+
+      {/* Admin Dashboard with AdminLayoutWrapper */}
+      <Route element={<AdminLayoutWrapper />}>
+        <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
+        <Route path={ROUTES.SUPERVISORS} element={<Supervisors />} />
+      </Route>
       
       {/* All Protected Routes with Layout Wrapper */}
       <Route element={<LayoutWrapper />}>
