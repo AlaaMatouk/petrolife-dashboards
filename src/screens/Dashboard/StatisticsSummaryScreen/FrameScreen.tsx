@@ -4,7 +4,7 @@ import { DashboardSection } from "./sections/DashboardSection/DashboardSection";
 import { SummarySection } from "./sections/SummarySection/SummarySection";
 import { TransactionsSection } from "./sections/TransactionsSection/TransactionsSection";
 
-export const FrameScreen = (): JSX.Element => {
+export const StatisticsSummaryScreen = (): JSX.Element => {
   return (
     <div
       className="flex flex-col items-start gap-6 relative"

@@ -22,7 +22,7 @@ export const TimeFilter: React.FC<TimeFilterProps> = ({
         className="w-[35px] bg-color-mode-surface-bg-icon-gray border-[0.2px] border-solid border-color-mode-surface-bg-screen items-start flex items-center justify-center h-[30px] relative rounded-[5px] hover:bg-opacity-60 transition-all duration-200"
         aria-label="عرض الخيارات"
       >
-        <Calendar className="w-4 h-4 text-gray-600" />
+        <Calendar className="w-4 h-4" />
       </button>
 
       <div className="flex justify-end w-full gap-2">

@@ -2,7 +2,7 @@ import React from "react";
 import { FrameSubsection } from "./sections/FrameSubsection";
 import { FrameWrapperSubsection } from "./sections/FrameWrapperSubsection/FrameWrapperSubsection";
 
-export const Box = (): JSX.Element => {
+export const SimpleDashboardStats = (): JSX.Element => {
   return (
     <div className="relative w-[1059px] h-[342px]" data-model-id="1:7066-frame">
       <div className="fixed top-[2707px] left-0 w-[1059px] h-[342px]">

@@ -1,4 +1,12 @@
-import { UserRound, ArrowLeft, Upload, User, MapPin, Car, Calendar, ChevronDown } from "lucide-react";
+import {
+  UserRound,
+  ArrowLeft,
+  Upload,
+  User,
+  MapPin,
+  Car,
+  ChevronDown,
+} from "lucide-react";
 import React from "react";
 import { RadioGroup } from "../../../../components/shared/Form";
 import { useNavigate } from "react-router-dom";
@@ -9,11 +17,11 @@ interface DriverInfoProps {
 
 export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
   const navigate = useNavigate();
-  
+
   // Helper function to get value or dash
   const getValueOrDash = (value: any): string => {
-    if (value === null || value === undefined || value === '') {
-      return '-';
+    if (value === null || value === undefined || value === "") {
+      return "-";
     }
     return String(value);
   };
@@ -21,12 +29,12 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
   // Helper function to translate car size
   const getCarSizeArabic = (size: string): string => {
     const sizeMap: { [key: string]: string } = {
-      'small': 'صغيرة',
-      'medium': 'متوسطة',
-      'large': 'كبيرة',
-      'vip': 'VIP',
+      small: "صغيرة",
+      medium: "متوسطة",
+      large: "كبيرة",
+      vip: "VIP",
     };
-    return sizeMap[size?.toLowerCase()] || size || '-';
+    return sizeMap[size?.toLowerCase()] || size || "-";
   };
 
   // Extract driver information from Firestore data
@@ -35,18 +43,35 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
     email: getValueOrDash(driverData.email),
     phone: getValueOrDash(driverData.phone),
     address: getValueOrDash(driverData.location),
-    city: getValueOrDash(driverData.city?.name?.ar || driverData.city?.name?.en),
-    driverImage: driverData.image ? driverData.image.split('/').pop() || driverData.image : '-',
-    licenseImage: driverData.licenceAttachment ? driverData.licenceAttachment.split('/').pop() || driverData.licenceAttachment : '-',
+    city: getValueOrDash(
+      driverData.city?.name?.ar || driverData.city?.name?.en
+    ),
+    driverImage: driverData.image
+      ? driverData.image.split("/").pop() || driverData.image
+      : "-",
+    licenseImage: driverData.licenceAttachment
+      ? driverData.licenceAttachment.split("/").pop() ||
+        driverData.licenceAttachment
+      : "-",
     carStatus: getValueOrDash(driverData.vehicleStatus),
-    monetaryValue: getValueOrDash(driverData.plan?.dailyTrans || driverData.balance),
-    plateNumber: getValueOrDash(driverData.plateNumber?.ar?.split(' ')[0] || driverData.plateNumber?.en?.split(' ')[0]),
-    plateLetters: getValueOrDash(driverData.plateNumber?.ar?.split(' ').slice(1).join(' ') || driverData.plateNumber?.en?.split(' ').slice(1).join(' ')),
+    monetaryValue: getValueOrDash(
+      driverData.plan?.dailyTrans || driverData.balance
+    ),
+    plateNumber: getValueOrDash(
+      driverData.plateNumber?.ar?.split(" ")[0] ||
+        driverData.plateNumber?.en?.split(" ")[0]
+    ),
+    plateLetters: getValueOrDash(
+      driverData.plateNumber?.ar?.split(" ").slice(1).join(" ") ||
+        driverData.plateNumber?.en?.split(" ").slice(1).join(" ")
+    ),
     carCategory: getCarSizeArabic(driverData.plan?.carSize || driverData.size),
   };
 
   // Days of the week data - read-only display
-  const selectedDays = driverData.plan?.exceptionDays?.map((day: any) => day.ar) || ["السبت"];
+  const selectedDays = driverData.plan?.exceptionDays?.map(
+    (day: any) => day.ar
+  ) || ["السبت"];
 
   // Options for radio groups
   const fuelTypes = [
@@ -84,7 +109,7 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
 
   const weekDays = [
     "الجمعة",
-    "الخميس", 
+    "الخميس",
     "الأربعاء",
     "الثلاثاء",
     "الإثنين",
@@ -110,9 +135,9 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
           </button>
 
           <div className="flex w-[134px] items-center justify-end gap-1.5 relative">
-                    <h1 className="w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-bold text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap relative [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
-                      معلومات السائق
-                    </h1>
+            <h1 className="w-[145px] h-5 mt-[-1.00px] ml-[-35.00px] font-bold text-[var(--form-section-title-color)] text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] whitespace-nowrap relative [direction:rtl] [font-style:var(--subtitle-subtitle-2-font-style)]">
+              معلومات السائق
+            </h1>
             <UserRound className="w-5 h-5 text-gray-500" />
           </div>
         </nav>
@@ -124,21 +149,27 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
             {/* Driver Personal and Contact Information (Top Row) - Order: Phone, Email, Name (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">رقم الهاتف</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  رقم الهاتف
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.phone}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">البريد الالكتروني</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  البريد الالكتروني
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.email}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">اسم السائق</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  اسم السائق
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.name}
                 </div>
@@ -148,14 +179,18 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
             {/* Driver Image and Address Information (Second Row) - Order: Driver Image, Address, City (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">المدينة</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  المدينة
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.city}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">العنوان</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  العنوان
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.address}
                 </div>
@@ -172,7 +207,9 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 flex-1">
-                  <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">صورة السائق</label>
+                  <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                    صورة السائق
+                  </label>
                   <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                     {driverInfo.driverImage}
                   </div>
@@ -189,19 +226,19 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
                 {weekDays.map((day) => (
                   <div
                     key={day}
-                     className={`flex items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 self-stretch grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
-                       selectedDays.includes(day)
-                         ? "border-[0.7px] border-color-mode-text-icons-t-blue"
-                         : "border-gray-300 bg-gray-50"
-                     }`}
+                    className={`flex items-center justify-center gap-[var(--corner-radius-small)] pt-[var(--corner-radius-small)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-small)] pl-[var(--corner-radius-large)] relative flex-1 self-stretch grow rounded-[var(--corner-radius-small)] border-[0.5px] border-solid transition-colors ${
+                      selectedDays.includes(day)
+                        ? "border-[0.7px] border-color-mode-text-icons-t-blue"
+                        : "border-gray-300 bg-gray-50"
+                    }`}
                   >
-                     <span
-                       className={`relative w-fit text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] ${
-                         selectedDays.includes(day)
-                           ? "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-blue [font-style:var(--body-body-2-font-style)]"
-                           : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-gray-400 [font-style:var(--body-body-2-font-style)]"
-                       }`}
-                     >
+                    <span
+                      className={`relative w-fit text-[length:var(--body-body-2-font-size)] text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap [direction:rtl] ${
+                        selectedDays.includes(day)
+                          ? "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-blue [font-style:var(--body-body-2-font-style)]"
+                          : "font-body-body-2 font-[number:var(--body-body-2-font-weight)] text-gray-400 [font-style:var(--body-body-2-font-style)]"
+                      }`}
+                    >
                       {day}
                     </span>
 
@@ -220,7 +257,9 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
             {/* Third Row - Order: License Photo, Financial Value, Car Status (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">حالة السيارة</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  حالة السيارة
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.carStatus}
                 </div>
@@ -228,7 +267,9 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
 
               <div className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center justify-between w-full">
-                  <span className="text-blue-500 text-sm font-medium">غير محددة</span>
+                  <span className="text-blue-500 text-sm font-medium">
+                    غير محددة
+                  </span>
                   <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
                     القيمة المالية المحددة للسائق (ر.س)
                   </label>
@@ -239,7 +280,9 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">صورة ترخيص السائق "اختياري"</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  صورة ترخيص السائق "اختياري"
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.licenseImage}
                 </div>
@@ -249,21 +292,27 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
             {/* Fourth Row - Order: Plate Letters, Plate Number, Car Category (right to left) */}
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">حروف لوحة السيارة</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  حروف لوحة السيارة
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.plateLetters}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">رقم لوحة السيارة</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  رقم لوحة السيارة
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.plateNumber}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">تصنيف السيارة</label>
+                <label className="text-sm font-normal text-[var(--form-readonly-label-color)] [direction:rtl] text-right">
+                  تصنيف السيارة
+                </label>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-[var(--form-readonly-input-text-color)] [direction:rtl] text-right font-normal">
                   {driverInfo.carCategory}
                 </div>
@@ -274,7 +323,7 @@ export const DriverInfo = ({ driverData }: DriverInfoProps): JSX.Element => {
             <div className="flex items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               <button
                 className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-medium)] pb-[var(--corner-radius-medium)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: '#FFFCEC' }}
+                style={{ backgroundColor: "#FFFCEC" }}
                 aria-label="تعديل البيانات"
               >
                 <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
