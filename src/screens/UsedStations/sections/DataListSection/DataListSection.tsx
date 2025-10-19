@@ -1,4 +1,4 @@
-import { Fuel, Calendar } from "lucide-react";
+import { Fuel } from "lucide-react";
 import React, { useState } from "react";
 
 export const DataListSection = (): JSX.Element => {
@@ -21,7 +21,11 @@ export const DataListSection = (): JSX.Element => {
       <div className="flex items-center justify-between mb-6">
         {/* Calendar Icon + Time Period Buttons - Left */}
         <div className="flex items-center gap-4">
-          <Calendar className="w-4 h-4 text-gray-500" />
+          <img
+            src="/src/assets/imgs/icons/calendar.svg"
+            alt=""
+            className="w-4 h-4"
+          />
           <div className="flex items-center gap-2">
             {timePeriodsData.map((period) => (
               <button
@@ -29,10 +33,14 @@ export const DataListSection = (): JSX.Element => {
                 onClick={() => handlePeriodSelect(period.value)}
                 className="px-4 py-2 text-sm rounded-lg transition-all"
                 style={{
-                  backgroundColor: 'white',
-                  color: selectedPeriod === period.value ? '#5A66C1' : '#6B7280',
-                  border: selectedPeriod === period.value ? '2px solid #5A66C1' : '2px solid #9CA3AF',
-                  borderRadius: '8px'
+                  backgroundColor: "white",
+                  color:
+                    selectedPeriod === period.value ? "#5A66C1" : "#6B7280",
+                  border:
+                    selectedPeriod === period.value
+                      ? "2px solid #5A66C1"
+                      : "2px solid #9CA3AF",
+                  borderRadius: "8px",
                 }}
               >
                 {period.label}
@@ -43,7 +51,9 @@ export const DataListSection = (): JSX.Element => {
 
         {/* Title - Right */}
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">المحطات المستخدمة</h2>
+          <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">
+            المحطات المستخدمة
+          </h2>
           <Fuel className="w-5 h-5 text-gray-500" />
         </div>
       </div>

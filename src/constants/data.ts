@@ -87,6 +87,12 @@ export const navigationMenuData = {
       href: ROUTES.PEROLIFE_STATION_LOCATIONS,
     },
     {
+      id: "invoices",
+      label: "الفواتير",
+      icon: "/img/side-icons-5.svg",
+      href: ROUTES.INVOICES,
+    },
+    {
       id: "refund-requests",
       label: "طلبات الاسترداد",
       icon: "/img/side-icons-10.svg",
@@ -110,8 +116,8 @@ export const serviceDistributerNavigationMenuData = {
       icon: "/src/assets/imgs/icons/dashboard.svg",
       isActive: false,
       hasBackground: false,
-      href: ROUTES.SERVICE_DISTRIBUTER_DASHBOARD
-    }
+      href: ROUTES.SERVICE_DISTRIBUTER_DASHBOARD,
+    },
   ],
   sections: [
     {
@@ -122,15 +128,15 @@ export const serviceDistributerNavigationMenuData = {
           label: "عمال المحطـــــات",
           icon: "/src/assets/imgs/icons/user-group.svg",
           hasBackground: false,
-          href: ROUTES.STATION_WORKERS
+          href: ROUTES.STATION_WORKERS,
         },
         {
           id: "stations",
           label: "المحطــــــات",
           icon: "/src/assets/imgs/icons/petrol-station.svg",
-          href: ROUTES.STATIONS
-        }
-      ]
+          href: ROUTES.STATIONS,
+        },
+      ],
     },
   ],
   bottomItems: [
@@ -138,25 +144,25 @@ export const serviceDistributerNavigationMenuData = {
       id: "fuel-station-requests",
       label: "طلبات محطـــات الوقود",
       icon: "/src/assets/imgs/icons/document-clock.svg",
-      href: ROUTES.FUEL_STATION_REQUESTS
+      href: ROUTES.FUEL_STATION_REQUESTS,
     },
     {
       id: "financial-reports",
-      label:"التقارير المالية",
+      label: "التقارير المالية",
       icon: "/src/assets/imgs/icons/analytics.svg",
-      href: ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS
+      href: ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS,
     },
     {
       id: "station-locations",
       label: "مواقع المحطات",
       icon: "/src/assets/imgs/icons/location-pin.svg",
-      href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS
+      href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS,
     },
     {
       id: "invoices",
       label: "الفواتيــــــــــــر",
       icon: "/src/assets/imgs/icons/invoice.svg",
-      href: ROUTES.SERVICE_DISTRIBUTER_INVOICES
+      href: ROUTES.SERVICE_DISTRIBUTER_INVOICES,
     },
     {
       id: "charge-requests",
@@ -251,7 +257,7 @@ export const adminNavigationMenuData = {
       items: [
         {
           id: "wallet-requests",
-          label:"طلبات المحافظ",
+          label: "طلبات المحافظ",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
           href: ROUTES.WALLET_REQUESTS,
@@ -269,7 +275,7 @@ export const adminNavigationMenuData = {
       items: [
         {
           id: "admin-financial-reports",
-          label:"تقارير المبيعات",
+          label: "تقارير المبيعات",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
           href: ROUTES.ADMIN_FINANCIAL_REPORTS,
@@ -305,21 +311,21 @@ export const adminNavigationMenuData = {
       items: [
         {
           id: "admin-countries",
-          label:"البلدان",
+          label: "البلدان",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
           href: ROUTES.ADMIN_COUNTRIES,
         },
         {
           id: "admin-cars",
-          label:"المركبات",
+          label: "المركبات",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
           href: ROUTES.ADMIN_CARS,
         },
         {
           id: "admin-categories",
-          label:"التصنيفات",
+          label: "التصنيفات",
           icon: "/img/side-icons-3.svg",
           hasBackground: false,
           href: ROUTES.ADMIN_CATEGORIES,
@@ -1291,15 +1297,15 @@ export const fuelData = [
 
 // Service Distributer Financial Reports Filter Options
 export const serviceDistributerFinancialReportsFilterOptions = [
-  { 
-    label: "نوع التقرير", 
-    value: "تحليلي", 
+  {
+    label: "نوع التقرير",
+    value: "تحليلي",
     icon: "/img/side-icons-20.svg",
     options: [
       { value: "تحليلي", label: "تحليلي" },
       { value: "ملخص", label: "ملخص" },
-      { value: "تفصيلي", label: "تفصيلي" }
-    ]
+      { value: "تفصيلي", label: "تفصيلي" },
+    ],
   },
   {
     label: "اسم المنتج",
@@ -1311,8 +1317,8 @@ export const serviceDistributerFinancialReportsFilterOptions = [
       { value: "بنزين 95", label: "بنزين 95" },
       { value: "ديزل", label: "ديزل" },
       { value: "زيت محرك", label: "زيت محرك" },
-      { value: "سائل تبريد", label: "سائل تبريد" }
-    ]
+      { value: "سائل تبريد", label: "سائل تبريد" },
+    ],
   },
   {
     label: "قائمة المحطات",
@@ -1323,8 +1329,8 @@ export const serviceDistributerFinancialReportsFilterOptions = [
       { value: "محطة الرياض المركزية", label: "محطة الرياض المركزية" },
       { value: "محطة جدة الشمالية", label: "محطة جدة الشمالية" },
       { value: "محطة الدمام", label: "محطة الدمام" },
-      { value: "محطة مكة", label: "محطة مكة" }
-    ]
+      { value: "محطة مكة", label: "محطة مكة" },
+    ],
   },
   {
     label: "المدينة",
@@ -1336,8 +1342,8 @@ export const serviceDistributerFinancialReportsFilterOptions = [
       { value: "جدة", label: "جدة" },
       { value: "الدمام", label: "الدمام" },
       { value: "مكة", label: "مكة" },
-      { value: "المدينة المنورة", label: "المدينة المنورة" }
-    ]
+      { value: "المدينة المنورة", label: "المدينة المنورة" },
+    ],
   },
   {
     label: "رقم العملية",
@@ -1349,9 +1355,9 @@ export const serviceDistributerFinancialReportsFilterOptions = [
       { value: "21A255", label: "21A255" },
       { value: "21A256", label: "21A256" },
       { value: "21A257", label: "21A257" },
-      { value: "21A258", label: "21A258" }
-    ]
-  }
+      { value: "21A258", label: "21A258" },
+    ],
+  },
 ];
 
 // Service Distributer Financial Reports Data
@@ -1364,7 +1370,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "20",
     value: "94",
     unit: "لتر",
-    operationNumber: "21A254"
+    operationNumber: "21A254",
   },
   {
     id: 2,
@@ -1374,7 +1380,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "15",
     value: "78",
     unit: "لتر",
-    operationNumber: "21A255"
+    operationNumber: "21A255",
   },
   {
     id: 3,
@@ -1384,7 +1390,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "25",
     value: "85",
     unit: "لتر",
-    operationNumber: "21A256"
+    operationNumber: "21A256",
   },
   {
     id: 4,
@@ -1394,7 +1400,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "5",
     value: "120",
     unit: "لتر",
-    operationNumber: "21A257"
+    operationNumber: "21A257",
   },
   {
     id: 5,
@@ -1404,7 +1410,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "30",
     value: "141",
     unit: "لتر",
-    operationNumber: "21A258"
+    operationNumber: "21A258",
   },
   {
     id: 6,
@@ -1414,7 +1420,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "18",
     value: "61",
     unit: "لتر",
-    operationNumber: "21A259"
+    operationNumber: "21A259",
   },
   {
     id: 7,
@@ -1424,7 +1430,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "8",
     value: "96",
     unit: "لتر",
-    operationNumber: "21A260"
+    operationNumber: "21A260",
   },
   {
     id: 8,
@@ -1434,7 +1440,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "22",
     value: "115",
     unit: "لتر",
-    operationNumber: "21A261"
+    operationNumber: "21A261",
   },
   {
     id: 9,
@@ -1444,7 +1450,7 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "12",
     value: "56",
     unit: "لتر",
-    operationNumber: "21A262"
+    operationNumber: "21A262",
   },
   {
     id: 10,
@@ -1454,10 +1460,9 @@ export const serviceDistributerFinancialReportsData = [
     quantity: "3",
     value: "75",
     unit: "لتر",
-    operationNumber: "21A263"
-  }
+    operationNumber: "21A263",
+  },
 ];
-
 
 // Invoices Data
 export const invoicesData = [
@@ -1467,7 +1472,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مبيعات",
     creationDate: "2024-10-01",
     vat: "150.00 ر.س",
-    totalWithVat: "1,150.00 ر.س"
+    totalWithVat: "1,150.00 ر.س",
   },
   {
     id: 2,
@@ -1475,7 +1480,7 @@ export const invoicesData = [
     invoiceType: "فاتورة خدمات",
     creationDate: "2024-10-05",
     vat: "75.00 ر.س",
-    totalWithVat: "575.00 ر.س"
+    totalWithVat: "575.00 ر.س",
   },
   {
     id: 3,
@@ -1483,7 +1488,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مبيعات",
     creationDate: "2024-10-10",
     vat: "300.00 ر.س",
-    totalWithVat: "2,300.00 ر.س"
+    totalWithVat: "2,300.00 ر.س",
   },
   {
     id: 4,
@@ -1491,7 +1496,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مشتريات",
     creationDate: "2024-10-12",
     vat: "225.00 ر.س",
-    totalWithVat: "1,725.00 ر.س"
+    totalWithVat: "1,725.00 ر.س",
   },
   {
     id: 5,
@@ -1499,7 +1504,7 @@ export const invoicesData = [
     invoiceType: "فاتورة خدمات",
     creationDate: "2024-10-14",
     vat: "180.00 ر.س",
-    totalWithVat: "1,380.00 ر.س"
+    totalWithVat: "1,380.00 ر.س",
   },
   {
     id: 6,
@@ -1507,7 +1512,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مبيعات",
     creationDate: "2024-10-15",
     vat: "90.00 ر.س",
-    totalWithVat: "690.00 ر.س"
+    totalWithVat: "690.00 ر.س",
   },
   {
     id: 7,
@@ -1515,7 +1520,7 @@ export const invoicesData = [
     invoiceType: "فاتورة خدمات",
     creationDate: "2024-10-16",
     vat: "135.00 ر.س",
-    totalWithVat: "1,035.00 ر.س"
+    totalWithVat: "1,035.00 ر.س",
   },
   {
     id: 8,
@@ -1523,7 +1528,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مشتريات",
     creationDate: "2024-10-17",
     vat: "210.00 ر.س",
-    totalWithVat: "1,610.00 ر.س"
+    totalWithVat: "1,610.00 ر.س",
   },
   {
     id: 9,
@@ -1531,7 +1536,7 @@ export const invoicesData = [
     invoiceType: "فاتورة مبيعات",
     creationDate: "2024-10-18",
     vat: "165.00 ر.س",
-    totalWithVat: "1,265.00 ر.س"
+    totalWithVat: "1,265.00 ر.س",
   },
   {
     id: 10,
@@ -1539,10 +1544,9 @@ export const invoicesData = [
     invoiceType: "فاتورة خدمات",
     creationDate: "2024-10-19",
     vat: "195.00 ر.س",
-    totalWithVat: "1,495.00 ر.س"
-  }
+    totalWithVat: "1,495.00 ر.س",
+  },
 ];
-
 
 // Fuel Station Requests Data
 export const fuelStationRequestsData = [
@@ -1554,7 +1558,7 @@ export const fuelStationRequestsData = [
     workerName: "هشام موسى",
     fuelType: "ديزل",
     totalLiters: "2",
-    creationDate: "21 فبراير 2025 - 5:05 ص"
+    creationDate: "21 فبراير 2025 - 5:05 ص",
   },
   {
     id: 2,
@@ -1564,7 +1568,7 @@ export const fuelStationRequestsData = [
     workerName: "هشام موسى",
     fuelType: "بنزين 91، بنزين 95",
     totalLiters: "4",
-    creationDate: "21 فبراير 2025 - 5:05 ص"
+    creationDate: "21 فبراير 2025 - 5:05 ص",
   },
   {
     id: 3,
@@ -1574,7 +1578,7 @@ export const fuelStationRequestsData = [
     workerName: "هشام موسى",
     fuelType: "بنزين 95",
     totalLiters: "2",
-    creationDate: "21 فبراير 2025 - 5:05 ص"
+    creationDate: "21 فبراير 2025 - 5:05 ص",
   },
   {
     id: 4,
@@ -1584,7 +1588,7 @@ export const fuelStationRequestsData = [
     workerName: "محمد أحمد",
     fuelType: "ديزل",
     totalLiters: "4",
-    creationDate: "20 فبراير 2025 - 4:30 ص"
+    creationDate: "20 فبراير 2025 - 4:30 ص",
   },
   {
     id: 5,
@@ -1594,7 +1598,7 @@ export const fuelStationRequestsData = [
     workerName: "حسن علي",
     fuelType: "بنزين 91",
     totalLiters: "2",
-    creationDate: "20 فبراير 2025 - 3:15 ص"
+    creationDate: "20 فبراير 2025 - 3:15 ص",
   },
   {
     id: 6,
@@ -1604,7 +1608,7 @@ export const fuelStationRequestsData = [
     workerName: "سعد محمود",
     fuelType: "بنزين 95",
     totalLiters: "4",
-    creationDate: "19 فبراير 2025 - 6:45 ص"
+    creationDate: "19 فبراير 2025 - 6:45 ص",
   },
   {
     id: 7,
@@ -1614,7 +1618,7 @@ export const fuelStationRequestsData = [
     workerName: "إبراهيم يوسف",
     fuelType: "ديزل",
     totalLiters: "2",
-    creationDate: "19 فبراير 2025 - 2:20 ص"
+    creationDate: "19 فبراير 2025 - 2:20 ص",
   },
   {
     id: 8,
@@ -1624,7 +1628,7 @@ export const fuelStationRequestsData = [
     workerName: "عبدالله خالد",
     fuelType: "بنزين 91، بنزين 95",
     totalLiters: "4",
-    creationDate: "18 فبراير 2025 - 7:10 ص"
+    creationDate: "18 فبراير 2025 - 7:10 ص",
   },
   {
     id: 9,
@@ -1634,7 +1638,7 @@ export const fuelStationRequestsData = [
     workerName: "مطيري فهد",
     fuelType: "ديزل",
     totalLiters: "2",
-    creationDate: "18 فبراير 2025 - 1:55 ص"
+    creationDate: "18 فبراير 2025 - 1:55 ص",
   },
   {
     id: 10,
@@ -1644,11 +1648,9 @@ export const fuelStationRequestsData = [
     workerName: "سعيد عبدالعزيز",
     fuelType: "بنزين 95",
     totalLiters: "4",
-    creationDate: "17 فبراير 2025 - 8:30 ص"
-  }
+    creationDate: "17 فبراير 2025 - 8:30 ص",
+  },
 ];
-
-
 
 // Time Filters
 export const timeFilters = [

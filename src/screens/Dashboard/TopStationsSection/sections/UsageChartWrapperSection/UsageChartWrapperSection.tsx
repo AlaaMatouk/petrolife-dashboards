@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { TimeFilter } from "../../../../../components/shared";
 
 interface FuelData {
   diesel?: number;
@@ -79,13 +80,13 @@ const driversData: DriverData[] = [
 ];
 
 export const UsageChartWrapperSection = (): JSX.Element => {
-  const [selectedFilter, setSelectedFilter] = useState("year");
+  const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
 
   const renderFuelColumn = (
     value: number | undefined,
     color: string,
     unit: string,
-    label: string,
+    label: string
   ) => {
     if (!value) return null;
 
@@ -111,7 +112,11 @@ export const UsageChartWrapperSection = (): JSX.Element => {
   const renderDriverRow = (driver: DriverData, isLast = false) => (
     <div
       key={driver.id}
-      className={`flex h-[72px] items-center justify-between relative self-stretch w-full ${!isLast ? "border-b-[0.3px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder" : "mb-[-7.00px] border-color-mode-text-icons-t-placeholder"}`}
+      className={`flex h-[72px] items-center justify-between relative self-stretch w-full ${
+        !isLast
+          ? "border-b-[0.3px] [border-bottom-style:solid] border-color-mode-text-icons-t-placeholder"
+          : "mb-[-7.00px] border-color-mode-text-icons-t-placeholder"
+      }`}
     >
       <div className="inline-flex items-center gap-[var(--corner-radius-extra-large-2)] relative flex-[0_0_auto]">
         <div className="flex flex-col w-[45px] items-end relative">
@@ -127,19 +132,19 @@ export const UsageChartWrapperSection = (): JSX.Element => {
           driver.fuelData.diesel,
           "text-color-mode-text-icons-t-orange",
           " .L",
-          "ديزل",
+          "ديزل"
         )}
         {renderFuelColumn(
           driver.fuelData.gasoline95,
           "text-color-mode-text-icons-t-red",
           " .L",
-          "بنزين 95",
+          "بنزين 95"
         )}
         {renderFuelColumn(
           driver.fuelData.gasoline91,
           "text-color-mode-text-icons-t-green",
           " .L",
-          "بنزين 91",
+          "بنزين 91"
         )}
       </div>
 
@@ -184,72 +189,16 @@ export const UsageChartWrapperSection = (): JSX.Element => {
             </h2>
           </div>
 
-          <nav
-            className="flex h-[45.18px] items-center gap-[11px] relative self-stretch w-full mb-[-4.36px]"
-            role="tablist"
-            aria-label="Time filter options"
-          >
-            <button
-              className="flex flex-col w-[35px] h-[30px] items-center justify-center gap-2.5 p-4 relative bg-color-mode-surface-bg-icon-gray rounded-[5px] border-[0.2px] border-solid border-color-mode-surface-bg-screen"
-              aria-label="Filter options"
-            >
-              <div className="flex w-[29.17px] items-center justify-center gap-[12.5px] relative flex-[0_0_auto] mt-[-11.00px] mb-[-11.00px] ml-[-13.08px] mr-[-13.08px]">
-                <div className="relative w-5 h-5 aspect-[1]">
-                  <img
-                    className="absolute w-[33.33%] h-[16.67%] top-[5.83%] left-[30.83%]"
-                    alt=""
-                    src="/img/vector-4.svg"
-                  />
-                  <img
-                    className="absolute w-[75.00%] h-[75.00%] top-[14.17%] left-[10.00%]"
-                    alt=""
-                    src="/img/vector-5.svg"
-                  />
-                  <img
-                    className="absolute w-[75.00%] h-0 top-[39.17%] left-[10.00%] object-cover"
-                    alt=""
-                    src="/img/vector-6.svg"
-                  />
-                  <img
-                    className="absolute w-[33.33%] h-[16.67%] top-[54.17%] left-[29.17%]"
-                    alt=""
-                    src="/img/vector-7.svg"
-                  />
-                </div>
-              </div>
-            </button>
-
-            {timeFilters.map((filter) => (
-              <button
-                key={filter.id}
-                role="tab"
-                aria-selected={selectedFilter === filter.id}
-                onClick={() => setSelectedFilter(filter.id)}
-                className={`flex flex-col h-[30px] items-center justify-center gap-2.5 p-4 relative flex-1 grow rounded-[5px] ${
-                  selectedFilter === filter.id
-                    ? "border border-solid border-color-mode-text-icons-t-blue bg-basewhite"
-                    : "border-[0.2px] border-solid border-color-mode-text-icons-t-placeholder bg-color-mode-surface-bg-screen"
-                }`}
-              >
-                <div className="ml-[-29.75px] mr-[-29.75px] flex w-[126px] items-center justify-center gap-[15px] relative flex-[0_0_auto] mt-[-12.00px] mb-[-12.00px]">
-                  <span
-                    className={`flex items-center justify-center w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-[length:var(--body-body-2-font-size)] tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] whitespace-nowrap relative font-body-body-2 [direction:rtl] [font-style:var(--body-body-2-font-style)] ${
-                      selectedFilter === filter.id
-                        ? "text-color-mode-text-icons-t-primary-gray"
-                        : "text-color-mode-text-icons-t-sec"
-                    }`}
-                  >
-                    {filter.label}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </nav>
+          <TimeFilter
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+            filters={["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"]}
+          />
         </header>
 
         <main className="flex flex-col h-[353px] items-start relative self-stretch w-full">
           {driversData.map((driver, index) =>
-            renderDriverRow(driver, index === driversData.length - 1),
+            renderDriverRow(driver, index === driversData.length - 1)
           )}
         </main>
       </div>

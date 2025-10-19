@@ -1,6 +1,6 @@
 import React from "react";
 
-export const Frame = (): JSX.Element => {
+export const VehicleAndOrdersSection = (): JSX.Element => {
   // Data for vehicle statistics
   const vehicleStats = [
     {

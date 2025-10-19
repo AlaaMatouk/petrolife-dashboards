@@ -1,8 +1,31 @@
 import { useState, useEffect } from "react";
 import { Table, TimeFilter } from "../../components/shared";
-import { BarChart3, MapPin, Fuel, Wallet, Car, Users, Droplets, Battery, FileText, Download } from "lucide-react";
+import {
+  BarChart3,
+  MapPin,
+  Fuel,
+  Wallet,
+  Car,
+  Users,
+  Droplets,
+  Battery,
+  FileText,
+  Download,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useGlobalState";
-import { fetchOrders, calculateFuelStatistics, calculateCarWashStatistics, calculateOilChangeStatistics, calculateBatteryChangeStatistics, calculateTireChangeStatistics, calculateBatteryReplacementStatistics, calculateDriverStatistics, calculateCarStatistics, calculateOrderStatistics, calculateFuelConsumptionByCities } from "../../services/firestore";
+import {
+  fetchOrders,
+  calculateFuelStatistics,
+  calculateCarWashStatistics,
+  calculateOilChangeStatistics,
+  calculateBatteryChangeStatistics,
+  calculateTireChangeStatistics,
+  calculateBatteryReplacementStatistics,
+  calculateDriverStatistics,
+  calculateCarStatistics,
+  calculateOrderStatistics,
+  calculateFuelConsumptionByCities,
+} from "../../services/firestore";
 import { exportDataTable } from "../../services/exportService";
 import { useToast } from "../../context/ToastContext";
 import { useNavigation } from "../../hooks/useNavigation";
@@ -13,22 +36,27 @@ import { Map } from "../PerolifeStationLocations/sections/map/Map";
 const BannerSection = () => {
   return (
     <section className="w-full mb-8">
-      <div className="relative w-full h-48 rounded-2xl overflow-hidden" style={{ backgroundColor: '#311159' }}>
+      <div
+        className="relative w-full h-48 rounded-2xl overflow-hidden"
+        style={{ backgroundColor: "#311159" }}
+      >
         {/* Content */}
         <div className="relative z-10 flex items-center h-full pl-0 pr-8">
           {/* Left Side - Image */}
           <div className="flex-shrink-0 mr-8 h-full flex items-center">
-            <img 
-              src="/img/123.png" 
-              alt="Dashboard illustration" 
+            <img
+              src="/img/123.png"
+              alt="Dashboard illustration"
               className="h-48 w-auto object-contain"
             />
           </div>
-          
+
           {/* Right Side - Text Content */}
           <div className="flex-1 text-white">
             <p className="text-xl font-normal leading-relaxed text-right [direction:rtl] max-w-2xl">
-              كل ما تحتاجه في مكان واحد. قم بإدارة كافة أعمال الوقود الخاص بنشاطك التجاري من مكان واحد. ما عليك إلا شحن المحفظة وتسجيل السائقين والسيارات واستمتع بإحصائيات كاملة حول وقودك المستهلك.
+              كل ما تحتاجه في مكان واحد. قم بإدارة كافة أعمال الوقود الخاص
+              بنشاطك التجاري من مكان واحد. ما عليك إلا شحن المحفظة وتسجيل
+              السائقين والسيارات واستمتع بإحصائيات كاملة حول وقودك المستهلك.
             </p>
           </div>
         </div>
@@ -41,63 +69,68 @@ const BannerSection = () => {
 const StatsCardsSection = () => {
   const { company } = useAuth();
   const [fuelStats, setFuelStats] = useState<{
-    fuelTypes: Array<{ type: string; totalLitres: number; totalCost: number; color: string }>;
+    fuelTypes: Array<{
+      type: string;
+      totalLitres: number;
+      totalCost: number;
+      color: string;
+    }>;
     totalLitres: number;
     totalCost: number;
   }>({ fuelTypes: [], totalLitres: 0, totalCost: 0 });
-  
+
   const [carWashStats, setCarWashStats] = useState<{
     sizes: Array<{ name: string; count: number; totalCost: number }>;
     totalOrders: number;
     totalCost: number;
   }>({ sizes: [], totalOrders: 0, totalCost: 0 });
-  
+
   const [oilStats, setOilStats] = useState<{
     totalLitres: number;
   }>({ totalLitres: 0 });
-  
+
   const [batteryStats, setBatteryStats] = useState<{
     sizes: Array<{ name: string; count: number }>;
     totalOrders: number;
   }>({ sizes: [], totalOrders: 0 });
-  
+
   const [tireStats, setTireStats] = useState<{
     sizes: Array<{ name: string; count: number }>;
     totalOrders: number;
   }>({ sizes: [], totalOrders: 0 });
-  
+
   const [batteryReplacementStats, setBatteryReplacementStats] = useState<{
     totalCost: number;
     replacedCount: number;
     requestedCount: number;
   }>({ totalCost: 0, replacedCount: 0, requestedCount: 0 });
-  
+
   const [driverStats, setDriverStats] = useState<{
     active: number;
     inactive: number;
     total: number;
   }>({ active: 0, inactive: 0, total: 0 });
-  
+
   const [carStats, setCarStats] = useState<{
     sizes: Array<{ name: string; count: number }>;
     total: number;
   }>({ sizes: [], total: 0 });
-  
+
   const [orderStats, setOrderStats] = useState<{
     completed: number;
     cancelled: number;
     total: number;
   }>({ completed: 0, cancelled: 0, total: 0 });
-  
+
   // Get balance from company data
   // If company is null, we're still loading
   // If company.balance is undefined, default to 0
-  const walletBalance = company ? (company.balance ?? 0) : null;
+  const walletBalance = company ? company.balance ?? 0 : null;
   const isLoadingBalance = walletBalance === null;
-  
+
   // Format number with thousands separator (English)
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat("en-US").format(num);
   };
 
   // Fetch orders and calculate fuel, car wash, oil, battery, driver, car, and order statistics
@@ -107,69 +140,83 @@ const StatsCardsSection = () => {
         const orders = await fetchOrders();
         const fuelData = calculateFuelStatistics(orders);
         setFuelStats(fuelData);
-        
+
         const carWashData = calculateCarWashStatistics(orders);
         setCarWashStats(carWashData);
-        
+
         const oilData = calculateOilChangeStatistics(orders);
         setOilStats(oilData);
-        
+
         const batteryData = calculateBatteryChangeStatistics(orders);
         setBatteryStats(batteryData);
-        
+
         const tireData = calculateTireChangeStatistics(orders);
         setTireStats(tireData);
-        
-        const batteryReplacementData = calculateBatteryReplacementStatistics(orders);
+
+        const batteryReplacementData =
+          calculateBatteryReplacementStatistics(orders);
         setBatteryReplacementStats(batteryReplacementData);
-        
+
         const orderData = calculateOrderStatistics(orders);
         setOrderStats(orderData);
-        
+
         const driverData = await calculateDriverStatistics();
         setDriverStats(driverData);
-        
+
         const carData = await calculateCarStatistics();
         setCarStats(carData);
       } catch (error) {
-        console.error('Error loading statistics:', error);
+        console.error("Error loading statistics:", error);
       }
     };
     loadStats();
   }, []);
-  
+
   // Format fuel data for display
-  const fuelData = fuelStats.fuelTypes.length > 0 
-    ? fuelStats.fuelTypes.map(fuel => ({
-        type: fuel.type,
-        amount: `${Math.round(fuel.totalLitres)} .L`,
-        color: fuel.color,
-      }))
-    : [
-        { type: "ديزل", amount: "185 .L", color: "text-color-mode-text-icons-t-orange" },
-        { type: "بنزين 95", amount: "548 .L", color: "text-color-mode-text-icons-t-red" },
-        { type: "بنزين 91", amount: "845 .L", color: "text-color-mode-text-icons-t-green" },
-      ];
+  const fuelData =
+    fuelStats.fuelTypes.length > 0
+      ? fuelStats.fuelTypes.map((fuel) => ({
+          type: fuel.type,
+          amount: `${Math.round(fuel.totalLitres)} .L`,
+          color: fuel.color,
+        }))
+      : [
+          {
+            type: "ديزل",
+            amount: "185 .L",
+            color: "text-color-mode-text-icons-t-orange",
+          },
+          {
+            type: "بنزين 95",
+            amount: "548 .L",
+            color: "text-color-mode-text-icons-t-red",
+          },
+          {
+            type: "بنزين 91",
+            amount: "845 .L",
+            color: "text-color-mode-text-icons-t-green",
+          },
+        ];
 
   const statsData = [
     {
       title: "اجمالي اللترات المستهلكة",
       content: fuelData,
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
       type: "fuel",
     },
     {
       title: "التكلفة الإجمالية للوقود",
       amount: formatNumber(Math.round(fuelStats.totalCost)),
       currency: "ر.س",
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
       type: "cost",
     },
     {
       title: "رصيد محفظتي",
       amount: isLoadingBalance ? null : formatNumber(walletBalance ?? 0),
       currency: "ر.س",
-      icon: <Wallet className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Wallet className="w-5 h-5" style={{ color: "#E76500" }} />,
       type: "wallet",
       isLoading: isLoadingBalance,
     },
@@ -177,38 +224,40 @@ const StatsCardsSection = () => {
       title: "تغييرات الزيوت",
       amount: formatNumber(Math.round(oilStats.totalLitres)),
       unit: "لتر",
-      icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />,
       type: "oil",
     },
     {
       title: "عمليات تغيير الإطارات",
-      categories: tireStats.sizes.length > 0 
-        ? tireStats.sizes.map(size => ({
-            name: size.name,
-            count: size.count,
-          }))
-        : [
-            { name: "صغيرة", count: 0 },
-            { name: "متوسطة", count: 0 },
-            { name: "كبيرة", count: 0 },
-            { name: "VIP", count: 0 },
-          ],
-      icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
+      categories:
+        tireStats.sizes.length > 0
+          ? tireStats.sizes.map((size) => ({
+              name: size.name,
+              count: size.count,
+            }))
+          : [
+              { name: "صغيرة", count: 0 },
+              { name: "متوسطة", count: 0 },
+              { name: "كبيرة", count: 0 },
+              { name: "VIP", count: 0 },
+            ],
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "عمليات غسيل السيارات",
-      categories: carWashStats.sizes.length > 0 
-        ? carWashStats.sizes.map(size => ({
-            name: size.name,
-            count: size.count,
-          }))
-        : [
-            { name: "صغيرة", count: 0 },
-            { name: "متوسطة", count: 0 },
-            { name: "كبيرة", count: 0 },
-            { name: "VIP", count: 0 },
-          ],
-      icon: <Droplets className="w-5 h-5" style={{ color: '#E76500' }} />,
+      categories:
+        carWashStats.sizes.length > 0
+          ? carWashStats.sizes.map((size) => ({
+              name: size.name,
+              count: size.count,
+            }))
+          : [
+              { name: "صغيرة", count: 0 },
+              { name: "متوسطة", count: 0 },
+              { name: "كبيرة", count: 0 },
+              { name: "VIP", count: 0 },
+            ],
+      icon: <Droplets className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "استبدال البطاريات",
@@ -216,66 +265,81 @@ const StatsCardsSection = () => {
       currency: "ر.س",
       replaced: formatNumber(batteryReplacementStats.replacedCount),
       requested: formatNumber(batteryReplacementStats.requestedCount),
-      icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Battery className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "عمليات تغيير البطاريات",
-      categories: batteryStats.sizes.length > 0 
-        ? batteryStats.sizes.map(size => ({
-            name: size.name,
-            count: size.count,
-          }))
-        : [
-            { name: "صغيرة", count: 0 },
-            { name: "متوسطة", count: 0 },
-            { name: "كبيرة", count: 0 },
-            { name: "VIP", count: 0 },
-          ],
-      icon: <Battery className="w-5 h-5" style={{ color: '#E76500' }} />,
+      categories:
+        batteryStats.sizes.length > 0
+          ? batteryStats.sizes.map((size) => ({
+              name: size.name,
+              count: size.count,
+            }))
+          : [
+              { name: "صغيرة", count: 0 },
+              { name: "متوسطة", count: 0 },
+              { name: "كبيرة", count: 0 },
+              { name: "VIP", count: 0 },
+            ],
+      icon: <Battery className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "اجمالي تكلفة الوقود",
       total: `الاجمالي ${formatNumber(Math.round(fuelStats.totalCost))}`,
-      breakdown: fuelStats.fuelTypes.length > 0
-        ? fuelStats.fuelTypes.map(fuel => ({
-            type: fuel.type,
-            amount: formatNumber(Math.round(fuel.totalCost)),
-            color: fuel.color,
-          }))
-        : [
-            { type: "ديزل", amount: "0", color: "text-color-mode-text-icons-t-orange" },
-            { type: "بنزين 95", amount: "0", color: "text-color-mode-text-icons-t-red" },
-            { type: "بنزين 91", amount: "0", color: "text-color-mode-text-icons-t-green" },
-          ],
-      icon: <Fuel className="w-5 h-5" style={{ color: '#E76500' }} />,
+      breakdown:
+        fuelStats.fuelTypes.length > 0
+          ? fuelStats.fuelTypes.map((fuel) => ({
+              type: fuel.type,
+              amount: formatNumber(Math.round(fuel.totalCost)),
+              color: fuel.color,
+            }))
+          : [
+              {
+                type: "ديزل",
+                amount: "0",
+                color: "text-color-mode-text-icons-t-orange",
+              },
+              {
+                type: "بنزين 95",
+                amount: "0",
+                color: "text-color-mode-text-icons-t-red",
+              },
+              {
+                type: "بنزين 91",
+                amount: "0",
+                color: "text-color-mode-text-icons-t-green",
+              },
+            ],
+      icon: <Fuel className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "الطلبات المكتملة / الملغية",
       completed: orderStats.completed,
       cancelled: orderStats.cancelled,
-      icon: <FileText className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <FileText className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "السيارات",
       total: carStats.total,
-      categories: carStats.sizes.length > 0 
-        ? carStats.sizes.map(size => ({
-            name: size.name,
-            count: size.count,
-          }))
-        : [
-            { name: "صغيرة", count: 0 },
-            { name: "متوسطة", count: 0 },
-            { name: "كبيرة", count: 0 },
-            { name: "VIP", count: 0 },
-          ],
-      icon: <Car className="w-5 h-5" style={{ color: '#E76500' }} />,
+      categories:
+        carStats.sizes.length > 0
+          ? carStats.sizes.map((size) => ({
+              name: size.name,
+              count: size.count,
+            }))
+          : [
+              { name: "صغيرة", count: 0 },
+              { name: "متوسطة", count: 0 },
+              { name: "كبيرة", count: 0 },
+              { name: "VIP", count: 0 },
+            ],
+      icon: <Car className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
     {
       title: "السائقين النشطين / المعطلين",
       active: driverStats.active,
       inactive: driverStats.inactive,
-      icon: <Users className="w-5 h-5" style={{ color: '#E76500' }} />,
+      icon: <Users className="w-5 h-5" style={{ color: "#E76500" }} />,
     },
   ];
 
@@ -292,13 +356,16 @@ const StatsCardsSection = () => {
               {stat.title}
             </span>
           </div>
-          
+
           {/* Lower row - value and icon */}
           <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFF3F9' }}>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "#FFF3F9" }}
+            >
               {stat.icon}
             </div>
-            
+
             {stat.type === "fuel" ? (
               <div className="flex items-center gap-4">
                 {stat.content?.map((fuel, fuelIndex) => (
@@ -307,7 +374,9 @@ const StatsCardsSection = () => {
                       <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                         {fuel.amount}
                       </span>
-                      <span className={`${fuel.color} text-xs`}>{fuel.type}</span>
+                      <span className={`${fuel.color} text-xs`}>
+                        {fuel.type}
+                      </span>
                     </div>
                     {fuelIndex < (stat.content?.length || 0) - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
@@ -323,7 +392,9 @@ const StatsCardsSection = () => {
                       <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                         {category.count}
                       </span>
-                      <span className="text-xs text-color-mode-text-icons-t-sec">{category.name}</span>
+                      <span className="text-xs text-color-mode-text-icons-t-sec">
+                        {category.name}
+                      </span>
                     </div>
                     {catIndex < stat.categories.length - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
@@ -339,7 +410,9 @@ const StatsCardsSection = () => {
                       <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                         {fuel.amount}
                       </span>
-                      <span className={`${fuel.color} text-xs`}>{fuel.type}</span>
+                      <span className={`${fuel.color} text-xs`}>
+                        {fuel.type}
+                      </span>
                     </div>
                     {fuelIndex < stat.breakdown.length - 1 && (
                       <div className="w-px h-8 bg-gray-300"></div>
@@ -353,21 +426,27 @@ const StatsCardsSection = () => {
                   <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                     {stat.cost}
                   </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">التكلفة</span>
+                  <span className="text-xs text-color-mode-text-icons-t-sec">
+                    التكلفة
+                  </span>
                 </div>
                 <div className="w-px h-8 bg-gray-300"></div>
                 <div className="flex flex-col items-end">
                   <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                     {stat.replaced}
                   </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">مستبدلة</span>
+                  <span className="text-xs text-color-mode-text-icons-t-sec">
+                    مستبدلة
+                  </span>
                 </div>
                 <div className="w-px h-8 bg-gray-300"></div>
                 <div className="flex flex-col items-end">
                   <span className="text-lg font-bold text-color-mode-text-icons-t-blue">
                     {stat.requested}
                   </span>
-                  <span className="text-xs text-color-mode-text-icons-t-sec">طلب</span>
+                  <span className="text-xs text-color-mode-text-icons-t-sec">
+                    طلب
+                  </span>
                 </div>
               </div>
             ) : stat.completed ? (
@@ -389,7 +468,8 @@ const StatsCardsSection = () => {
               </div>
             ) : (
               <p className="text-2xl text-color-mode-text-icons-t-blue font-bold">
-                {stat.amount} <span className="text-base">{stat.currency || stat.unit}</span>
+                {stat.amount}{" "}
+                <span className="text-base">{stat.currency || stat.unit}</span>
               </p>
             )}
           </div>
@@ -399,43 +479,49 @@ const StatsCardsSection = () => {
   );
 };
 
-
 // Subscription and Locations Section
 const SubscriptionAndLocationsSection = () => {
   const { company } = useAuth();
-  
+
   // Extract current subscription from company data
   const currentSubscription = company?.selectedSubscription;
-  
+
   // Get subscription details using correct field names:
   // نوع الباقة = periodName (extract Arabic text from object)
-  const packageType = currentSubscription?.periodName?.ar || 
-                     currentSubscription?.periodName?.en || 
-                     (typeof currentSubscription?.periodName === 'string' ? currentSubscription?.periodName : 'N/A');
-  
+  const packageType =
+    currentSubscription?.periodName?.ar ||
+    currentSubscription?.periodName?.en ||
+    (typeof currentSubscription?.periodName === "string"
+      ? currentSubscription?.periodName
+      : "N/A");
+
   // عدد المركبات = maxCarNumber (with fallbacks)
-  const vehicleCount = company?.maxCarNumber || 
-                      company?.numberOfVehicles || 
-                      company?.vehicleCount || 
-                      company?.carsLimit || 
-                      currentSubscription?.maxCarNumber || 
-                      0;
-  
+  const vehicleCount =
+    company?.maxCarNumber ||
+    company?.numberOfVehicles ||
+    company?.vehicleCount ||
+    company?.carsLimit ||
+    currentSubscription?.maxCarNumber ||
+    0;
+
   // اسم الباقة
-  const packageName = currentSubscription?.title?.ar || currentSubscription?.title?.en || 'N/A';
-  
+  const packageName =
+    currentSubscription?.title?.ar || currentSubscription?.title?.en || "N/A";
+
   // Calculate days remaining using createdDate + periodValueInDays
   const calculateDaysRemaining = () => {
     const createdDate = currentSubscription?.createdDate;
     const periodValueInDays = currentSubscription?.periodValueInDays;
-    
+
     if (!createdDate || !periodValueInDays) return 0;
-    
+
     try {
-      const startDate = createdDate.toDate ? createdDate.toDate() : new Date(createdDate);
+      const startDate = createdDate.toDate
+        ? createdDate.toDate()
+        : new Date(createdDate);
       const expiryDate = new Date(startDate);
       expiryDate.setDate(expiryDate.getDate() + periodValueInDays);
-      
+
       const now = new Date();
       const diffTime = expiryDate.getTime() - now.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -447,23 +533,26 @@ const SubscriptionAndLocationsSection = () => {
 
   const daysRemaining = calculateDaysRemaining();
 
-  console.log('\n📅 Dashboard Subscription Data:');
-  console.log('==============================');
-  console.log('Company:', company?.name);
-  console.log('Company Data - Checking all possible vehicle count fields:');
-  console.log('  maxCarNumber:', company?.maxCarNumber);
-  console.log('  numberOfVehicles:', company?.numberOfVehicles);
-  console.log('  vehicleCount:', company?.vehicleCount);
-  console.log('  carsLimit:', company?.carsLimit);
-  console.log('  selectedSubscription.maxCarNumber:', currentSubscription?.maxCarNumber);
-  console.log('Final Vehicle Count:', vehicleCount);
-  console.log('Period Name:', currentSubscription?.periodName);
-  console.log('Package Type (extracted):', packageType);
-  console.log('Package Name:', packageName);
-  console.log('Created Date:', currentSubscription?.createdDate);
-  console.log('Period Value in Days:', currentSubscription?.periodValueInDays);
-  console.log('Days Remaining:', daysRemaining);
-  console.log('==============================\n');
+  console.log("\n📅 Dashboard Subscription Data:");
+  console.log("==============================");
+  console.log("Company:", company?.name);
+  console.log("Company Data - Checking all possible vehicle count fields:");
+  console.log("  maxCarNumber:", company?.maxCarNumber);
+  console.log("  numberOfVehicles:", company?.numberOfVehicles);
+  console.log("  vehicleCount:", company?.vehicleCount);
+  console.log("  carsLimit:", company?.carsLimit);
+  console.log(
+    "  selectedSubscription.maxCarNumber:",
+    currentSubscription?.maxCarNumber
+  );
+  console.log("Final Vehicle Count:", vehicleCount);
+  console.log("Period Name:", currentSubscription?.periodName);
+  console.log("Package Type (extracted):", packageType);
+  console.log("Package Name:", packageName);
+  console.log("Created Date:", currentSubscription?.createdDate);
+  console.log("Period Value in Days:", currentSubscription?.periodValueInDays);
+  console.log("Days Remaining:", daysRemaining);
+  console.log("==============================\n");
 
   return (
     <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -475,22 +564,26 @@ const SubscriptionAndLocationsSection = () => {
             اشتراكي الحالي
           </h3>
         </div>
-        
+
         {/* Two Information Boxes */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {/* Package Type Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">نوع الباقة</div>
+            <div className="text-lg font-bold text-purple-800 mb-1">
+              نوع الباقة
+            </div>
             <div className="text-xs text-purple-800">{packageType}</div>
           </div>
-          
+
           {/* Number of Vehicles Box */}
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm text-center">
-            <div className="text-lg font-bold text-purple-800 mb-1">عدد المركبات</div>
+            <div className="text-lg font-bold text-purple-800 mb-1">
+              عدد المركبات
+            </div>
             <div className="text-xs text-purple-800">{vehicleCount}</div>
           </div>
         </div>
-        
+
         {/* Explanatory Text */}
         <div className="flex items-center justify-center mb-6">
           <div className="flex items-center gap-2 text-orange-500">
@@ -502,18 +595,18 @@ const SubscriptionAndLocationsSection = () => {
             </span>
           </div>
         </div>
-        
+
         {/* Remaining Days Section */}
         <div className="text-center">
           <div className="text-sm text-purple-800 mb-3 [direction:rtl] text-center">
             الأيام المتبقية من الاشتراك
           </div>
-          
+
           {/* Countdown Numbers */}
           <div className="text-2xl font-bold text-orange-500 mb-2 [direction:rtl] text-center">
             {daysRemaining} يوم
           </div>
-          
+
           {/* Package Name */}
           <div className="text-sm text-gray-600 mt-2 [direction:rtl] text-center">
             {packageName}
@@ -531,8 +624,8 @@ const SubscriptionAndLocationsSection = () => {
 
 // Consumption Section
 const ConsumptionSection = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("12 شهر");
-  
+  const [selectedPeriod, setSelectedPeriod] = useState("اخر 12 شهر");
+
   const months = [
     "Feb",
     "Mar",
@@ -546,13 +639,6 @@ const ConsumptionSection = () => {
     "Nov",
     "Dec",
     "Jan",
-  ];
-
-  const timeOptions = [
-    { id: "week", label: "اسبوع", value: "اسبوع" },
-    { id: "month", label: "30 يوم", value: "30 يوم" },
-    { id: "sixMonths", label: "6 شهور", value: "6 شهور" },
-    { id: "year", label: "12 شهر", value: "12 شهر" },
   ];
 
   const legendItems = [
@@ -625,28 +711,18 @@ const ConsumptionSection = () => {
 
           {/* Title and Time Periods - Right */}
           <div className="flex items-center gap-4">
-            {/* Time Period Buttons */}
-            <div className="flex items-center gap-2">
-              {timeOptions.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setSelectedPeriod(option.value)}
-                  className="px-4 py-2 text-sm rounded-lg transition-all"
-                  style={{
-                    backgroundColor: 'white',
-                    color: selectedPeriod === option.value ? '#5A66C1' : '#6B7280',
-                    border: selectedPeriod === option.value ? '2px solid #5A66C1' : '2px solid #9CA3AF',
-                    borderRadius: '8px'
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            {/* Time Period Filter */}
+            <TimeFilter
+              selectedFilter={selectedPeriod}
+              onFilterChange={setSelectedPeriod}
+              filters={["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"]}
+            />
 
             {/* Title */}
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">المبيعات</h2>
+              <h2 className="text-lg font-bold text-[var(--form-section-title-color)]">
+                المبيعات
+              </h2>
               <Fuel className="w-5 h-5 text-gray-500" />
             </div>
           </div>
@@ -693,44 +769,59 @@ const FuelDeliveryRequestsSection = () => {
     const loadDeliveryStats = async () => {
       try {
         const orders = await fetchOrders();
-        
-        // Filter for fuel delivery orders
-        const fuelDeliveryOrders = orders.filter(order => {
-          const titleAr = order.service?.title?.ar || '';
-          const titleEn = order.service?.title?.en || '';
-          const descAr = order.service?.desc?.ar || '';
-          const descEn = order.service?.desc?.en || '';
 
-          return (titleAr === 'توصيل الوقود' || titleEn === 'Fuel Delivery') ||
-                 (descAr === 'عند الطلب وفي أي وقت وفي أي مكان' || descEn === 'On-demand, anytime anywhere.');
+        // Filter for fuel delivery orders
+        const fuelDeliveryOrders = orders.filter((order) => {
+          const titleAr = order.service?.title?.ar || "";
+          const titleEn = order.service?.title?.en || "";
+          const descAr = order.service?.desc?.ar || "";
+          const descEn = order.service?.desc?.en || "";
+
+          return (
+            titleAr === "توصيل الوقود" ||
+            titleEn === "Fuel Delivery" ||
+            descAr === "عند الطلب وفي أي وقت وفي أي مكان" ||
+            descEn === "On-demand, anytime anywhere."
+          );
         });
 
         // Count completed and cancelled
         let completed = 0;
         let cancelled = 0;
 
-        fuelDeliveryOrders.forEach(order => {
-          const status = order.status?.toLowerCase().trim() || '';
-          
-          if (status === 'completed' || status === 'done' || status === 'delivered' || 
-              status === 'مكتمل' || status === 'تم التوصيل') {
+        fuelDeliveryOrders.forEach((order) => {
+          const status = order.status?.toLowerCase().trim() || "";
+
+          if (
+            status === "completed" ||
+            status === "done" ||
+            status === "delivered" ||
+            status === "مكتمل" ||
+            status === "تم التوصيل"
+          ) {
             completed++;
-          } else if (status === 'cancelled' || status === 'canceled' || status === 'rejected' || 
-                     status === 'ملغي' || status === 'مرفوض') {
+          } else if (
+            status === "cancelled" ||
+            status === "canceled" ||
+            status === "rejected" ||
+            status === "ملغي" ||
+            status === "مرفوض"
+          ) {
             cancelled++;
           }
         });
 
         const total = fuelDeliveryOrders.length;
-        const completionPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const completionPercentage =
+          total > 0 ? Math.round((completed / total) * 100) : 0;
 
-        console.log('\n⛽ Fuel Delivery Requests Stats:');
-        console.log('========================');
-        console.log('Total Fuel Delivery Orders:', total);
-        console.log('Completed:', completed);
-        console.log('Cancelled:', cancelled);
-        console.log('Completion Rate:', completionPercentage + '%');
-        console.log('========================\n');
+        console.log("\n⛽ Fuel Delivery Requests Stats:");
+        console.log("========================");
+        console.log("Total Fuel Delivery Orders:", total);
+        console.log("Completed:", completed);
+        console.log("Cancelled:", cancelled);
+        console.log("Completion Rate:", completionPercentage + "%");
+        console.log("========================\n");
 
         setDeliveryStats({
           completed,
@@ -739,7 +830,7 @@ const FuelDeliveryRequestsSection = () => {
           completionPercentage,
         });
       } catch (error) {
-        console.error('Error loading delivery stats:', error);
+        console.error("Error loading delivery stats:", error);
       }
     };
 
@@ -749,7 +840,8 @@ const FuelDeliveryRequestsSection = () => {
   // Calculate stroke-dasharray for the progress circle
   // Circle circumference = 2 * π * r = 2 * 3.14159 * 45 ≈ 283
   const circumference = 283;
-  const progressLength = (deliveryStats.completionPercentage / 100) * circumference;
+  const progressLength =
+    (deliveryStats.completionPercentage / 100) * circumference;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -761,7 +853,7 @@ const FuelDeliveryRequestsSection = () => {
           طلبات توصيل الوقود
         </h3>
       </div>
-      
+
       {/* Donut Chart */}
       <div className="flex justify-center items-center">
         <div className="relative w-48 h-48">
@@ -787,11 +879,15 @@ const FuelDeliveryRequestsSection = () => {
               strokeLinecap="round"
             />
           </svg>
-          
+
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-base text-gray-500 mb-1 [direction:rtl]">الطلبات المكتملة</div>
-            <div className="text-4xl font-bold text-gray-900">{deliveryStats.completionPercentage}%</div>
+            <div className="text-base text-gray-500 mb-1 [direction:rtl]">
+              الطلبات المكتملة
+            </div>
+            <div className="text-4xl font-bold text-gray-900">
+              {deliveryStats.completionPercentage}%
+            </div>
           </div>
         </div>
       </div>
@@ -810,28 +906,28 @@ const MyCarsSection = () => {
     const loadCarsData = async () => {
       try {
         const carStats = await calculateCarStatistics();
-        
-        console.log('\n🚗 My Cars Section Data:');
-        console.log('========================');
-        console.log('Total Cars:', carStats.total);
-        console.log('By Size:', carStats.sizes);
-        console.log('========================\n');
+
+        console.log("\n🚗 My Cars Section Data:");
+        console.log("========================");
+        console.log("Total Cars:", carStats.total);
+        console.log("By Size:", carStats.sizes);
+        console.log("========================\n");
 
         // Map size names to full names for display
-        const categories = carStats.sizes.map(size => {
-          let fullName = '';
+        const categories = carStats.sizes.map((size) => {
+          let fullName = "";
           switch (size.name) {
-            case 'صغيرة':
-              fullName = 'سيارات صغيرة';
+            case "صغيرة":
+              fullName = "سيارات صغيرة";
               break;
-            case 'متوسطة':
-              fullName = 'سيارات متوسطة';
+            case "متوسطة":
+              fullName = "سيارات متوسطة";
               break;
-            case 'كبيرة':
-              fullName = 'سيارات كبيرة';
+            case "كبيرة":
+              fullName = "سيارات كبيرة";
               break;
-            case 'VIP':
-              fullName = 'سيارات VIP';
+            case "VIP":
+              fullName = "سيارات VIP";
               break;
             default:
               fullName = `سيارات ${size.name}`;
@@ -847,21 +943,22 @@ const MyCarsSection = () => {
           categories: categories,
         });
       } catch (error) {
-        console.error('Error loading cars data:', error);
+        console.error("Error loading cars data:", error);
       }
     };
 
     loadCarsData();
   }, []);
 
-  const carCategories = carsData.categories.length > 0 
-    ? carsData.categories 
-    : [
-        { name: "سيارات صغيرة", count: 0 },
-        { name: "سيارات متوسطة", count: 0 },
-        { name: "سيارات كبيرة", count: 0 },
-        { name: "سيارات VIP", count: 0 },
-      ];
+  const carCategories =
+    carsData.categories.length > 0
+      ? carsData.categories
+      : [
+          { name: "سيارات صغيرة", count: 0 },
+          { name: "سيارات متوسطة", count: 0 },
+          { name: "سيارات كبيرة", count: 0 },
+          { name: "سيارات VIP", count: 0 },
+        ];
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -873,23 +970,28 @@ const MyCarsSection = () => {
           سياراتي
         </h3>
       </div>
-      
+
       {/* Car Categories */}
       <div className="space-y-6">
         {carCategories.map((category, index) => {
-          const percentage = carsData.total > 0 ? (category.count / carsData.total) * 100 : 0;
+          const percentage =
+            carsData.total > 0 ? (category.count / carsData.total) * 100 : 0;
           return (
             <div key={index} className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700 [direction:rtl]">{carsData.total}/{category.count}</span>
-                <span className="text-sm font-medium text-gray-900 [direction:rtl]">{category.name}</span>
+                <span className="text-sm font-medium text-gray-700 [direction:rtl]">
+                  {carsData.total}/{category.count}
+                </span>
+                <span className="text-sm font-medium text-gray-900 [direction:rtl]">
+                  {category.name}
+                </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 flex justify-end">
                 <div
                   className="h-3 rounded-full transition-all duration-500"
-                  style={{ 
+                  style={{
                     width: `${percentage}%`,
-                    backgroundColor: '#5A66C1'
+                    backgroundColor: "#5A66C1",
                   }}
                 ></div>
               </div>
@@ -905,7 +1007,9 @@ const MyCarsSection = () => {
 const FuelConsumptionByCitiesSection = () => {
   const { addToast } = useToast();
   const [selectedFilter, setSelectedFilter] = useState("اخر 12 شهر");
-  const [citiesData, setCitiesData] = useState<Array<{ name: string; consumption: number; stationCount?: number }>>([]);
+  const [citiesData, setCitiesData] = useState<
+    Array<{ name: string; consumption: number; stationCount?: number }>
+  >([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch cities data from Firestore
@@ -916,11 +1020,11 @@ const FuelConsumptionByCitiesSection = () => {
         const data = await calculateFuelConsumptionByCities();
         setCitiesData(data);
       } catch (error) {
-        console.error('Error loading cities data:', error);
+        console.error("Error loading cities data:", error);
         addToast({
-          title: 'خطأ',
-          message: 'فشل في تحميل بيانات المدن',
-          type: 'error',
+          title: "خطأ",
+          message: "فشل في تحميل بيانات المدن",
+          type: "error",
         });
       } finally {
         setLoading(false);
@@ -930,37 +1034,38 @@ const FuelConsumptionByCitiesSection = () => {
     loadCitiesData();
   }, [addToast]);
 
-  const maxConsumption = citiesData.length > 0 
-    ? Math.max(...citiesData.map(city => city.consumption))
-    : 0;
-  
+  const maxConsumption =
+    citiesData.length > 0
+      ? Math.max(...citiesData.map((city) => city.consumption))
+      : 0;
+
   // Handle export
   const handleExport = async () => {
     try {
       const exportColumns = [
-        { key: 'name', label: 'المدينة' },
-        { key: 'consumption', label: 'الاستهلاك (لتر)' },
+        { key: "name", label: "المدينة" },
+        { key: "consumption", label: "الاستهلاك (لتر)" },
       ];
 
       await exportDataTable(
         citiesData,
         exportColumns,
-        'fuel-consumption-by-cities',
-        'excel',
-        'استهلاك الوقود للمدن'
+        "fuel-consumption-by-cities",
+        "excel",
+        "استهلاك الوقود للمدن"
       );
 
       addToast({
-        title: 'نجح التصدير',
-        message: 'تم تصدير بيانات استهلاك الوقود بنجاح',
-        type: 'success',
+        title: "نجح التصدير",
+        message: "تم تصدير بيانات استهلاك الوقود بنجاح",
+        type: "success",
       });
     } catch (error) {
-      console.error('Export error:', error);
+      console.error("Export error:", error);
       addToast({
-        title: 'فشل التصدير',
-        message: 'حدث خطأ أثناء تصدير البيانات',
-        type: 'error',
+        title: "فشل التصدير",
+        message: "حدث خطأ أثناء تصدير البيانات",
+        type: "error",
       });
     }
   };
@@ -969,7 +1074,7 @@ const FuelConsumptionByCitiesSection = () => {
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={handleExport}
             className="flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
@@ -979,64 +1084,83 @@ const FuelConsumptionByCitiesSection = () => {
           <TimeFilter
             selectedFilter={selectedFilter}
             onFilterChange={setSelectedFilter}
+            filters={["اخر اسبوع", "اخر 30 يوم", "اخر 6 شهور", "اخر 12 شهر"]}
           />
         </div>
         <h3 className="text-xl font-bold text-gray-800 [direction:rtl] text-right">
           استهلاك الوقود للمدن
         </h3>
       </div>
-      
+
       {/* Loading State */}
       {loading && (
         <div className="h-80 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 [direction:rtl]">جاري تحميل البيانات...</p>
+            <p className="text-gray-600 [direction:rtl]">
+              جاري تحميل البيانات...
+            </p>
           </div>
         </div>
       )}
-      
+
       {/* Empty State */}
       {!loading && citiesData.length === 0 && (
         <div className="h-80 flex items-center justify-center">
           <div className="text-center">
             <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 [direction:rtl] text-lg font-medium">لا توجد بيانات لعرضها</p>
-            <p className="text-gray-500 [direction:rtl] text-sm mt-2">لم يتم العثور على استهلاك وقود في أي مدينة</p>
+            <p className="text-gray-600 [direction:rtl] text-lg font-medium">
+              لا توجد بيانات لعرضها
+            </p>
+            <p className="text-gray-500 [direction:rtl] text-sm mt-2">
+              لم يتم العثور على استهلاك وقود في أي مدينة
+            </p>
           </div>
         </div>
       )}
-      
+
       {/* Bar Chart */}
       {!loading && citiesData.length > 0 && (
         <div className="h-80 flex items-end justify-between gap-1">
           {citiesData.map((city, index) => {
-            const height = maxConsumption > 0 ? (city.consumption / maxConsumption) * 100 : 0;
+            const height =
+              maxConsumption > 0
+                ? (city.consumption / maxConsumption) * 100
+                : 0;
             return (
               <div key={index} className="flex flex-col items-center flex-1">
                 {/* Litres Consumed - On Top */}
-                <div className="text-xs font-bold text-gray-700 [direction:rtl] text-center mb-2" style={{ minHeight: '20px' }}>
+                <div
+                  className="text-xs font-bold text-gray-700 [direction:rtl] text-center mb-2"
+                  style={{ minHeight: "20px" }}
+                >
                   {city.consumption.toFixed(1)} .L
                 </div>
-                
+
                 {/* Bar */}
                 <div className="relative w-6 mb-3">
-                  <div className="w-full bg-gray-100 rounded-full" style={{ height: '220px' }}>
-                      <div
-                        className="w-full rounded-full transition-all duration-700 hover:opacity-80"
-                        style={{ 
-                          height: `${height}%`,
-                          position: 'absolute',
-                          bottom: 0,
-                          backgroundColor: '#5A66C1'
-                        }}
-                        title={`${city.name}: ${city.consumption.toFixed(1)} لتر`}
-                      ></div>
+                  <div
+                    className="w-full bg-gray-100 rounded-full"
+                    style={{ height: "220px" }}
+                  >
+                    <div
+                      className="w-full rounded-full transition-all duration-700 hover:opacity-80"
+                      style={{
+                        height: `${height}%`,
+                        position: "absolute",
+                        bottom: 0,
+                        backgroundColor: "#5A66C1",
+                      }}
+                      title={`${city.name}: ${city.consumption.toFixed(1)} لتر`}
+                    ></div>
                   </div>
                 </div>
-                
+
                 {/* City Name - At Bottom */}
-                <div className="text-xs text-gray-600 [direction:rtl] text-center font-medium max-w-[60px] truncate" title={city.name}>
+                <div
+                  className="text-xs text-gray-600 [direction:rtl] text-center font-medium max-w-[60px] truncate"
+                  title={city.name}
+                >
                   {city.name}
                 </div>
               </div>
@@ -1057,30 +1181,39 @@ const MostUsedSection = () => {
     const loadTopData = async () => {
       try {
         const orders = await fetchOrders();
-        
+
         // Group orders by driver and calculate total fuel consumption and cost
-        const driverConsumption: Record<string, {
-          name: string;
-          phone: string;
-          totalFuel: number;
-          totalCost: number;
-          fuelType: string;
-        }> = {};
+        const driverConsumption: Record<
+          string,
+          {
+            name: string;
+            phone: string;
+            totalFuel: number;
+            totalCost: number;
+            fuelType: string;
+          }
+        > = {};
 
         // Group orders by station and calculate usage
-        const stationUsage: Record<string, {
-          name: string;
-          address: string;
-          totalFuel: number;
-          totalPrice: number;
-          fuelType: string;
-        }> = {};
+        const stationUsage: Record<
+          string,
+          {
+            name: string;
+            address: string;
+            totalFuel: number;
+            totalPrice: number;
+            fuelType: string;
+          }
+        > = {};
 
-        orders.forEach(order => {
+        orders.forEach((order) => {
           // Process drivers
           const driverName = order.assignedDriver?.name;
-          const driverPhone = order.assignedDriver?.phoneNumber || order.assignedDriver?.phone || 'N/A';
-          
+          const driverPhone =
+            order.assignedDriver?.phoneNumber ||
+            order.assignedDriver?.phone ||
+            "N/A";
+
           if (driverName) {
             if (!driverConsumption[driverName]) {
               driverConsumption[driverName] = {
@@ -1088,7 +1221,7 @@ const MostUsedSection = () => {
                 phone: driverPhone,
                 totalFuel: 0,
                 totalCost: 0,
-                fuelType: '',
+                fuelType: "",
               };
             }
 
@@ -1101,10 +1234,11 @@ const MostUsedSection = () => {
             driverConsumption[driverName].totalCost += cost;
 
             // Get fuel type (use the most common one)
-            const fuelType = order.selectedOption?.name?.ar || 
-                           order.selectedOption?.label || 
-                           order.service?.title?.ar ||
-                           'وقود';
+            const fuelType =
+              order.selectedOption?.name?.ar ||
+              order.selectedOption?.label ||
+              order.service?.title?.ar ||
+              "وقود";
             if (!driverConsumption[driverName].fuelType) {
               driverConsumption[driverName].fuelType = fuelType;
             }
@@ -1112,19 +1246,21 @@ const MostUsedSection = () => {
 
           // Process stations
           const stationName = order.carStation?.name || order.station?.name;
-          const stationAddress = order.carStation?.address || 
-                                order.carStation?.formattedLocation?.address?.formatted ||
-                                order.station?.address ||
-                                'N/A';
-          
+          const stationAddress =
+            order.carStation?.address ||
+            order.carStation?.formattedLocation?.address?.formatted ||
+            order.station?.address ||
+            "N/A";
+
           if (stationName) {
             if (!stationUsage[stationName]) {
               stationUsage[stationName] = {
                 name: stationName,
-                address: typeof stationAddress === 'string' ? stationAddress : 'N/A',
+                address:
+                  typeof stationAddress === "string" ? stationAddress : "N/A",
                 totalFuel: 0,
                 totalPrice: 0,
-                fuelType: '',
+                fuelType: "",
               };
             }
 
@@ -1137,10 +1273,11 @@ const MostUsedSection = () => {
             stationUsage[stationName].totalPrice += price;
 
             // Get fuel type
-            const fuelType = order.selectedOption?.name?.ar || 
-                           order.selectedOption?.label || 
-                           order.service?.title?.ar ||
-                           'وقود';
+            const fuelType =
+              order.selectedOption?.name?.ar ||
+              order.selectedOption?.label ||
+              order.service?.title?.ar ||
+              "وقود";
             if (!stationUsage[stationName].fuelType) {
               stationUsage[stationName].fuelType = fuelType;
             }
@@ -1152,8 +1289,8 @@ const MostUsedSection = () => {
           .sort((a, b) => b.totalCost - a.totalCost)
           .slice(0, 5); // Top 5 drivers
 
-        console.log('\n👥 Top 5 Most Consuming Drivers:');
-        console.log('========================');
+        console.log("\n👥 Top 5 Most Consuming Drivers:");
+        console.log("========================");
         sortedDrivers.forEach((driver, index) => {
           console.log(`Driver ${index + 1}:`, {
             name: driver.name,
@@ -1162,10 +1299,10 @@ const MostUsedSection = () => {
             fuelType: driver.fuelType,
           });
         });
-        console.log('========================\n');
+        console.log("========================\n");
 
         // Transform drivers to table format
-        const transformedDrivers = sortedDrivers.map(driver => ({
+        const transformedDrivers = sortedDrivers.map((driver) => ({
           name: driver.name,
           phone: driver.phone,
           cost: Math.round(driver.totalCost),
@@ -1180,8 +1317,8 @@ const MostUsedSection = () => {
           .sort((a, b) => b.totalPrice - a.totalPrice)
           .slice(0, 5); // Top 5 stations
 
-        console.log('\n⛽ Top 5 Most Used Stations:');
-        console.log('========================');
+        console.log("\n⛽ Top 5 Most Used Stations:");
+        console.log("========================");
         sortedStations.forEach((station, index) => {
           console.log(`Station ${index + 1}:`, {
             name: station.name,
@@ -1191,10 +1328,10 @@ const MostUsedSection = () => {
             fuelType: station.fuelType,
           });
         });
-        console.log('========================\n');
+        console.log("========================\n");
 
         // Transform stations to table format
-        const transformedStations = sortedStations.map(station => ({
+        const transformedStations = sortedStations.map((station) => ({
           name: station.name,
           address: station.address,
           price: Math.round(station.totalPrice),
@@ -1204,7 +1341,7 @@ const MostUsedSection = () => {
 
         setTopStations(transformedStations);
       } catch (error) {
-        console.error('Error loading top data:', error);
+        console.error("Error loading top data:", error);
       }
     };
 
@@ -1222,8 +1359,10 @@ const MostUsedSection = () => {
       width: "min-w-[100px]",
       render: (value: any, station: any) => (
         <div className="text-right">
-          <div className="font-medium text-orange-500">{station?.fuel || 'N/A'}</div>
-          <div className="text-gray-500">{station?.type || 'N/A'}</div>
+          <div className="font-medium text-orange-500">
+            {station?.fuel || "N/A"}
+          </div>
+          <div className="text-gray-500">{station?.type || "N/A"}</div>
         </div>
       ),
     },
@@ -1233,7 +1372,9 @@ const MostUsedSection = () => {
       width: "min-w-[100px]",
       render: (value: any, station: any) => (
         <div className="text-right">
-          <div className="font-medium text-blue-600">{station?.price || 'N/A'}</div>
+          <div className="font-medium text-blue-600">
+            {station?.price || "N/A"}
+          </div>
           <div className="text-gray-500">ر.س</div>
         </div>
       ),
@@ -1246,10 +1387,10 @@ const MostUsedSection = () => {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {station?.name || 'N/A'}
+              {station?.name || "N/A"}
             </div>
             <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {station?.address || 'N/A'}
+              {station?.address || "N/A"}
             </div>
           </div>
           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -1268,8 +1409,10 @@ const MostUsedSection = () => {
       width: "min-w-[100px]",
       render: (value: any, driver: any) => (
         <div className="text-right">
-          <div className="font-medium text-orange-500">{driver?.fuel || 'N/A'}</div>
-          <div className="text-gray-500">{driver?.type || 'N/A'}</div>
+          <div className="font-medium text-orange-500">
+            {driver?.fuel || "N/A"}
+          </div>
+          <div className="text-gray-500">{driver?.type || "N/A"}</div>
         </div>
       ),
     },
@@ -1279,7 +1422,9 @@ const MostUsedSection = () => {
       width: "min-w-[100px]",
       render: (value: any, driver: any) => (
         <div className="text-right">
-          <div className="font-medium text-blue-600">{driver?.cost || 'N/A'}</div>
+          <div className="font-medium text-blue-600">
+            {driver?.cost || "N/A"}
+          </div>
           <div className="text-gray-500">ر.س</div>
         </div>
       ),
@@ -1292,10 +1437,10 @@ const MostUsedSection = () => {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="font-medium text-gray-800 [direction:rtl] text-right">
-              {driver?.name || 'N/A'}
+              {driver?.name || "N/A"}
             </div>
             <div className="text-sm text-gray-500 [direction:rtl] text-right">
-              {driver?.phone || 'N/A'}
+              {driver?.phone || "N/A"}
             </div>
           </div>
           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -1321,12 +1466,7 @@ const MostUsedSection = () => {
           </div>
         </div>
 
-        <Table
-          columns={stationsColumns}
-          data={stationsData}
-          className="mb-4"
-        />
-        
+        <Table columns={stationsColumns} data={stationsData} className="mb-4" />
       </div>
 
       {/* Most Consuming Drivers */}
@@ -1342,12 +1482,7 @@ const MostUsedSection = () => {
           </div>
         </div>
 
-        <Table
-          columns={driversColumns}
-          data={driversData}
-          className="mb-4"
-        />
-        
+        <Table columns={driversColumns} data={driversData} className="mb-4" />
       </div>
     </section>
   );
@@ -1362,18 +1497,22 @@ const LatestOrdersSection = () => {
     const loadRecentOrders = async () => {
       try {
         const orders = await fetchOrders();
-        
+
         // Sort by createdDate (most recent first) and take top 5
         const sortedOrders = orders
           .sort((a, b) => {
-            const dateA = a.createdDate?.toDate ? a.createdDate.toDate() : new Date(a.createdDate || 0);
-            const dateB = b.createdDate?.toDate ? b.createdDate.toDate() : new Date(b.createdDate || 0);
+            const dateA = a.createdDate?.toDate
+              ? a.createdDate.toDate()
+              : new Date(a.createdDate || 0);
+            const dateB = b.createdDate?.toDate
+              ? b.createdDate.toDate()
+              : new Date(b.createdDate || 0);
             return dateB.getTime() - dateA.getTime();
           })
           .slice(0, 5);
 
-        console.log('\n📋 Latest Orders (Top 5):');
-        console.log('========================');
+        console.log("\n📋 Latest Orders (Top 5):");
+        console.log("========================");
         sortedOrders.forEach((order, index) => {
           console.log(`Order ${index + 1}:`, {
             id: order.id,
@@ -1383,35 +1522,38 @@ const LatestOrdersSection = () => {
             value: order.totalPrice,
           });
         });
-        console.log('========================\n');
+        console.log("========================\n");
 
         // Transform orders to table format with cumulative totals
         let cumulativeTotal = 0;
-        const transformedOrders = sortedOrders.map(order => {
+        const transformedOrders = sortedOrders.map((order) => {
           const value = parseFloat(order.totalPrice) || 0;
           cumulativeTotal += value;
 
           // Format date
-          let formattedDate = 'N/A';
+          let formattedDate = "N/A";
           if (order.createdDate) {
-            const date = order.createdDate?.toDate ? order.createdDate.toDate() : new Date(order.createdDate);
-            formattedDate = new Intl.DateTimeFormat('ar-SA', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
+            const date = order.createdDate?.toDate
+              ? order.createdDate.toDate()
+              : new Date(order.createdDate);
+            formattedDate = new Intl.DateTimeFormat("ar-SA", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             }).format(date);
           }
 
           return {
-            code: order.id || order.refId || 'N/A',
-            type: order.service?.title?.ar || 
-                  order.selectedOption?.name?.ar || 
-                  order.selectedOption?.label ||
-                  order.service?.title?.en ||
-                  'منتج',
-            driver: order.assignedDriver?.name || '--',
+            code: order.id || order.refId || "N/A",
+            type:
+              order.service?.title?.ar ||
+              order.selectedOption?.name?.ar ||
+              order.selectedOption?.label ||
+              order.service?.title?.en ||
+              "منتج",
+            driver: order.assignedDriver?.name || "--",
             date: formattedDate,
             value: Math.round(value).toString(),
             cumulative: Math.round(cumulativeTotal).toString(),
@@ -1420,7 +1562,7 @@ const LatestOrdersSection = () => {
 
         setRecentOrders(transformedOrders);
       } catch (error) {
-        console.error('Error loading recent orders:', error);
+        console.error("Error loading recent orders:", error);
       }
     };
 
@@ -1437,7 +1579,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[150px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.cumulative || 'N/A'}
+          {order?.cumulative || "N/A"}
         </div>
       ),
     },
@@ -1447,7 +1589,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[100px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.value || 'N/A'}
+          {order?.value || "N/A"}
         </div>
       ),
     },
@@ -1457,7 +1599,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[150px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.date || 'N/A'}
+          {order?.date || "N/A"}
         </div>
       ),
     },
@@ -1467,7 +1609,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[120px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.driver || 'N/A'}
+          {order?.driver || "N/A"}
         </div>
       ),
     },
@@ -1477,7 +1619,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[120px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.type || 'N/A'}
+          {order?.type || "N/A"}
         </div>
       ),
     },
@@ -1487,7 +1629,7 @@ const LatestOrdersSection = () => {
       width: "min-w-[120px]",
       render: (value: any, order: any) => (
         <div className="text-right text-sm text-gray-800 [direction:rtl]">
-          {order?.code || 'N/A'}
+          {order?.code || "N/A"}
         </div>
       ),
     },
@@ -1496,11 +1638,13 @@ const LatestOrdersSection = () => {
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <button 
+        <button
           onClick={() => goTo(ROUTES.WALLET)}
           className="flex items-center gap-2 px-3 py-2 border border-gray-500 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
-          <span className="text-sm font-medium [direction:rtl]">عرض المزيد</span>
+          <span className="text-sm font-medium [direction:rtl]">
+            عرض المزيد
+          </span>
         </button>
         <div className="inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
           <h3 className="mt-[-1.00px] font-[number:var(--subtitle-subtitle-2-font-weight)] text-color-mode-text-icons-t-sec text-[length:var(--subtitle-subtitle-2-font-size)] tracking-[var(--subtitle-subtitle-2-letter-spacing)] leading-[var(--subtitle-subtitle-2-line-height)] [direction:rtl] relative font-subtitle-subtitle-2 whitespace-nowrap [font-style:var(--subtitle-subtitle-2-font-style)]">
@@ -1510,11 +1654,7 @@ const LatestOrdersSection = () => {
         </div>
       </div>
 
-      <Table
-        columns={ordersColumns}
-        data={ordersData}
-        className="mb-4"
-      />
+      <Table columns={ordersColumns} data={ordersData} className="mb-4" />
     </section>
   );
 };

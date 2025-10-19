@@ -1,6 +1,6 @@
 import React from "react";
 
-export const Frame = (): JSX.Element => {
+export const SubscriptionMapSection = (): JSX.Element => {
   // Data for subscription stats
   const subscriptionStats = [
     {

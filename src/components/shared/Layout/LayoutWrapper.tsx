@@ -12,76 +12,83 @@ interface PageConfig {
 
 // Define page configurations for each route
 const PAGE_CONFIGS: Record<string, PageConfig> = {
-  '/dashboard': {
-    title: 'لوحة التحكم',
+  "/dashboard": {
+    title: "لوحة التحكم",
     titleIcon: <img src="/img/side-icons-1.svg" alt="" className="w-5 h-5" />,
   },
-  '/drivers': {
-    title: 'الســـــــــــــــائقين',
+  "/drivers": {
+    title: "الســـــــــــــــائقين",
     titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
     showSearch: true,
-    searchPlaceholder: 'بحث بالاسم، الهاتف، أو رقم السيارة...',
+    searchPlaceholder: "بحث بالاسم، الهاتف، أو رقم السيارة...",
   },
-  '/cars': {
-    title: 'السيــــــــــــارات',
+  "/cars": {
+    title: "السيــــــــــــارات",
     titleIcon: <img src="/img/side-icons-4.svg" alt="" className="w-5 h-5" />,
     showSearch: true,
-    searchPlaceholder: 'بحث بالاسم، الماركة، الرقم، أو الطراز...',
+    searchPlaceholder: "بحث بالاسم، الماركة، الرقم، أو الطراز...",
   },
-  '/wallet': {
-    title: 'محفظــــــــــــتي',
+  "/wallet": {
+    title: "محفظــــــــــــتي",
     titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
   },
-  '/financialreports': {
-    title: 'تقرير المبيعات',
+  "/financialreports": {
+    title: "تقرير المبيعات",
     titleIcon: <img src="/img/side-icons-5.svg" alt="" className="w-5 h-5" />,
   },
-  '/walletreports': {
-    title: 'تقرير المحفظة',
+  "/walletreports": {
+    title: "تقرير المحفظة",
     titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
   },
-  '/fuel-delivery': {
-    title: 'طلبات توصيل الوقود',
+  "/fuel-delivery": {
+    title: "طلبات توصيل الوقود",
     titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
   },
-  '/perolifestationlocations': {
-    title: 'محطات البترول',
+  "/perolifestationlocations": {
+    title: "محطات البترول",
     titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
   },
-  '/moneyrefundrequests': {
-    title: 'طلبات الاسترداد',
+  "/moneyrefundrequests": {
+    title: "طلبات الاسترداد",
     titleIcon: <img src="/img/side-icons-10.svg" alt="" className="w-5 h-5" />,
   },
-  '/walletchargerequests': {
-    title: 'طلبات الشحن',
+  "/walletchargerequests": {
+    title: "طلبات الشحن",
     titleIcon: <img src="/img/side-icons-11.svg" alt="" className="w-5 h-5" />,
   },
-  '/chargewallet': {
-    title: 'شحن المحفظة',
+  "/chargewallet": {
+    title: "شحن المحفظة",
     titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
   },
-  '/store': {
-    title: 'المتجر',
+  "/store": {
+    title: "المتجر",
     titleIcon: <img src="/img/side-icons-10.svg" alt="" className="w-5 h-5" />,
   },
-  '/subscriptions': {
-    title: 'اشتراكاتي',
+  "/subscriptions": {
+    title: "اشتراكاتي",
     titleIcon: <img src="/img/side-icons-11.svg" alt="" className="w-5 h-5" />,
   },
-  '/adddriver': {
-    title: 'إضافة سائق',
+  "/invoices": {
+    title: "الفواتير",
+    titleIcon: <img src="/img/side-icons-5.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder:
+      "بحث برقم العميل / العملية السجل التجاري / رقم الهاتف...",
+  },
+  "/adddriver": {
+    title: "إضافة سائق",
     titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
   },
-  '/addcar': {
-    title: 'إضافة سيارة',
+  "/addcar": {
+    title: "إضافة سيارة",
     titleIcon: <img src="/img/side-icons-4.svg" alt="" className="w-5 h-5" />,
   },
-  '/create-delivery-request': {
-    title: 'إنشاء طلب توصيل',
+  "/create-delivery-request": {
+    title: "إنشاء طلب توصيل",
     titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
   },
-  '/test-transfer': {
-    title: 'بيانات النقل المفلترة',
+  "/test-transfer": {
+    title: "بيانات النقل المفلترة",
     titleIcon: <img src="/img/side-icons-1.svg" alt="" className="w-5 h-5" />,
   },
 };
@@ -94,16 +101,16 @@ const getPageConfig = (pathname: string): PageConfig | null => {
   }
 
   // Check for dynamic routes
-  if (pathname.startsWith('/driver/')) {
+  if (pathname.startsWith("/driver/")) {
     return {
-      title: 'تفاصيل السائق',
+      title: "تفاصيل السائق",
       titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
     };
   }
 
-  if (pathname.startsWith('/car/')) {
+  if (pathname.startsWith("/car/")) {
     return {
-      title: 'تفاصيل السيارة',
+      title: "تفاصيل السيارة",
       titleIcon: <img src="/img/side-icons-4.svg" alt="" className="w-5 h-5" />,
     };
   }
@@ -150,4 +157,3 @@ export const LayoutWrapper: React.FC = () => {
     </LayoutSimple>
   );
 };
-

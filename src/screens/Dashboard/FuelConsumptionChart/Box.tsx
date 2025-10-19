@@ -4,7 +4,7 @@ import { FrameWrapperSubsection } from "./sections/FrameWrapperSubsection/FrameW
 import { GraphSubsection } from "./sections/GraphSubsection";
 import { GroupSubsection } from "./sections/GroupSubsection";
 
-export const Box = (): JSX.Element => {
+export const FuelConsumptionChart = (): JSX.Element => {
   // Y-axis scale data for the chart
   const yAxisLabels = [110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
 
