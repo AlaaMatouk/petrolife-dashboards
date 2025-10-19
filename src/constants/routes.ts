@@ -15,6 +15,7 @@ export const ROUTES = {
   // Wallet and financial
   WALLET: '/wallet',
   CHARGE_WALLET: '/chargewallet',
+  TRANSFER_MONEY: '/transfermoney',
   FINANCIAL_REPORTS: '/financialreports',
   WALLET_REPORTS: '/walletreports',
   

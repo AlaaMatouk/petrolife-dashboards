@@ -1471,8 +1471,11 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
     
     // Transform each order to financial report format
     const reportData = orders.map((order, index) => {
-      // Extract city from city.name
-      const city = order.city?.name || '-';
+      // Extract city from document.carStation.address
+      const city = order.document?.carStation?.address || 
+                   order.carStation?.address || 
+                   order.city?.name || 
+                   '-';
       
       // Extract station name from carStation.name
       const stationName = order.carStation?.name || '-';
@@ -1480,8 +1483,8 @@ export const fetchFinancialReportData = async (): Promise<any[]> => {
       // Extract date from createdDate
       const date = order.createdDate || order.orderDate || null;
       
-      // Extract operation number from id
-      const operationNumber = order.id || order.refId || '-';
+      // Extract operation number from document.refId
+      const operationNumber = order.document?.refId || order.refId || order.id || '-';
       
       // Extract quantity from cartItems[0].quantity
       const quantity = order.cartItems?.[0]?.quantity || 
@@ -1848,6 +1851,30 @@ export const fetchProducts = async (): Promise<any[]> => {
     return products;
   } catch (error) {
     console.error('Error fetching products:', error);
+    return [];
+  }
+};
+
+/**
+ * Fetch all services from Firestore
+ * @returns Promise with services data
+ */
+export const fetchServices = async (): Promise<any[]> => {
+  try {
+    console.log('📋 Fetching services from Firestore...');
+    
+    const servicesCollection = collection(db, 'services');
+    const servicesSnapshot = await getDocs(servicesCollection);
+    
+    const services = servicesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    console.log('✅ Fetched services:', services.length);
+    return services;
+  } catch (error) {
+    console.error('❌ Error fetching services:', error);
     return [];
   }
 };

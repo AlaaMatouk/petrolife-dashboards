@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Table, Pagination, ExportButton, RTLSelect } from "../../../../components/shared";
 import { UserRound, ChartNoAxesCombined } from "lucide-react";
-import { fetchFinancialReportData } from "../../../../services/firestore";
+import { fetchFinancialReportData, fetchServices, fetchCompaniesDrivers } from "../../../../services/firestore";
 import { LoadingSpinner } from "../../../../components/shared/Spinner/LoadingSpinner";
 import { useAuth } from "../../../../hooks/useGlobalState";
 import { exportFinancialReport, getFilteredFinancialData, FinancialReportData, FinancialReportFilters } from "../../../../services/exportService";
 import { useToast } from "../../../../context/ToastContext";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../../../config/firebase";
 
 const clientData = {
   phone: "00966254523658",
@@ -257,6 +259,9 @@ export const DataTableSection = (): JSX.Element => {
   const { company } = useAuth();
   const { addToast } = useToast();
   const [reportData, setReportData] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [carStations, setCarStations] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -302,14 +307,32 @@ export const DataTableSection = (): JSX.Element => {
     }
   };
 
-  // Fetch financial report data
+  // Fetch financial report data, services, car stations, and drivers
   useEffect(() => {
-    const loadReportData = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await fetchFinancialReportData();
-        setReportData(data);
+        
+        // Fetch report data, services, and drivers
+        const [reportDataResult, servicesResult, driversResult] = await Promise.all([
+          fetchFinancialReportData(),
+          fetchServices(),
+          fetchCompaniesDrivers()
+        ]);
+        
+        // Fetch car stations separately
+        const carStationsRef = collection(db, 'carstations');
+        const carStationsSnapshot = await getDocs(carStationsRef);
+        const carStationsData = carStationsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setReportData(reportDataResult);
+        setServices(servicesResult);
+        setCarStations(carStationsData);
+        setDrivers(driversResult);
       } catch (err) {
         console.error('Error loading financial report data:', err);
         setError('فشل في تحميل بيانات التقارير المالية');
@@ -318,7 +341,7 @@ export const DataTableSection = (): JSX.Element => {
       }
     };
 
-    loadReportData();
+    loadData();
   }, []);
 
   const handleFilterChange = (filterKey: string, value: string) => {
@@ -384,9 +407,38 @@ export const DataTableSection = (): JSX.Element => {
   }));
 
   // Extract unique values for filter options
-  const uniqueProductTypes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.productType).filter(Boolean)))];
-  const uniqueDriverCodes = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.driverCode).filter(Boolean)))];
-  const uniqueCities = ['الكل', ...Array.from(new Set(transformedTableData.map(item => item.city).filter(Boolean)))];
+  // Get product types from services collection (title.ar)
+  const uniqueProductTypes = [
+    'الكل', 
+    ...services
+      .map(service => service.title?.ar)
+      .filter(Boolean)
+      .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+  ];
+  
+  // Get driver codes from companies-drivers collection (filtered by current company)
+  const uniqueDriverCodes = [
+    'الكل',
+    ...drivers
+      .map(driver => driver.id) // Get the document ID
+      .filter(Boolean) // Remove null/undefined values
+  ];
+  
+  // Get cities from carstations collection (address field)
+  const uniqueCities = [
+    'الكل',
+    ...Array.from(new Set(
+      carStations
+        .map(station => {
+          // Extract address from different possible locations
+          return station.formattedLocation?.address?.city || 
+                 station.address?.city || 
+                 station.city || 
+                 station.address;
+        })
+        .filter(Boolean) // Remove null/undefined values
+    ))
+  ];
 
   // Apply filters to data
   const filteredTableData = transformedTableData.filter(item => {
