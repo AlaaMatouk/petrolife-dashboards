@@ -27,14 +27,17 @@ import { ServiceDistributerDashboard } from '../components/ServiceDistributerDas
 import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
 import { Stations } from '../screens/Stations';
 import { TestTransfer } from '../screens/TestTransfer';
-import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
-import { Supervisors } from '../components/AdminDashboard/pages/Supervisors';
 import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
 import { FuelStationRequests } from '../screens/FuelStationRequests';
 import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
 import { ServiceDistributerStationLocations } from '../screens/ServiceDistributerStationLocations';
 import { ServiceDistributerInvoices } from '../screens/ServiceDistributerInvoices';
 import { IconPreview } from '../screens/IconPreview';
+// admin dashboard
+import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
+import { Supervisors } from '../components/AdminDashboard/pages/supervisors/Supervisors';
+import { AddSupervisor } from '../components/AdminDashboard/pages/supervisors/AddSupervisor';
+import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisors/SupervisorDetails';
 
 
 // 404 Component
@@ -58,6 +61,8 @@ export const AppRouter = () => {
       <Route element={<AdminLayoutWrapper />}>
         <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
         <Route path={ROUTES.SUPERVISORS} element={<Supervisors />} />
+        <Route path={ROUTES.ADD_SUPERVISOR} element={<AddSupervisor />} />
+        <Route path={ROUTES.SUPERVISOR_DETAILS} element={<SupervisorDetails />} />
       </Route>
       
       {/* All Protected Routes with Layout Wrapper */}

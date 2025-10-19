@@ -47,6 +47,8 @@ export const ROUTES = {
   // Admin Dashboard
   ADMIN_DASHBOARD: '/admin-dashboard',
   SUPERVISORS: '/supervisors',
+  SUPERVISOR_DETAILS: '/supervisors/:id',
+  ADD_SUPERVISOR: '/supervisors/add',
   COMPANIES: '/companies',
   PEOPLE: '/people',
   SERVICE_PROVIDERS: '/serviceproviders',

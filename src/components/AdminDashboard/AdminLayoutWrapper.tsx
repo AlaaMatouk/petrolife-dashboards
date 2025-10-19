@@ -25,6 +25,11 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     showSearch: true,
     searchPlaceholder: 'بحث عن مشرف...',
   },
+  '/supervisors/add': {
+    title: 'إضافة مشرف جديد',
+    titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+    showSearch: false,
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -32,6 +37,15 @@ const getPageConfig = (pathname: string): PageConfig | null => {
   // Direct match
   if (ADMIN_PAGE_CONFIGS[pathname]) {
     return ADMIN_PAGE_CONFIGS[pathname];
+  }
+
+  // Match dynamic routes (e.g., /supervisors/:id)
+  if (pathname.startsWith('/supervisors/') && pathname !== '/supervisors/add') {
+    return {
+      title: 'تفاصيل المشرف',
+      titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
   }
 
   return null;
