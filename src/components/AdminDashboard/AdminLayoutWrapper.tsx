@@ -26,7 +26,7 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     searchPlaceholder: 'بحث عن مشرف...',
   },
   '/supervisors/add': {
-    title: 'إضافة مشرف جديد',
+    title: 'المشرفين / اضافة مشرف جديد',
     titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
@@ -42,7 +42,7 @@ const getPageConfig = (pathname: string): PageConfig | null => {
   // Match dynamic routes (e.g., /supervisors/:id)
   if (pathname.startsWith('/supervisors/') && pathname !== '/supervisors/add') {
     return {
-      title: 'تفاصيل المشرف',
+      title: 'المشرفين / تفاصيل المشرف',
       titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
@@ -54,23 +54,32 @@ const getPageConfig = (pathname: string): PageConfig | null => {
 export const AdminLayoutWrapper: React.FC = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [dynamicTitle, setDynamicTitle] = React.useState<string | null>(null);
 
   const pageConfig = getPageConfig(location.pathname);
 
+  // Reset dynamic title when pathname changes
+  React.useEffect(() => {
+    setDynamicTitle(null);
+  }, [location.pathname]);
+
   // If no config found, render without layout
   if (!pageConfig) {
-    return <Outlet context={{ searchQuery, setSearchQuery }} />;
+    return <Outlet context={{ searchQuery, setSearchQuery, setDynamicTitle }} />;
   }
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
 
+  // Use dynamic title if set, otherwise use config title
+  const displayTitle = dynamicTitle || pageConfig.title;
+
   return (
     <LayoutSimple
       headerProps={{
         admin: true,
-        title: pageConfig.title,
+        title: displayTitle,
         titleIconSrc: pageConfig.titleIcon,
         showSearch: pageConfig.showSearch,
         searchProps: pageConfig.showSearch
@@ -88,7 +97,7 @@ export const AdminLayoutWrapper: React.FC = () => {
         userInfo: userInfo,
       }}
     >
-      <Outlet context={{ searchQuery, setSearchQuery }} />
+      <Outlet context={{ searchQuery, setSearchQuery, setDynamicTitle }} />
     </LayoutSimple>
   );
 };

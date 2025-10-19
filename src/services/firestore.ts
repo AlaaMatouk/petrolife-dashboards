@@ -2705,6 +2705,37 @@ export const fetchNotifications = async () => {
 };
 
 /**
+ * Fetch a single supervisor by ID from mock data
+ * @param supervisorId - Supervisor ID
+ * @returns Promise with the supervisor data
+ */
+export const fetchSupervisorById = async (supervisorId: string) => {
+  try {
+    console.log('Fetching supervisor by ID:', supervisorId);
+    
+    // Import mock data from Supervisors.tsx to avoid duplication
+    const { mockSupervisorsData } = await import('../components/AdminDashboard/pages/supervisors/Supervisors');
+    
+    // Find supervisor by ID
+    const supervisor = mockSupervisorsData.find(s => s.id === parseInt(supervisorId));
+    
+    if (!supervisor) {
+      throw new Error('Supervisor not found');
+    }
+    
+    console.log('Supervisor data fetched (mock):', supervisor);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return supervisor;
+  } catch (error) {
+    console.error('Error fetching supervisor by ID:', error);
+    throw error;
+  }
+};
+
+/**
  * Interface for fuel station data
  */
 export interface FuelStation {
