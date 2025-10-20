@@ -2599,6 +2599,53 @@ export const getCompaniesCountByType = async (): Promise<{
 };
 
 /**
+ * Fetch supervisors from users collection
+ * Filters users where isAdmin === true OR isSuperAdmin === true
+ * @returns Promise with array of supervisor data
+ */
+export const fetchSupervisorsFromUsers = async (): Promise<any[]> => {
+  try {
+    console.log("\n👔 FETCHING SUPERVISORS FROM USERS COLLECTION");
+    console.log("====================================");
+
+    const usersRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersRef);
+
+    const supervisors: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Filter by isAdmin or isSuperAdmin
+      if (data.isAdmin === true || data.isSuperAdmin === true) {
+        supervisors.push({
+          id: doc.id,
+          supervisorCode: data.uid || data.id || doc.id || "-",
+          supervisorName: data.name || data.fullName || data.displayName || "-",
+          phone: data.phoneNumber || data.phone || "-",
+          email: data.email || "-",
+          city: data.city || data.location || "-",
+          accountStatus: {
+            active: data.isActive === true,
+            text: data.isActive === true ? "مفعل" : "معطل",
+          },
+          // Keep original data for reference
+          ...data,
+        });
+      }
+    });
+
+    console.log(`✅ Found ${supervisors.length} supervisors/admins`);
+    console.log("====================================\n");
+
+    return supervisors;
+  } catch (error) {
+    console.error("❌ Error fetching supervisors:", error);
+    throw error;
+  }
+};
+
+/**
  * Calculate total users count by type from all collections
  * @returns Promise with users breakdown
  */
@@ -2625,11 +2672,11 @@ export const getTotalUsersByType = async (): Promise<{
       getDocs(collection(db, "stationscompany")),
     ]);
 
-    // Count supervisors (users where isSupervisory === true)
+    // Count supervisors/admins (users where isAdmin === true OR isSuperAdmin === true)
     let supervisorsCount = 0;
     usersSnapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.isSupervisory === true) {
+      if (data.isAdmin === true || data.isSuperAdmin === true) {
         supervisorsCount++;
       }
     });
@@ -3499,26 +3546,42 @@ export const fetchNotifications = async () => {
  */
 export const fetchSupervisorById = async (supervisorId: string) => {
   try {
-    console.log('Fetching supervisor by ID:', supervisorId);
-    
-    // Import mock data from Supervisors.tsx to avoid duplication
-    const { mockSupervisorsData } = await import('../components/AdminDashboard/pages/supervisors/Supervisors');
-    
-    // Find supervisor by ID
-    const supervisor = mockSupervisorsData.find(s => s.id === parseInt(supervisorId));
-    
-    if (!supervisor) {
-      throw new Error('Supervisor not found');
+    console.log("Fetching supervisor by ID:", supervisorId);
+
+    // Fetch the specific user document from Firestore
+    const userDocRef = doc(db, "users", supervisorId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("Supervisor not found");
     }
-    
-    console.log('Supervisor data fetched (mock):', supervisor);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+    const data = userDoc.data();
+
+    // Verify user is admin or super admin
+    if (data.isAdmin !== true && data.isSuperAdmin !== true) {
+      throw new Error("User is not a supervisor/admin");
+    }
+
+    const supervisor = {
+      id: userDoc.id,
+      supervisorCode: data.uid || data.id || userDoc.id || "-",
+      supervisorName: data.name || data.fullName || data.displayName || "-",
+      phone: data.phoneNumber || data.phone || "-",
+      email: data.email || "-",
+      city: data.city || data.location || "-",
+      accountStatus: {
+        active: data.isActive === true,
+        text: data.isActive === true ? "مفعل" : "معطل",
+      },
+      ...data,
+    };
+
+    console.log("Supervisor data fetched:", supervisor);
+
     return supervisor;
   } catch (error) {
-    console.error('Error fetching supervisor by ID:', error);
+    console.error("Error fetching supervisor by ID:", error);
     throw error;
   }
 };
