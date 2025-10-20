@@ -28,22 +28,74 @@ export interface StatData {
   type?: string;
 }
 
+export interface FuelUsageData {
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
+  totalClientsBalance?: number;
+  fuelUsageData?: FuelUsageData;
 }
 
-const StatsCardsSection = ({ 
-  statsData, 
-  defaultSelectedOptions = {} 
+const StatsCardsSection = ({
+  statsData,
+  defaultSelectedOptions = {},
+  totalClientsBalance,
+  fuelUsageData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
   }>(defaultSelectedOptions);
 
+  // Update wallet balance and fuel usage in statsData if provided
+  const updatedStatsData = statsData.map((stat) => {
+    // Update wallet balance
+    if (stat.type === "wallet" && totalClientsBalance !== undefined) {
+      return {
+        ...stat,
+        amount: new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(totalClientsBalance),
+      };
+    }
+
+    // Update fuel usage data
+    if (stat.title === "اجمالي اللترات" && fuelUsageData) {
+      return {
+        ...stat,
+        breakdown: [
+          {
+            type: "ديزل",
+            amount: `${fuelUsageData.diesel.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-orange",
+          },
+          {
+            type: "بنزين 95",
+            amount: `${fuelUsageData.gasoline95.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-red",
+          },
+          {
+            type: "بنزين 91",
+            amount: `${fuelUsageData.gasoline91.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-green",
+          },
+        ],
+        total: { name: "الاجمالي", count: fuelUsageData.total },
+      };
+    }
+
+    return stat;
+  });
+
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {statsData.map((stat, index) => (
+      {updatedStatsData.map((stat, index) => (
         <div
           key={index}
           className="relative w-full bg-color-mode-surface-bg-screen rounded-[16px] rounded-bl-[28px] border-[0.2px] border-solid border-[#A9B4BE] p-6 flex flex-col justify-between"
@@ -163,4 +215,3 @@ const StatsCardsSection = ({
 };
 
 export default StatsCardsSection;
-

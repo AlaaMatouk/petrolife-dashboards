@@ -2297,6 +2297,217 @@ export const fetchCurrentCompany = async (): Promise<any> => {
   }
 };
 
+/**
+ * Fetch ALL clients from Firestore (for admin dashboard)
+ * @returns Promise with all clients data
+ */
+export const fetchAllClients = async (): Promise<any[]> => {
+  try {
+    console.log("\n👥 Fetching ALL clients data from Firestore...");
+
+    const clientsRef = collection(db, "clients");
+    const querySnapshot = await getDocs(clientsRef);
+
+    const clientsData: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      clientsData.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log(`✅ Fetched ${clientsData.length} clients`);
+    return clientsData;
+  } catch (error) {
+    console.error("❌ Error fetching all clients:", error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate total wallet balance from all clients
+ * @returns Promise with total balance sum
+ */
+export const getTotalClientsBalance = async (): Promise<number> => {
+  try {
+    const clients = await fetchAllClients();
+
+    const totalBalance = clients.reduce((sum, client) => {
+      const balance = parseFloat(client.balance) || 0;
+      return sum + balance;
+    }, 0);
+
+    console.log(`💰 Total clients wallet balance: ${totalBalance.toFixed(2)}`);
+    return totalBalance;
+  } catch (error) {
+    console.error("❌ Error calculating total clients balance:", error);
+    return 0;
+  }
+};
+
+/**
+ * Fetch ALL orders from Firestore (for admin dashboard - no filtering)
+ * @returns Promise with all orders data
+ */
+export const fetchAllOrders = async (): Promise<any[]> => {
+  try {
+    console.log("\n📦 Fetching ALL orders data from Firestore...");
+
+    const ordersRef = collection(db, "orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allOrdersData: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrdersData.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log(`✅ Fetched ${allOrdersData.length} orders`);
+    return allOrdersData;
+  } catch (error) {
+    console.error("❌ Error fetching all orders:", error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate total fuel liter usage by type from all orders
+ * @returns Promise with fuel usage breakdown
+ */
+export const getTotalFuelUsageByType = async (): Promise<{
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}> => {
+  try {
+    const orders = await fetchAllOrders();
+
+    let dieselTotal = 0;
+    let gasoline95Total = 0;
+    let gasoline91Total = 0;
+
+    console.log(`\n📦 Total orders fetched (unfiltered): ${orders.length}`);
+    console.log(
+      "📑 Sample of first 5 orders (keys):",
+      orders.slice(0, 5).map((o: any) => ({
+        id: o.id || o.refId,
+        fuelType:
+          o.fuelType ||
+          o.productType ||
+          o?.selectedOption?.name?.ar ||
+          o?.service?.title?.ar,
+        totalLitre: o.totalLitre,
+        totalLiter: (o as any).totalLiter,
+        quantity: o.quantity,
+        selectedQuantity: o?.selectedOption?.quantity,
+        liters: o.liters,
+      }))
+    );
+
+    orders.forEach((order, idx) => {
+      // Derive fuel type using same fallbacks as companies dashboard
+      let fuelType = "";
+      if (order?.selectedOption?.name?.ar)
+        fuelType = order.selectedOption.name.ar;
+      else if (order?.selectedOption?.name?.en)
+        fuelType = order.selectedOption.name.en;
+      else if (order?.selectedOption?.label)
+        fuelType = order.selectedOption.label;
+      else if (order?.selectedOption?.title?.ar)
+        fuelType = order.selectedOption.title.ar;
+      else if (order?.selectedOption?.title?.en)
+        fuelType = order.selectedOption.title.en;
+      else if (order?.service?.title?.ar) fuelType = order.service.title.ar;
+      else if (order?.service?.title?.en) fuelType = order.service.title.en;
+      else if (order?.fuelType) fuelType = order.fuelType;
+      else if (order?.productType) fuelType = order.productType;
+
+      // Derive litres from multiple possible fields
+      const rawLitres =
+        order?.totalLitre ??
+        (order as any)?.totalLiter ??
+        order?.quantity ??
+        order?.selectedOption?.quantity ??
+        order?.liters ??
+        0;
+      const liters = parseFloat(String(rawLitres)) || 0;
+
+      const normalizedType = String(fuelType).toLowerCase().trim();
+
+      let matched = false;
+      if (
+        normalizedType.includes("ديزل") ||
+        normalizedType.includes("diesel")
+      ) {
+        dieselTotal += liters;
+        matched = true;
+      } else if (
+        normalizedType.includes("95") ||
+        normalizedType.includes("بنزين 95") ||
+        normalizedType.includes("gasoline 95")
+      ) {
+        gasoline95Total += liters;
+        matched = true;
+      } else if (
+        normalizedType.includes("91") ||
+        normalizedType.includes("بنزين 91") ||
+        normalizedType.includes("gasoline 91")
+      ) {
+        gasoline91Total += liters;
+        matched = true;
+      }
+
+      if (idx < 15) {
+        console.log(`🔎 Order ${idx + 1}:`, {
+          id: order.id || order.refId,
+          fuelType: fuelType || "",
+          normalizedType,
+          liters,
+          matchedCategory: matched
+            ? normalizedType.includes("ديزل") ||
+              normalizedType.includes("diesel")
+              ? "ديزل"
+              : normalizedType.includes("95")
+              ? "بنزين 95"
+              : normalizedType.includes("91")
+              ? "بنزين 91"
+              : "-"
+            : "-",
+        });
+      }
+    });
+
+    const total = dieselTotal + gasoline95Total + gasoline91Total;
+
+    console.log("⛽ Fuel usage breakdown:");
+    console.log(`  ديزل: ${dieselTotal.toFixed(0)} L`);
+    console.log(`  بنزين 95: ${gasoline95Total.toFixed(0)} L`);
+    console.log(`  بنزين 91: ${gasoline91Total.toFixed(0)} L`);
+    console.log(`  Total: ${total.toFixed(0)} L`);
+
+    return {
+      diesel: dieselTotal,
+      gasoline95: gasoline95Total,
+      gasoline91: gasoline91Total,
+      total: total,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating fuel usage:", error);
+    return {
+      diesel: 0,
+      gasoline95: 0,
+      gasoline91: 0,
+      total: 0,
+    };
+  }
+};
+
 // ==================== HELPER FUNCTIONS ====================
 
 /**

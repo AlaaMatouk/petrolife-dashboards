@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // import { useOutletContext } from "react-router-dom"; // Uncomment when using search functionality
 import { Table, TimeFilter } from "../../components/shared";
 import { MapPin, Fuel, Download } from "lucide-react";
 import MostUsedSection from "./MostUsedSection";
-import StatsCardsSection from "./StatsCardsSection";
+import StatsCardsSection, { FuelUsageData } from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
 import { Map } from "../../screens/PerolifeStationLocations/sections/map/Map";
+import {
+  getTotalClientsBalance,
+  getTotalFuelUsageByType,
+} from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
 // interface OutletContextType {
@@ -543,12 +547,62 @@ export const DashboardContent = (): JSX.Element => {
   // const { searchQuery } = useOutletContext<OutletContextType>();
   // console.log("Current search query:", searchQuery);
 
+  // State for total clients wallet balance
+  const [totalClientsBalance, setTotalClientsBalance] = useState<
+    number | undefined
+  >(undefined);
+  const [loadingBalance, setLoadingBalance] = useState(true);
+
+  // State for fuel usage data
+  const [fuelUsageData, setFuelUsageData] = useState<FuelUsageData>({
+    diesel: 0,
+    gasoline95: 0,
+    gasoline91: 0,
+    total: 0,
+  });
+  const [loadingFuelData, setLoadingFuelData] = useState(true);
+
+  // Fetch total clients balance and fuel usage data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoadingBalance(true);
+        setLoadingFuelData(true);
+
+        // Fetch both data in parallel
+        const [balance, fuelData] = await Promise.all([
+          getTotalClientsBalance(),
+          getTotalFuelUsageByType(),
+        ]);
+
+        setTotalClientsBalance(balance);
+        setFuelUsageData(fuelData);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setTotalClientsBalance(0);
+        setFuelUsageData({
+          diesel: 0,
+          gasoline95: 0,
+          gasoline91: 0,
+          total: 0,
+        });
+      } finally {
+        setLoadingBalance(false);
+        setLoadingFuelData(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* All Cards - 4 rows of 3 cards each */}
       <StatsCardsSection
         statsData={statsData}
         defaultSelectedOptions={defaultSelectedOptions}
+        totalClientsBalance={totalClientsBalance}
+        fuelUsageData={fuelUsageData}
       />
 
       {/* Consumption Section */}
