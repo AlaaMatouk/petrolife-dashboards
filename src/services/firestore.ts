@@ -2646,6 +2646,117 @@ export const fetchSupervisorsFromUsers = async (): Promise<any[]> => {
 };
 
 /**
+ * Fetch all companies with enriched data (cars and drivers count)
+ * @returns Promise with array of companies with counts
+ */
+export const fetchAllCompaniesWithCounts = async (): Promise<any[]> => {
+  try {
+    console.log("\n🏢 FETCHING ALL COMPANIES WITH COUNTS");
+    console.log("====================================");
+
+    // Fetch companies, cars, and drivers in parallel
+    const [companiesSnapshot, carsSnapshot, driversSnapshot] =
+      await Promise.all([
+        getDocs(collection(db, "companies")),
+        getDocs(collection(db, "companies-cars")),
+        getDocs(collection(db, "companies-drivers")),
+      ]);
+
+    console.log(`📦 Total companies: ${companiesSnapshot.size}`);
+    console.log(`🚗 Total cars in DB: ${carsSnapshot.size}`);
+    console.log(`👤 Total drivers in DB: ${driversSnapshot.size}`);
+
+    // Build companies array with enriched data
+    const companies: any[] = [];
+
+    companiesSnapshot.forEach((companyDoc) => {
+      const companyData = companyDoc.data();
+      const companyEmail = companyData.email || "";
+
+      // Count cars for this company (filter by email)
+      let carsCount = 0;
+      carsSnapshot.forEach((carDoc) => {
+        const carData = carDoc.data();
+        const carEmail =
+          carData.email || carData.companyEmail || carData.createdUserId || "";
+        if (
+          carEmail &&
+          companyEmail &&
+          carEmail.toLowerCase() === companyEmail.toLowerCase()
+        ) {
+          carsCount++;
+        }
+      });
+
+      // Count drivers for this company (filter by createdUserId matching company email)
+      let driversCount = 0;
+      driversSnapshot.forEach((driverDoc) => {
+        const driverData = driverDoc.data();
+        const driverCompanyEmail =
+          driverData.createdUserId ||
+          driverData.email ||
+          driverData.companyEmail ||
+          "";
+        if (
+          driverCompanyEmail &&
+          companyEmail &&
+          driverCompanyEmail.toLowerCase() === companyEmail.toLowerCase()
+        ) {
+          driversCount++;
+        }
+      });
+
+      // Extract subscription title (handle object with ar/en keys)
+      let subscriptionTitle = "-";
+      if (companyData.selectedSubscription?.title) {
+        const title = companyData.selectedSubscription.title;
+        if (typeof title === "string") {
+          subscriptionTitle = title;
+        } else if (typeof title === "object" && title.ar) {
+          subscriptionTitle = title.ar;
+        } else if (typeof title === "object" && title.en) {
+          subscriptionTitle = title.en;
+        }
+      }
+
+      // Extract city (handle object with ar/en keys)
+      let cityName = "-";
+      const cityData =
+        companyData.formattedLocation?.address?.city || companyData.city;
+      if (cityData) {
+        if (typeof cityData === "string") {
+          cityName = cityData;
+        } else if (typeof cityData === "object" && cityData.ar) {
+          cityName = cityData.ar;
+        } else if (typeof cityData === "object" && cityData.en) {
+          cityName = cityData.en;
+        }
+      }
+
+      companies.push({
+        id: companyDoc.id,
+        companyCode: companyData.id || companyDoc.id || "-",
+        companyName: companyData.name || companyData.brandName || "-",
+        phone: companyData.phoneNumber || companyData.phone || "-",
+        email: companyData.email || "-",
+        city: cityName,
+        cars: carsCount,
+        drivers: driversCount,
+        subscriptions: subscriptionTitle,
+      });
+    });
+
+    console.log(`✅ Processed ${companies.length} companies with counts`);
+    console.log("====================================\n");
+
+    return companies;
+  } catch (error) {
+    console.error("❌ Error fetching companies with counts:", error);
+    throw error;
+  }
+};
+
+/**
  * Calculate total users count by type from all collections
  * @returns Promise with users breakdown
  */
@@ -3593,26 +3704,102 @@ export const fetchSupervisorById = async (supervisorId: string) => {
  */
 export const fetchCompanyById = async (companyId: string) => {
   try {
-    console.log('Fetching company by ID:', companyId);
-    
-    // Import mock data from Companies.tsx to avoid duplication
-    const { mockCompaniesData } = await import('../components/AdminDashboard/pages/companies/Companies');
-    
-    // Find company by ID
-    const company = mockCompaniesData.find(c => c.id === parseInt(companyId));
-    
-    if (!company) {
-      throw new Error('Company not found');
+    console.log("Fetching company by ID:", companyId);
+
+    // Fetch the specific company document from Firestore
+    const companyDocRef = doc(db, "companies", companyId);
+    const companyDoc = await getDoc(companyDocRef);
+
+    if (!companyDoc.exists()) {
+      throw new Error("Company not found");
     }
-    
-    console.log('Company data fetched (mock):', company);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+    const companyData = companyDoc.data();
+    const companyEmail = companyData.email || "";
+
+    // Fetch cars and drivers for this company in parallel
+    const [carsSnapshot, driversSnapshot] = await Promise.all([
+      getDocs(collection(db, "companies-cars")),
+      getDocs(collection(db, "companies-drivers")),
+    ]);
+
+    // Count cars for this company
+    let carsCount = 0;
+    carsSnapshot.forEach((carDoc) => {
+      const carData = carDoc.data();
+      const carEmail =
+        carData.email || carData.companyEmail || carData.createdUserId || "";
+      if (
+        carEmail &&
+        companyEmail &&
+        carEmail.toLowerCase() === companyEmail.toLowerCase()
+      ) {
+        carsCount++;
+      }
+    });
+
+    // Count drivers for this company (filter by createdUserId matching company email)
+    let driversCount = 0;
+    driversSnapshot.forEach((driverDoc) => {
+      const driverData = driverDoc.data();
+      const driverCompanyEmail =
+        driverData.createdUserId ||
+        driverData.email ||
+        driverData.companyEmail ||
+        "";
+      if (
+        driverCompanyEmail &&
+        companyEmail &&
+        driverCompanyEmail.toLowerCase() === companyEmail.toLowerCase()
+      ) {
+        driversCount++;
+      }
+    });
+
+    // Extract subscription title (handle object with ar/en keys)
+    let subscriptionTitle = "-";
+    if (companyData.selectedSubscription?.title) {
+      const title = companyData.selectedSubscription.title;
+      if (typeof title === "string") {
+        subscriptionTitle = title;
+      } else if (typeof title === "object" && title.ar) {
+        subscriptionTitle = title.ar;
+      } else if (typeof title === "object" && title.en) {
+        subscriptionTitle = title.en;
+      }
+    }
+
+    // Extract city (handle object with ar/en keys)
+    let cityName = "-";
+    const cityData =
+      companyData.formattedLocation?.address?.city || companyData.city;
+    if (cityData) {
+      if (typeof cityData === "string") {
+        cityName = cityData;
+      } else if (typeof cityData === "object" && cityData.ar) {
+        cityName = cityData.ar;
+      } else if (typeof cityData === "object" && cityData.en) {
+        cityName = cityData.en;
+      }
+    }
+
+    const company = {
+      id: companyDoc.id,
+      companyCode: companyData.id || companyDoc.id || "-",
+      companyName: companyData.name || companyData.brandName || "-",
+      phone: companyData.phoneNumber || companyData.phone || "-",
+      email: companyData.email || "-",
+      city: cityName,
+      cars: carsCount,
+      drivers: driversCount,
+      subscriptions: subscriptionTitle,
+    };
+
+    console.log("Company data fetched:", company);
+
     return company;
   } catch (error) {
-    console.error('Error fetching company by ID:', error);
+    console.error("Error fetching company by ID:", error);
     throw error;
   }
 };
