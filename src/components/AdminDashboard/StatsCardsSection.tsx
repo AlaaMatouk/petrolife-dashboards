@@ -42,12 +42,20 @@ export interface FuelCostData {
   total: number;
 }
 
+export interface CarWashData {
+  small: number;
+  medium: number;
+  large: number;
+  vip: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
   totalClientsBalance?: number;
   fuelUsageData?: FuelUsageData;
   fuelCostData?: FuelCostData;
+  carWashData?: CarWashData;
 }
 
 const StatsCardsSection = ({
@@ -56,6 +64,7 @@ const StatsCardsSection = ({
   totalClientsBalance,
   fuelUsageData,
   fuelCostData,
+  carWashData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
@@ -121,6 +130,19 @@ const StatsCardsSection = ({
           },
         ],
         total: { name: "الاجمالي", count: fuelCostData.total },
+      };
+    }
+
+    // Update car wash operations data
+    if (stat.title === "عمليات غسيل السيارات" && carWashData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "VIP", count: carWashData.vip },
+          { name: "كبيرة", count: carWashData.large },
+          { name: "متوسطة", count: carWashData.medium },
+          { name: "صغيرة", count: carWashData.small },
+        ],
       };
     }
 

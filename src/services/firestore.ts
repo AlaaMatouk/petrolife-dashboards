@@ -2549,6 +2549,148 @@ export const getTotalFuelCostByType = async (): Promise<{
   }
 };
 
+/**
+ * Calculate car wash operations by car size from all orders
+ * Uses same logic as companies dashboard calculateCarWashStatistics but without filtering by company
+ * @returns Promise with car wash operations breakdown
+ */
+export const getCarWashOperationsBySize = async (): Promise<{
+  small: number;
+  medium: number;
+  large: number;
+  vip: number;
+}> => {
+  try {
+    const orders = await fetchAllOrders();
+
+    console.log("\n🚗 CAR WASH OPERATIONS CALCULATION");
+    console.log("====================================");
+    console.log(`📦 Total orders: ${orders.length}`);
+
+    // Filter car wash orders using same logic as companies dashboard
+    const checkCategory = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === "string" ? value : "";
+      return (
+        str.includes("عمليات غسيل السيارات") ||
+        str.includes("غسيل سيارة") ||
+        str.includes("غسيل خارجي") ||
+        str.includes("غسيل") ||
+        str.includes("تنظيف السيارة من الداخل والخارج") ||
+        str.includes("تنظيف السيارة") ||
+        str.includes("Car Wash") ||
+        str.includes("Car wash") ||
+        str.includes("Exterior wash") ||
+        str.includes("Exterior & Interior car cleanning") ||
+        str.includes("car cleanning") ||
+        str.includes("washing") ||
+        str.toLowerCase().includes("wash") ||
+        str.toLowerCase().includes("clean")
+      );
+    };
+
+    const carWashOrders = orders.filter(
+      (order) =>
+        checkCategory(order.category?.ar) ||
+        checkCategory(order.category?.en) ||
+        checkCategory(order.service?.category?.ar) ||
+        checkCategory(order.service?.category?.en) ||
+        checkCategory(order.service?.title?.ar) ||
+        checkCategory(order.service?.title?.en) ||
+        checkCategory(order.service?.desc?.ar) ||
+        checkCategory(order.service?.desc?.en) ||
+        checkCategory(order.selectedOption?.category?.name?.ar) ||
+        checkCategory(order.selectedOption?.category?.name?.en) ||
+        checkCategory(order.selectedOption?.category?.ar) ||
+        checkCategory(order.selectedOption?.category?.en) ||
+        checkCategory(order.selectedOption?.title?.ar) ||
+        checkCategory(order.selectedOption?.title?.en) ||
+        checkCategory(order.selectedOption?.label) ||
+        checkCategory(order.type) ||
+        checkCategory(order.orderType)
+    );
+
+    console.log(`🧼 Car wash orders found: ${carWashOrders.length}`);
+
+    if (carWashOrders.length > 0) {
+      console.log("\n📋 First 3 car wash orders:");
+      carWashOrders.slice(0, 3).forEach((order, idx) => {
+        console.log(`  Order ${idx + 1}:`, {
+          id: order.id || order.refId,
+          carSize: order.car?.size,
+          category:
+            order.category ||
+            order.service?.category?.ar ||
+            order.service?.title?.ar,
+        });
+      });
+    }
+
+    // Group by car size
+    let smallCount = 0;
+    let mediumCount = 0;
+    let largeCount = 0;
+    let vipCount = 0;
+
+    carWashOrders.forEach((order) => {
+      const carSize = order.car?.size;
+
+      if (carSize) {
+        const normalizedSize = String(carSize).toLowerCase().trim();
+
+        if (
+          normalizedSize === "small" ||
+          normalizedSize === "صغيرة" ||
+          normalizedSize.includes("صغير")
+        ) {
+          smallCount++;
+        } else if (
+          normalizedSize === "medium" ||
+          normalizedSize === "middle" ||
+          normalizedSize === "متوسطة" ||
+          normalizedSize.includes("متوسط")
+        ) {
+          mediumCount++;
+        } else if (
+          normalizedSize === "large" ||
+          normalizedSize === "big" ||
+          normalizedSize === "كبيرة" ||
+          normalizedSize.includes("كبير")
+        ) {
+          largeCount++;
+        } else if (
+          normalizedSize === "vip" ||
+          normalizedSize.toUpperCase() === "VIP"
+        ) {
+          vipCount++;
+        }
+      }
+    });
+
+    console.log("\n📊 Car Wash by Size:");
+    console.log(`  صغيرة (small): ${smallCount}`);
+    console.log(`  متوسطة (medium): ${mediumCount}`);
+    console.log(`  كبيرة (large): ${largeCount}`);
+    console.log(`  VIP: ${vipCount}`);
+    console.log("====================================\n");
+
+    return {
+      small: smallCount,
+      medium: mediumCount,
+      large: largeCount,
+      vip: vipCount,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating car wash operations:", error);
+    return {
+      small: 0,
+      medium: 0,
+      large: 0,
+      vip: 0,
+    };
+  }
+};
+
 // ==================== HELPER FUNCTIONS ====================
 
 /**

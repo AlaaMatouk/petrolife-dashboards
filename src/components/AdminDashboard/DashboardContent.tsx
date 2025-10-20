@@ -6,6 +6,7 @@ import MostUsedSection from "./MostUsedSection";
 import StatsCardsSection, {
   FuelUsageData,
   FuelCostData,
+  CarWashData,
 } from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
 import { Map } from "../../screens/PerolifeStationLocations/sections/map/Map";
@@ -13,6 +14,7 @@ import {
   getTotalClientsBalance,
   getTotalFuelUsageByType,
   getTotalFuelCostByType,
+  getCarWashOperationsBySize,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -575,24 +577,36 @@ export const DashboardContent = (): JSX.Element => {
   });
   const [loadingFuelCostData, setLoadingFuelCostData] = useState(true);
 
-  // Fetch total clients balance, fuel usage, and fuel cost data on component mount
+  // State for car wash data
+  const [carWashData, setCarWashData] = useState<CarWashData>({
+    small: 0,
+    medium: 0,
+    large: 0,
+    vip: 0,
+  });
+  const [loadingCarWashData, setLoadingCarWashData] = useState(true);
+
+  // Fetch all dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingBalance(true);
         setLoadingFuelData(true);
         setLoadingFuelCostData(true);
+        setLoadingCarWashData(true);
 
         // Fetch all data in parallel
-        const [balance, fuelData, fuelCost] = await Promise.all([
+        const [balance, fuelData, fuelCost, carWash] = await Promise.all([
           getTotalClientsBalance(),
           getTotalFuelUsageByType(),
           getTotalFuelCostByType(),
+          getCarWashOperationsBySize(),
         ]);
 
         setTotalClientsBalance(balance);
         setFuelUsageData(fuelData);
         setFuelCostData(fuelCost);
+        setCarWashData(carWash);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -608,10 +622,17 @@ export const DashboardContent = (): JSX.Element => {
           gasoline91: 0,
           total: 0,
         });
+        setCarWashData({
+          small: 0,
+          medium: 0,
+          large: 0,
+          vip: 0,
+        });
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
         setLoadingFuelCostData(false);
+        setLoadingCarWashData(false);
       }
     };
 
@@ -627,6 +648,7 @@ export const DashboardContent = (): JSX.Element => {
         totalClientsBalance={totalClientsBalance}
         fuelUsageData={fuelUsageData}
         fuelCostData={fuelCostData}
+        carWashData={carWashData}
       />
 
       {/* Consumption Section */}
