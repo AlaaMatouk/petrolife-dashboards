@@ -2550,6 +2550,76 @@ export const getTotalFuelCostByType = async (): Promise<{
 };
 
 /**
+ * Calculate total users count by type from all collections
+ * @returns Promise with users breakdown
+ */
+export const getTotalUsersByType = async (): Promise<{
+  supervisors: number;
+  companies: number;
+  individuals: number;
+  serviceProviders: number;
+}> => {
+  try {
+    console.log("\n👥 USERS COUNT CALCULATION");
+    console.log("====================================");
+
+    // Fetch all collections in parallel
+    const [
+      usersSnapshot,
+      companiesSnapshot,
+      clientsSnapshot,
+      stationsCompanySnapshot,
+    ] = await Promise.all([
+      getDocs(collection(db, "users")),
+      getDocs(collection(db, "companies")),
+      getDocs(collection(db, "clients")),
+      getDocs(collection(db, "stationscompany")),
+    ]);
+
+    // Count supervisors (users where isSupervisory === true)
+    let supervisorsCount = 0;
+    usersSnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.isSupervisory === true) {
+        supervisorsCount++;
+      }
+    });
+
+    // Count companies
+    const companiesCount = companiesSnapshot.size;
+
+    // Count individuals/clients
+    const individualsCount = clientsSnapshot.size;
+
+    // Count service providers
+    const serviceProvidersCount = stationsCompanySnapshot.size;
+
+    console.log(`👔 مشرفين (Supervisors): ${supervisorsCount}`);
+    console.log(`🏢 شركات (Companies): ${companiesCount}`);
+    console.log(`👤 افراد (Individuals): ${individualsCount}`);
+    console.log(
+      `🏪 مزودي الخدمة (Service Providers): ${serviceProvidersCount}`
+    );
+    console.log("====================================\n");
+
+    return {
+      supervisors: supervisorsCount,
+      companies: companiesCount,
+      individuals: individualsCount,
+      serviceProviders: serviceProvidersCount,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating users count:", error);
+    return {
+      supervisors: 0,
+      companies: 0,
+      individuals: 0,
+      serviceProviders: 0,
+    };
+  }
+};
+
+/**
  * Calculate car wash operations by car size from all orders
  * Uses same logic as companies dashboard calculateCarWashStatistics but without filtering by company
  * @returns Promise with car wash operations breakdown

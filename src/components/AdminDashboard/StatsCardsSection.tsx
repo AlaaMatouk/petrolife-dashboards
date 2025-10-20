@@ -49,6 +49,13 @@ export interface CarWashData {
   vip: number;
 }
 
+export interface UsersData {
+  supervisors: number;
+  companies: number;
+  individuals: number;
+  serviceProviders: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
@@ -56,6 +63,7 @@ export interface StatsCardsSectionProps {
   fuelUsageData?: FuelUsageData;
   fuelCostData?: FuelCostData;
   carWashData?: CarWashData;
+  usersData?: UsersData;
 }
 
 const StatsCardsSection = ({
@@ -65,6 +73,7 @@ const StatsCardsSection = ({
   fuelUsageData,
   fuelCostData,
   carWashData,
+  usersData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
@@ -142,6 +151,19 @@ const StatsCardsSection = ({
           { name: "كبيرة", count: carWashData.large },
           { name: "متوسطة", count: carWashData.medium },
           { name: "صغيرة", count: carWashData.small },
+        ],
+      };
+    }
+
+    // Update users data
+    if (stat.title === "المستخدمين" && usersData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "مزودي الخدمة", count: usersData.serviceProviders },
+          { name: "افراد", count: usersData.individuals },
+          { name: "شركات", count: usersData.companies },
+          { name: "مشرفين", count: usersData.supervisors },
         ],
       };
     }
