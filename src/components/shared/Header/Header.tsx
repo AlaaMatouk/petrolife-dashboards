@@ -194,7 +194,7 @@ const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({ tit
             className={`text-lg font-normal ${
               index === parts.length - 1
                 ? "text-[#5B738B] cursor-default"
-                : "text-[#5B738B] hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                : "text-[#5B738B] hover:text-blue-600 cursor-pointer transition-colors"
             }`}
             disabled={index === parts.length - 1}
           >

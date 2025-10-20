@@ -99,7 +99,7 @@ export const StationWorkers = (): JSX.Element => {
           fetchData={fetchWorkersData}
           onToggleStatus={handleToggleStatus}
           addNewRoute="/adddriver"
-          viewDetailsRoute={(id) => `/driver/${id}`}
+          viewDetailsRoute={(id) => `/service-distributer-station-worker/${id}`}
           loadingMessage="جاري تحميل بيانات العاملين..."
           errorMessage="فشل في تحميل بيانات العاملين. استخدام البيانات التجريبية."
           itemsPerPage={5}

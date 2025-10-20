@@ -116,7 +116,7 @@ export const Stations = (): JSX.Element => {
           fetchData={fetchStationsData}
           onToggleStatus={handleToggleStatus}
           addNewRoute="/addstation"
-          viewDetailsRoute={(id) => `/station/${id}`}
+          viewDetailsRoute={(id) => `/service-distributer-station/${id}`}
           loadingMessage="جاري تحميل بيانات المحطات..."
           errorMessage="فشل في تحميل بيانات المحطات. استخدام البيانات التجريبية."
           itemsPerPage={5}

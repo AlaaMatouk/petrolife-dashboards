@@ -33,6 +33,8 @@ import { ServiceDistributerFinancialReports } from '../screens/ServiceDistribute
 import { ServiceDistributerStationLocations } from '../screens/ServiceDistributerStationLocations';
 import { ServiceDistributerInvoices } from '../screens/ServiceDistributerInvoices';
 import { IconPreview } from '../screens/IconPreview';
+import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
+import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
 
 
 // 404 Component
@@ -96,7 +98,9 @@ export const AppRouter = () => {
       <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
       <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
       <Route path={ROUTES.STATIONS} element={<Stations/>} />
+      <Route path={ROUTES.STATIONS_DETAILS} element={<StationsDetails/>} />
       <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
+      <Route path={ROUTES.FUEL_STATION_REQUESTS_DETAILS} element={<FuelStationRequestsDetails/>}/>
       <Route path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS} element={<ServiceDistributerFinancialReports/>} />
       <Route path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS} element={<ServiceDistributerStationLocations />} />
       <Route path={ROUTES.SERVICE_DISTRIBUTER_INVOICES} element={<ServiceDistributerInvoices />} />
