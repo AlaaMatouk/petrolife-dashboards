@@ -57,15 +57,15 @@ export const Table = <T extends Record<string, any>>({
       <div className="overflow-x-auto" dir="rtl">
         <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
           {hasAnyLabels && (
-            <thead>
+            <thead className="">
               <tr>
                 {reversedColumns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-4 py-3 text-center bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
+                    className={`px-4 py-3 text-center  bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
                   >
                     {column.label && (
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-start gap-2">
                         <span>{column.label}</span>
                         {(column.key === "accountStatus" || column.key === "stationStatus") && (
                           <SlidersHorizontal className="w-4 h-4 text-gray-400" />
@@ -95,7 +95,7 @@ export const Table = <T extends Record<string, any>>({
                     className={`px-4 py-3 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
                     style={{ borderBottom: '1px solid var(--border-light, #e5e7eb)' }}
                   >
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-start">
                       {column.render
                         ? column.render(row[column.key], row, rowIndex)
                         : row[column.key]}

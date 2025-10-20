@@ -535,7 +535,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
                   (col) => col.priority === "high" || col.priority === "medium"
                 )}
                 data={paginatedData}
-                className="relative self-stretch w-full flex-[0_0_auto]"
+                className="relative self-stretch w-full  flex-[0_0_auto]"
               />
             </div>
 

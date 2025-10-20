@@ -15,6 +15,7 @@ const breadcrumbRoutes: Record<string, string> = {
   "السيــــــــــــــارات": "/cars",
   "الســـــــــــــــائقين": "/drivers",
   "الاشتراكـــــــــــات": "/subscriptions",
+  "المشرفين": "/supervisors",
 };
 
 interface SearchBarProps {
