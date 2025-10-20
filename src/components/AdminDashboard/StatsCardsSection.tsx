@@ -28,22 +28,175 @@ export interface StatData {
   type?: string;
 }
 
+export interface FuelUsageData {
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}
+
+export interface FuelCostData {
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}
+
+export interface CarWashData {
+  small: number;
+  medium: number;
+  large: number;
+  vip: number;
+}
+
+export interface UsersData {
+  supervisors: number;
+  companies: number;
+  individuals: number;
+  serviceProviders: number;
+}
+
+export interface CompaniesData {
+  direct: number;
+  viaRepresentatives: number;
+  total: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
+  totalClientsBalance?: number;
+  fuelUsageData?: FuelUsageData;
+  fuelCostData?: FuelCostData;
+  carWashData?: CarWashData;
+  usersData?: UsersData;
+  companiesData?: CompaniesData;
 }
 
-const StatsCardsSection = ({ 
-  statsData, 
-  defaultSelectedOptions = {} 
+const StatsCardsSection = ({
+  statsData,
+  defaultSelectedOptions = {},
+  totalClientsBalance,
+  fuelUsageData,
+  fuelCostData,
+  carWashData,
+  usersData,
+  companiesData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
   }>(defaultSelectedOptions);
 
+  // Update wallet balance, fuel usage, and fuel cost in statsData if provided
+  const updatedStatsData = statsData.map((stat) => {
+    // Update wallet balance
+    if (stat.type === "wallet" && totalClientsBalance !== undefined) {
+      return {
+        ...stat,
+        amount: new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(totalClientsBalance),
+      };
+    }
+
+    // Update fuel usage data
+    if (stat.title === "اجمالي اللترات" && fuelUsageData) {
+      return {
+        ...stat,
+        breakdown: [
+          {
+            type: "ديزل",
+            amount: `${fuelUsageData.diesel.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-orange",
+          },
+          {
+            type: "بنزين 95",
+            amount: `${fuelUsageData.gasoline95.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-red",
+          },
+          {
+            type: "بنزين 91",
+            amount: `${fuelUsageData.gasoline91.toFixed(0)} .L`,
+            color: "text-color-mode-text-icons-t-green",
+          },
+        ],
+        total: { name: "الاجمالي", count: fuelUsageData.total },
+      };
+    }
+
+    // Update fuel cost data
+    if (stat.title === "اجمالي تكلفة الوقود" && fuelCostData) {
+      return {
+        ...stat,
+        breakdown: [
+          {
+            type: "ديزل",
+            amount: fuelCostData.diesel.toFixed(0),
+            color: "text-color-mode-text-icons-t-orange",
+          },
+          {
+            type: "بنزين 95",
+            amount: fuelCostData.gasoline95.toFixed(0),
+            color: "text-color-mode-text-icons-t-red",
+          },
+          {
+            type: "بنزين 91",
+            amount: fuelCostData.gasoline91.toFixed(0),
+            color: "text-color-mode-text-icons-t-green",
+          },
+        ],
+        total: { name: "الاجمالي", count: fuelCostData.total },
+      };
+    }
+
+    // Update car wash operations data
+    if (stat.title === "عمليات غسيل السيارات" && carWashData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "VIP", count: carWashData.vip },
+          { name: "كبيرة", count: carWashData.large },
+          { name: "متوسطة", count: carWashData.medium },
+          { name: "صغيرة", count: carWashData.small },
+        ],
+      };
+    }
+
+    // Update users data
+    if (stat.title === "المستخدمين" && usersData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "مزودي الخدمة", count: usersData.serviceProviders },
+          { name: "افراد", count: usersData.individuals },
+          { name: "شركات", count: usersData.companies },
+          { name: "مشرفين", count: usersData.supervisors },
+        ],
+      };
+    }
+
+    // Update companies data
+    if (stat.title === "الشركات" && companiesData) {
+      return {
+        ...stat,
+        categories: [
+          {
+            name: "حسابات بواسطة المناديب",
+            count: companiesData.viaRepresentatives,
+          },
+          { name: "حسابات مباشرة", count: companiesData.direct },
+        ],
+        total: { name: "الاجمالي", count: companiesData.total },
+      };
+    }
+
+    return stat;
+  });
+
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {statsData.map((stat, index) => (
+      {updatedStatsData.map((stat, index) => (
         <div
           key={index}
           className="relative w-full bg-color-mode-surface-bg-screen rounded-[16px] rounded-bl-[28px] border-[0.2px] border-solid border-[#A9B4BE] p-6 flex flex-col justify-between"
@@ -163,4 +316,3 @@ const StatsCardsSection = ({
 };
 
 export default StatsCardsSection;
-
