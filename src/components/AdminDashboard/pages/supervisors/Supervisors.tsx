@@ -1,9 +1,10 @@
 import { DataTableSection } from "../../../sections/DataTableSection";
 import { Users } from "lucide-react";
+import { fetchSupervisorsFromUsers } from "../../../../services/firestore";
 
 // Define the Supervisor data type
 export interface Supervisor {
-  id: number;
+  id: string;
   supervisorName: string;
   supervisorCode: string;
   email: string;
@@ -157,13 +158,13 @@ export const mockSupervisorsData: Supervisor[] = [
   },
 ];
 
-// Mock data fetching function - replace with real API call
+// Fetch real supervisors data from Firestore
 const fetchSupervisors = async (): Promise<Supervisor[]> => {
-  return mockSupervisorsData;
+  return await fetchSupervisorsFromUsers();
 };
 
 // Handle status toggle
-const handleToggleStatus = (id: number) => {
+const handleToggleStatus = (id: string) => {
   console.log(`Toggle status for supervisor with id: ${id}`);
   // Add your status toggle logic here
 };
