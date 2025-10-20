@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 // import { useOutletContext } from "react-router-dom"; // Uncomment when using search functionality
 import { Table, TimeFilter } from "../../components/shared";
-import { MapPin, Fuel, Download } from "lucide-react";
+import { Fuel, Download } from "lucide-react";
 import MostUsedSection from "./MostUsedSection";
-import StatsCardsSection, { FuelUsageData } from "./StatsCardsSection";
+import StatsCardsSection, {
+  FuelUsageData,
+  FuelCostData,
+} from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
 import { Map } from "../../screens/PerolifeStationLocations/sections/map/Map";
 import {
   getTotalClientsBalance,
   getTotalFuelUsageByType,
+  getTotalFuelCostByType,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -562,21 +566,33 @@ export const DashboardContent = (): JSX.Element => {
   });
   const [loadingFuelData, setLoadingFuelData] = useState(true);
 
-  // Fetch total clients balance and fuel usage data on component mount
+  // State for fuel cost data
+  const [fuelCostData, setFuelCostData] = useState<FuelCostData>({
+    diesel: 0,
+    gasoline95: 0,
+    gasoline91: 0,
+    total: 0,
+  });
+  const [loadingFuelCostData, setLoadingFuelCostData] = useState(true);
+
+  // Fetch total clients balance, fuel usage, and fuel cost data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingBalance(true);
         setLoadingFuelData(true);
+        setLoadingFuelCostData(true);
 
-        // Fetch both data in parallel
-        const [balance, fuelData] = await Promise.all([
+        // Fetch all data in parallel
+        const [balance, fuelData, fuelCost] = await Promise.all([
           getTotalClientsBalance(),
           getTotalFuelUsageByType(),
+          getTotalFuelCostByType(),
         ]);
 
         setTotalClientsBalance(balance);
         setFuelUsageData(fuelData);
+        setFuelCostData(fuelCost);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -586,9 +602,16 @@ export const DashboardContent = (): JSX.Element => {
           gasoline91: 0,
           total: 0,
         });
+        setFuelCostData({
+          diesel: 0,
+          gasoline95: 0,
+          gasoline91: 0,
+          total: 0,
+        });
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
+        setLoadingFuelCostData(false);
       }
     };
 
@@ -603,6 +626,7 @@ export const DashboardContent = (): JSX.Element => {
         defaultSelectedOptions={defaultSelectedOptions}
         totalClientsBalance={totalClientsBalance}
         fuelUsageData={fuelUsageData}
+        fuelCostData={fuelCostData}
       />
 
       {/* Consumption Section */}

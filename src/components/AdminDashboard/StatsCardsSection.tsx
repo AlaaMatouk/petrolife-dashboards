@@ -35,11 +35,19 @@ export interface FuelUsageData {
   total: number;
 }
 
+export interface FuelCostData {
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
   totalClientsBalance?: number;
   fuelUsageData?: FuelUsageData;
+  fuelCostData?: FuelCostData;
 }
 
 const StatsCardsSection = ({
@@ -47,12 +55,13 @@ const StatsCardsSection = ({
   defaultSelectedOptions = {},
   totalClientsBalance,
   fuelUsageData,
+  fuelCostData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
   }>(defaultSelectedOptions);
 
-  // Update wallet balance and fuel usage in statsData if provided
+  // Update wallet balance, fuel usage, and fuel cost in statsData if provided
   const updatedStatsData = statsData.map((stat) => {
     // Update wallet balance
     if (stat.type === "wallet" && totalClientsBalance !== undefined) {
@@ -87,6 +96,31 @@ const StatsCardsSection = ({
           },
         ],
         total: { name: "الاجمالي", count: fuelUsageData.total },
+      };
+    }
+
+    // Update fuel cost data
+    if (stat.title === "اجمالي تكلفة الوقود" && fuelCostData) {
+      return {
+        ...stat,
+        breakdown: [
+          {
+            type: "ديزل",
+            amount: fuelCostData.diesel.toFixed(0),
+            color: "text-color-mode-text-icons-t-orange",
+          },
+          {
+            type: "بنزين 95",
+            amount: fuelCostData.gasoline95.toFixed(0),
+            color: "text-color-mode-text-icons-t-red",
+          },
+          {
+            type: "بنزين 91",
+            amount: fuelCostData.gasoline91.toFixed(0),
+            color: "text-color-mode-text-icons-t-green",
+          },
+        ],
+        total: { name: "الاجمالي", count: fuelCostData.total },
       };
     }
 

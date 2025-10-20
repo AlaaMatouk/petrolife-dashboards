@@ -2392,25 +2392,7 @@ export const getTotalFuelUsageByType = async (): Promise<{
     let gasoline95Total = 0;
     let gasoline91Total = 0;
 
-    console.log(`\n📦 Total orders fetched (unfiltered): ${orders.length}`);
-    console.log(
-      "📑 Sample of first 5 orders (keys):",
-      orders.slice(0, 5).map((o: any) => ({
-        id: o.id || o.refId,
-        fuelType:
-          o.fuelType ||
-          o.productType ||
-          o?.selectedOption?.name?.ar ||
-          o?.service?.title?.ar,
-        totalLitre: o.totalLitre,
-        totalLiter: (o as any).totalLiter,
-        quantity: o.quantity,
-        selectedQuantity: o?.selectedOption?.quantity,
-        liters: o.liters,
-      }))
-    );
-
-    orders.forEach((order, idx) => {
+    orders.forEach((order) => {
       // Derive fuel type using same fallbacks as companies dashboard
       let fuelType = "";
       if (order?.selectedOption?.name?.ar)
@@ -2440,56 +2422,27 @@ export const getTotalFuelUsageByType = async (): Promise<{
 
       const normalizedType = String(fuelType).toLowerCase().trim();
 
-      let matched = false;
       if (
         normalizedType.includes("ديزل") ||
         normalizedType.includes("diesel")
       ) {
         dieselTotal += liters;
-        matched = true;
       } else if (
         normalizedType.includes("95") ||
         normalizedType.includes("بنزين 95") ||
         normalizedType.includes("gasoline 95")
       ) {
         gasoline95Total += liters;
-        matched = true;
       } else if (
         normalizedType.includes("91") ||
         normalizedType.includes("بنزين 91") ||
         normalizedType.includes("gasoline 91")
       ) {
         gasoline91Total += liters;
-        matched = true;
-      }
-
-      if (idx < 15) {
-        console.log(`🔎 Order ${idx + 1}:`, {
-          id: order.id || order.refId,
-          fuelType: fuelType || "",
-          normalizedType,
-          liters,
-          matchedCategory: matched
-            ? normalizedType.includes("ديزل") ||
-              normalizedType.includes("diesel")
-              ? "ديزل"
-              : normalizedType.includes("95")
-              ? "بنزين 95"
-              : normalizedType.includes("91")
-              ? "بنزين 91"
-              : "-"
-            : "-",
-        });
       }
     });
 
     const total = dieselTotal + gasoline95Total + gasoline91Total;
-
-    console.log("⛽ Fuel usage breakdown:");
-    console.log(`  ديزل: ${dieselTotal.toFixed(0)} L`);
-    console.log(`  بنزين 95: ${gasoline95Total.toFixed(0)} L`);
-    console.log(`  بنزين 91: ${gasoline91Total.toFixed(0)} L`);
-    console.log(`  Total: ${total.toFixed(0)} L`);
 
     return {
       diesel: dieselTotal,
@@ -2499,6 +2452,94 @@ export const getTotalFuelUsageByType = async (): Promise<{
     };
   } catch (error) {
     console.error("❌ Error calculating fuel usage:", error);
+    return {
+      diesel: 0,
+      gasoline95: 0,
+      gasoline91: 0,
+      total: 0,
+    };
+  }
+};
+
+/**
+ * Calculate total fuel cost by type from all orders
+ * Uses same logic as companies dashboard calculateFuelStatistics but without filtering
+ * @returns Promise with fuel cost breakdown
+ */
+export const getTotalFuelCostByType = async (): Promise<{
+  diesel: number;
+  gasoline95: number;
+  gasoline91: number;
+  total: number;
+}> => {
+  try {
+    const orders = await fetchAllOrders();
+
+    let dieselCost = 0;
+    let gasoline95Cost = 0;
+    let gasoline91Cost = 0;
+
+    orders.forEach((order) => {
+      // Derive fuel type using same fallbacks as companies dashboard
+      let fuelType = "";
+      if (order?.selectedOption?.name?.ar)
+        fuelType = order.selectedOption.name.ar;
+      else if (order?.selectedOption?.name?.en)
+        fuelType = order.selectedOption.name.en;
+      else if (order?.selectedOption?.label)
+        fuelType = order.selectedOption.label;
+      else if (order?.selectedOption?.title?.ar)
+        fuelType = order.selectedOption.title.ar;
+      else if (order?.selectedOption?.title?.en)
+        fuelType = order.selectedOption.title.en;
+      else if (order?.service?.title?.ar) fuelType = order.service.title.ar;
+      else if (order?.service?.title?.en) fuelType = order.service.title.en;
+      else if (order?.fuelType) fuelType = order.fuelType;
+      else if (order?.productType) fuelType = order.productType;
+
+      // Derive cost from multiple possible fields
+      const rawCost =
+        order?.totalPrice ??
+        order?.totalCost ??
+        order?.total ??
+        order?.price ??
+        order?.fuelCost ??
+        order?.cost ??
+        0;
+      const cost = parseFloat(String(rawCost)) || 0;
+
+      const normalizedType = String(fuelType).toLowerCase().trim();
+
+      if (
+        normalizedType.includes("ديزل") ||
+        normalizedType.includes("diesel")
+      ) {
+        dieselCost += cost;
+      } else if (
+        normalizedType.includes("95") ||
+        normalizedType.includes("بنزين 95") ||
+        normalizedType.includes("gasoline 95")
+      ) {
+        gasoline95Cost += cost;
+      } else if (
+        normalizedType.includes("91") ||
+        normalizedType.includes("بنزين 91") ||
+        normalizedType.includes("gasoline 91")
+      ) {
+        gasoline91Cost += cost;
+      }
+    });
+
+    const total = dieselCost + gasoline95Cost + gasoline91Cost;
+
+    return {
+      diesel: dieselCost,
+      gasoline95: gasoline95Cost,
+      gasoline91: gasoline91Cost,
+      total: total,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating fuel cost:", error);
     return {
       diesel: 0,
       gasoline95: 0,
