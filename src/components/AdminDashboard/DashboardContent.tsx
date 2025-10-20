@@ -8,6 +8,7 @@ import StatsCardsSection, {
   FuelCostData,
   CarWashData,
   UsersData,
+  CompaniesData,
 } from "./StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "./statsData";
 import { Map } from "../../screens/PerolifeStationLocations/sections/map/Map";
@@ -17,6 +18,7 @@ import {
   getTotalFuelCostByType,
   getCarWashOperationsBySize,
   getTotalUsersByType,
+  getCompaniesCountByType,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -597,6 +599,15 @@ export const DashboardContent = (): JSX.Element => {
   });
   const [loadingUsersData, setLoadingUsersData] = useState(true);
 
+  // State for companies count data
+  const [companiesCountData, setCompaniesCountData] = useState<CompaniesData>({
+    direct: 0,
+    viaRepresentatives: 0,
+    total: 0,
+  });
+  const [loadingCompaniesCountData, setLoadingCompaniesCountData] =
+    useState(true);
+
   // Fetch all dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -606,23 +617,25 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingFuelCostData(true);
         setLoadingCarWashData(true);
         setLoadingUsersData(true);
+        setLoadingCompaniesCountData(true);
 
         // Fetch all data in parallel
-        const [balance, fuelData, fuelCost, carWash, users] = await Promise.all(
-          [
+        const [balance, fuelData, fuelCost, carWash, users, companiesCount] =
+          await Promise.all([
             getTotalClientsBalance(),
             getTotalFuelUsageByType(),
             getTotalFuelCostByType(),
             getCarWashOperationsBySize(),
             getTotalUsersByType(),
-          ]
-        );
+            getCompaniesCountByType(),
+          ]);
 
         setTotalClientsBalance(balance);
         setFuelUsageData(fuelData);
         setFuelCostData(fuelCost);
         setCarWashData(carWash);
         setUsersData(users);
+        setCompaniesCountData(companiesCount);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -650,12 +663,18 @@ export const DashboardContent = (): JSX.Element => {
           individuals: 0,
           serviceProviders: 0,
         });
+        setCompaniesCountData({
+          direct: 0,
+          viaRepresentatives: 0,
+          total: 0,
+        });
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
         setLoadingFuelCostData(false);
         setLoadingCarWashData(false);
         setLoadingUsersData(false);
+        setLoadingCompaniesCountData(false);
       }
     };
 
@@ -673,6 +692,7 @@ export const DashboardContent = (): JSX.Element => {
         fuelCostData={fuelCostData}
         carWashData={carWashData}
         usersData={usersData}
+        companiesData={companiesCountData}
       />
 
       {/* Consumption Section */}

@@ -2550,6 +2550,55 @@ export const getTotalFuelCostByType = async (): Promise<{
 };
 
 /**
+ * Calculate companies count by type
+ * @returns Promise with companies breakdown
+ */
+export const getCompaniesCountByType = async (): Promise<{
+  direct: number;
+  viaRepresentatives: number;
+  total: number;
+}> => {
+  try {
+    console.log("\n🏢 COMPANIES COUNT CALCULATION");
+    console.log("====================================");
+
+    // Fetch both collections in parallel
+    const [companiesSnapshot, stationsCompanySnapshot] = await Promise.all([
+      getDocs(collection(db, "companies")),
+      getDocs(collection(db, "stationscompany")),
+    ]);
+
+    // Count direct accounts (from companies collection)
+    const directCount = companiesSnapshot.size;
+
+    // Count via representatives (from stationscompany collection)
+    const viaRepresentativesCount = stationsCompanySnapshot.size;
+
+    const total = directCount + viaRepresentativesCount;
+
+    console.log(`📱 حسابات مباشرة (Direct): ${directCount}`);
+    console.log(
+      `👥 حسابات بواسطة المناديب (Via Representatives): ${viaRepresentativesCount}`
+    );
+    console.log(`📊 الاجمالي (Total): ${total}`);
+    console.log("====================================\n");
+
+    return {
+      direct: directCount,
+      viaRepresentatives: viaRepresentativesCount,
+      total: total,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating companies count:", error);
+    return {
+      direct: 0,
+      viaRepresentatives: 0,
+      total: 0,
+    };
+  }
+};
+
+/**
  * Calculate total users count by type from all collections
  * @returns Promise with users breakdown
  */

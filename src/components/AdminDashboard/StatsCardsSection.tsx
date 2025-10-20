@@ -56,6 +56,12 @@ export interface UsersData {
   serviceProviders: number;
 }
 
+export interface CompaniesData {
+  direct: number;
+  viaRepresentatives: number;
+  total: number;
+}
+
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
@@ -64,6 +70,7 @@ export interface StatsCardsSectionProps {
   fuelCostData?: FuelCostData;
   carWashData?: CarWashData;
   usersData?: UsersData;
+  companiesData?: CompaniesData;
 }
 
 const StatsCardsSection = ({
@@ -74,6 +81,7 @@ const StatsCardsSection = ({
   fuelCostData,
   carWashData,
   usersData,
+  companiesData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
@@ -165,6 +173,21 @@ const StatsCardsSection = ({
           { name: "شركات", count: usersData.companies },
           { name: "مشرفين", count: usersData.supervisors },
         ],
+      };
+    }
+
+    // Update companies data
+    if (stat.title === "الشركات" && companiesData) {
+      return {
+        ...stat,
+        categories: [
+          {
+            name: "حسابات بواسطة المناديب",
+            count: companiesData.viaRepresentatives,
+          },
+          { name: "حسابات مباشرة", count: companiesData.direct },
+        ],
+        total: { name: "الاجمالي", count: companiesData.total },
       };
     }
 
