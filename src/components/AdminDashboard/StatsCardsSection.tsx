@@ -31,18 +31,20 @@ export interface StatData {
 export interface StatsCardsSectionProps {
   statsData: StatData[];
   defaultSelectedOptions?: { [key: number]: number };
+  style?: string;
 }
 
 const StatsCardsSection = ({ 
   statsData, 
-  defaultSelectedOptions = {} 
+  defaultSelectedOptions = {},
+  style = ""
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
   }>(defaultSelectedOptions);
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${style}`}>
       {statsData.map((stat, index) => (
         <div
           key={index}

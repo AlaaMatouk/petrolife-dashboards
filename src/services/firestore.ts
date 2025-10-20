@@ -3011,6 +3011,37 @@ export const fetchSupervisorById = async (supervisorId: string) => {
 };
 
 /**
+ * Fetch a company by its ID
+ * @param companyId - The ID of the company to fetch
+ * @returns Promise with the company data
+ */
+export const fetchCompanyById = async (companyId: string) => {
+  try {
+    console.log('Fetching company by ID:', companyId);
+    
+    // Import mock data from Companies.tsx to avoid duplication
+    const { mockCompaniesData } = await import('../components/AdminDashboard/pages/companies/Companies');
+    
+    // Find company by ID
+    const company = mockCompaniesData.find(c => c.id === parseInt(companyId));
+    
+    if (!company) {
+      throw new Error('Company not found');
+    }
+    
+    console.log('Company data fetched (mock):', company);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return company;
+  } catch (error) {
+    console.error('Error fetching company by ID:', error);
+    throw error;
+  }
+};
+
+/**
  * Interface for fuel station data
  */
 export interface FuelStation {

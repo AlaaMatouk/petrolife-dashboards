@@ -55,6 +55,8 @@ export const ROUTES = {
   SUPERVISOR_DETAILS: '/supervisors/:id',
   ADD_SUPERVISOR: '/supervisors/add',
   COMPANIES: '/companies',
+  COMPANY_DETAILS: '/companies/:id',
+  ADD_COMPANY: '/companies/add',
   PEOPLE: '/people',
   SERVICE_PROVIDERS: '/serviceproviders',
   PETROLIFE_DRIVERS: '/petrolife-drivers',
