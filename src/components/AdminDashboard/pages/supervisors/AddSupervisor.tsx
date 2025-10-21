@@ -1,17 +1,63 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../../../../context/ToastContext";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "../../../../config/firebase";
+
+// Permission mapping for Arabic labels
+const PERMISSION_LABELS: Record<string, string> = {
+  individualsManagement: "إدارة الأفراد",
+  serviceProvidersManagement: "إدارة مزودي الخدمة",
+  serviceProvidersReportsManagement: "إدارة تقارير مزودي الخدمة",
+  salesReportsManagement: "إدارة تقارير المبيعات",
+  fuelDeliveryRequestsManagement: "إدارة طلبات توصيل الوقود",
+  vehicleConstantsManagement: "إدارة ثوابت المركبات",
+  applicationServicesManagement: "إدارة خدمات التطبيق",
+  applicationDefaultAccountsManagement: "إدارة الحسابات الافتراضية",
+  subscriptionsManagement: "إدارة الاشتراكات",
+  advertisementsManagement: "إدارة الإعلانات",
+  technicalSupportManagement: "إدارة الدعم الفني",
+  stationsManagement: "إدارة المحطات",
+  driversManagement: "إدارة السائقين",
+  financialReportsManagement: "إدارة التقارير المالية",
+  walletManagement: "إدارة المحفظة",
+  companiesManagement: "إدارة الشركات",
+  supervisorsManagement: "إدارة المشرفين",
+  petrolifeDriversManagement: "إدارة سائقي بترولايف",
+  petrolifeRepresentativesManagement: "إدارة مندوبي بترولايف",
+  petrolifeVehiclesManagement: "إدارة مركبات بترولايف",
+  petrolifeProductsManagement: "إدارة منتجات بترولايف",
+  governorRequestsManagement: "إدارة طلبات المحافظ",
+  invoicesReportsManagement: "إدارة تقارير الفواتير",
+  countriesConstantsManagement: "إدارة ثوابت البلدان",
+  categoriesConstantsManagement: "إدارة ثوابت التصنيفات",
+  discountCouponsManagement: "إدارة كوبونات الخصم",
+  customNotificationsManagement: "إدارة الاشعارات المخصصة",
+};
 
 export const AddSupervisor = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
+
   const [formData, setFormData] = useState({
-    supervisorName: "",
-    supervisorCode: "",
+    name: "",
     email: "",
-    phone: "",
+    phoneNumber: "",
     city: "",
-    password: "",
+    address: "",
+    employeeNumber: "",
   });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({
     individualsManagement: false,
     serviceProvidersManagement: false,
@@ -56,13 +102,187 @@ export const AddSupervisor = () => {
     }));
   };
 
+  // Validate form data
+  const validateForm = (): string[] => {
+    const errors: string[] = [];
+
+    if (!formData.name.trim()) {
+      errors.push("اسم المشرف مطلوب");
+    }
+
+    if (!formData.email.trim()) {
+      errors.push("البريد الإلكتروني مطلوب");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push("البريد الإلكتروني غير صحيح");
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      errors.push("رقم الهاتف مطلوب");
+    }
+
+    if (!imageFile) {
+      errors.push("صورة المشرف مطلوبة");
+    }
+
+    return errors;
+  };
+
+  // Check if email already exists
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
+    }
+  };
+
+  // Upload image to Firebase Storage
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileName = `supervisors/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, fileName);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your submit logic here
-    console.log("Form data:", formData, { imageFile, permissions });
 
-    // After successful submission, navigate back to supervisors list
-    // navigate("/supervisors");
+    // Validate form
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      addToast({
+        title: "خطأ في التحقق",
+        message: validationErrors.join(", "),
+        type: "error",
+      });
+      return;
+    }
+
+    // Check if email already exists
+    const emailExists = await checkEmailExists(formData.email);
+    if (emailExists) {
+      addToast({
+        title: "خطأ في البيانات",
+        message: "البريد الإلكتروني مستخدم بالفعل",
+        type: "error",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("لا يوجد مستخدم مسجل الدخول حالياً");
+      }
+
+      // Upload image to Firebase Storage
+      let imageUrl = "";
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
+      // Get selected permissions as array of Arabic strings
+      const selectedPermissions = Object.entries(permissions)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([key, _]) => PERMISSION_LABELS[key]);
+
+      // Create supervisor document
+      const supervisorData = {
+        // Basic info
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        city: formData.city,
+        address: formData.address.trim(),
+        employeeNumber: formData.employeeNumber.trim(),
+        image: imageUrl,
+        permissions: selectedPermissions,
+
+        // Default values
+        isSupervisor: false,
+        isAdmin: true,
+        isSuperAdmin: false,
+        isActive: true,
+
+        // Timestamps and user info
+        createdDate: serverTimestamp(),
+        createdUserId: currentUser.email || currentUser.uid,
+
+        // Account status for display
+        accountStatus: {
+          active: true,
+          text: "مفعل",
+        },
+      };
+
+      // Add document to Firestore
+      await addDoc(collection(db, "users"), supervisorData);
+
+      // Success message
+      addToast({
+        title: "تم بنجاح",
+        message: "تم إضافة المشرف بنجاح",
+        type: "success",
+      });
+
+      // Clear form
+      setFormData({
+        name: "",
+        email: "",
+        phoneNumber: "",
+        city: "",
+        address: "",
+        employeeNumber: "",
+      });
+      setImageFile(null);
+      setPermissions({
+        individualsManagement: false,
+        serviceProvidersManagement: false,
+        serviceProvidersReportsManagement: false,
+        salesReportsManagement: false,
+        fuelDeliveryRequestsManagement: false,
+        vehicleConstantsManagement: false,
+        applicationServicesManagement: false,
+        applicationDefaultAccountsManagement: false,
+        subscriptionsManagement: false,
+        advertisementsManagement: false,
+        technicalSupportManagement: false,
+        stationsManagement: false,
+        driversManagement: false,
+        financialReportsManagement: false,
+        walletManagement: false,
+        companiesManagement: false,
+        supervisorsManagement: false,
+        petrolifeDriversManagement: false,
+        petrolifeRepresentativesManagement: false,
+        petrolifeVehiclesManagement: false,
+        petrolifeProductsManagement: false,
+        governorRequestsManagement: false,
+        invoicesReportsManagement: false,
+        countriesConstantsManagement: false,
+        categoriesConstantsManagement: false,
+        discountCouponsManagement: false,
+        customNotificationsManagement: false,
+      });
+
+      // Navigate back to supervisors list
+      navigate("/supervisors");
+    } catch (error) {
+      console.error("Error adding supervisor:", error);
+      addToast({
+        title: "خطأ",
+        message: "فشل في إضافة المشرف. يرجى المحاولة مرة أخرى.",
+        type: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -79,16 +299,16 @@ export const AddSupervisor = () => {
           {/* Supervisor Name */}
           <div>
             <label
-              htmlFor="supervisorName"
+              htmlFor="name"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
               اسم المشرف
             </label>
             <input
               type="text"
-              id="supervisorName"
-              name="supervisorName"
-              value={formData.supervisorName}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -96,19 +316,19 @@ export const AddSupervisor = () => {
             />
           </div>
 
-          {/* Supervisor Code */}
+          {/* Email */}
           <div>
             <label
-              htmlFor="supervisorCode"
+              htmlFor="email"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
               البريد الالكتروني
             </label>
             <input
-              type="text"
-              id="supervisorCode"
-              name="supervisorCode"
-              value={formData.supervisorCode}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -119,16 +339,16 @@ export const AddSupervisor = () => {
           {/* Phone */}
           <div>
             <label
-              htmlFor="phone"
+              htmlFor="phoneNumber"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
               رقم الهاتف
             </label>
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -169,18 +389,17 @@ export const AddSupervisor = () => {
           {/* Address */}
           <div>
             <label
-              htmlFor="supervisorName"
+              htmlFor="address"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
               العنوان
             </label>
             <input
               type="text"
-              id="supervisorName"
-              name="supervisorName"
-              value={formData.supervisorName}
+              id="address"
+              name="address"
+              value={formData.address}
               onChange={handleChange}
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
               placeholder="العنوان بالتفصيل هنا"
             />
@@ -205,21 +424,20 @@ export const AddSupervisor = () => {
             />
           </div>
 
-          {/* Work Number */}
+          {/* Employee Number */}
           <div>
             <label
-              htmlFor="supervisorName"
+              htmlFor="employeeNumber"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
               الرقم الوظيفي
             </label>
             <input
               type="text"
-              id="supervisorName"
-              name="supervisorName"
-              value={formData.supervisorName}
+              id="employeeNumber"
+              name="employeeNumber"
+              value={formData.employeeNumber}
               onChange={handleChange}
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
               placeholder="الرقم الوظيفي هنا"
             />
@@ -234,14 +452,13 @@ export const AddSupervisor = () => {
               {/* إدارة الأفراد */}
               <div
                 className="relative flex items-center gap-2  p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.individualsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.individualsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("individualsManagement")}
               >
-
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.individualsManagement
@@ -261,8 +478,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -273,22 +490,24 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
-                  إدارة الأفراد
+                  {PERMISSION_LABELS.individualsManagement}
                 </span>
               </div>
 
               {/* إدارة مزودي الخدمة */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.serviceProvidersManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.serviceProvidersManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("serviceProvidersManagement")}
+                onClick={() =>
+                  handlePermissionChange("serviceProvidersManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -309,8 +528,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -321,24 +540,24 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
-                  إدارة مزودي الخدمة
+                  {PERMISSION_LABELS.serviceProvidersManagement}
                 </span>
               </div>
 
               {/* إدارة تقارير المبيعات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.salesReportsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.salesReportsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("salesReportsManagement")}
               >
-               <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.salesReportsManagement
                       ? "bg-[#5A66C1]"
@@ -357,8 +576,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -369,7 +588,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة تقارير المبيعات
@@ -379,14 +598,16 @@ export const AddSupervisor = () => {
               {/* إدارة طلبات توصيل الوقود */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.fuelDeliveryRequestsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.fuelDeliveryRequestsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("fuelDeliveryRequestsManagement")}
+                onClick={() =>
+                  handlePermissionChange("fuelDeliveryRequestsManagement")
+                }
               >
-               <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.fuelDeliveryRequestsManagement
                       ? "bg-[#5A66C1]"
@@ -405,8 +626,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -417,7 +638,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة طلبات توصيل الوقود
@@ -427,14 +648,16 @@ export const AddSupervisor = () => {
               {/* إدارة ثوابت المركبات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.vehicleConstantsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.vehicleConstantsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("vehicleConstantsManagement")}
+                onClick={() =>
+                  handlePermissionChange("vehicleConstantsManagement")
+                }
               >
-               <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.vehicleConstantsManagement
                       ? "bg-[#5A66C1]"
@@ -453,8 +676,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -465,7 +688,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة ثوابت المركبات
@@ -475,12 +698,14 @@ export const AddSupervisor = () => {
               {/* إدارة خدمات التطبيق */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.applicationServicesManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.applicationServicesManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("applicationServicesManagement")}
+                onClick={() =>
+                  handlePermissionChange("applicationServicesManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -501,8 +726,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -513,7 +738,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة خدمات التطبيق
@@ -523,12 +748,14 @@ export const AddSupervisor = () => {
               {/* إدارة الاشتراكات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.subscriptionsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.subscriptionsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("subscriptionsManagement")}
+                onClick={() =>
+                  handlePermissionChange("subscriptionsManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -549,8 +776,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -561,22 +788,24 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
-                  إدارة الاشتراكات
+                  {PERMISSION_LABELS.subscriptionsManagement}
                 </span>
               </div>
 
               {/* إدارة الدعم الفني */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.technicalSupportManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.technicalSupportManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("technicalSupportManagement")}
+                onClick={() =>
+                  handlePermissionChange("technicalSupportManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -597,8 +826,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -609,7 +838,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة الدعم الفني
@@ -619,10 +848,10 @@ export const AddSupervisor = () => {
               {/* إدارة المحطات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.stationsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.stationsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("stationsManagement")}
               >
@@ -645,8 +874,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -657,7 +886,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة المحطات
@@ -667,10 +896,10 @@ export const AddSupervisor = () => {
               {/* إدارة السائقين */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.driversManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.driversManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("driversManagement")}
               >
@@ -693,8 +922,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -705,7 +934,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة السائقين
@@ -715,12 +944,14 @@ export const AddSupervisor = () => {
               {/* إدارة التقارير المالية */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.financialReportsManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.financialReportsManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("financialReportsManagement")}
+                onClick={() =>
+                  handlePermissionChange("financialReportsManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -741,8 +972,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -753,7 +984,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة التقارير المالية
@@ -763,10 +994,10 @@ export const AddSupervisor = () => {
               {/* إدارة المحفظة */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
-                  border: permissions.walletManagement 
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                style={{
+                  border: permissions.walletManagement
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("walletManagement")}
               >
@@ -789,8 +1020,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -801,7 +1032,7 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
                 <span className="text-sm text-[#5B738B] text-right">
                   إدارة المحفظة
@@ -811,10 +1042,10 @@ export const AddSupervisor = () => {
               {/* إدارة الشركات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.companiesManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("companiesManagement")}
               >
@@ -837,8 +1068,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -849,18 +1080,20 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة الشركات</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة الشركات
+                </span>
               </div>
 
               {/* إدارة المشرفين */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.supervisorsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
                 onClick={() => handlePermissionChange("supervisorsManagement")}
               >
@@ -872,27 +1105,47 @@ export const AddSupervisor = () => {
                   }`}
                 >
                   {permissions.supervisorsManagement ? (
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
-                    <svg className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة المشرفين</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة المشرفين
+                </span>
               </div>
 
               {/* إدارة سائقي بترولايف */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.petrolifeDriversManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("petrolifeDriversManagement")}
+                onClick={() =>
+                  handlePermissionChange("petrolifeDriversManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -913,8 +1166,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -925,22 +1178,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة سائقي بترولايف</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة سائقي بترولايف
+                </span>
               </div>
 
               {/* إدارة مندوبي بترولايف */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.petrolifeRepresentativesManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("petrolifeRepresentativesManagement")}
+                onClick={() =>
+                  handlePermissionChange("petrolifeRepresentativesManagement")
+                }
               >
-                 <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.petrolifeRepresentativesManagement
                       ? "bg-[#5A66C1]"
@@ -959,8 +1216,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -971,22 +1228,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة مندوبي بترولايف</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة مندوبي بترولايف
+                </span>
               </div>
 
               {/* إدارة مركبات بترولايف */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.petrolifeVehiclesManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("petrolifeVehiclesManagement")}
+                onClick={() =>
+                  handlePermissionChange("petrolifeVehiclesManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.petrolifeVehiclesManagement
                       ? "bg-[#5A66C1]"
@@ -1005,8 +1266,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1017,22 +1278,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة مركبات بترولايف</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة مركبات بترولايف
+                </span>
               </div>
 
               {/* إدارة منتجات بترولايف */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.petrolifeProductsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("petrolifeProductsManagement")}
+                onClick={() =>
+                  handlePermissionChange("petrolifeProductsManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.petrolifeProductsManagement
                       ? "bg-[#5A66C1]"
@@ -1051,8 +1316,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1063,20 +1328,24 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة منتجات بترولايف</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة منتجات بترولايف
+                </span>
               </div>
 
               {/* إدارة تقارير مزودي الخدمة */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.serviceProvidersReportsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("serviceProvidersReportsManagement")}
+                onClick={() =>
+                  handlePermissionChange("serviceProvidersReportsManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -1097,8 +1366,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1109,22 +1378,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة تقارير مزودي الخدمة</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة تقارير مزودي الخدمة
+                </span>
               </div>
 
               {/* إدارة طلبات المحافظ */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.governorRequestsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("governorRequestsManagement")}
+                onClick={() =>
+                  handlePermissionChange("governorRequestsManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.governorRequestsManagement
                       ? "bg-[#5A66C1]"
@@ -1143,8 +1416,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1155,24 +1428,28 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة طلبات المحافظ</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة طلبات المحافظ
+                </span>
               </div>
 
               {/* إدارة تقارير الفواتير */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.invoicesReportsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("invoicesReportsManagement")}
+                onClick={() =>
+                  handlePermissionChange("invoicesReportsManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
-                    permissions.invoicesReportsManagement 
+                    permissions.invoicesReportsManagement
                       ? "bg-[#5A66C1]"
                       : "border-[#A9B4BE] "
                   }`}
@@ -1189,8 +1466,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1201,22 +1478,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة تقارير الفواتير</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة تقارير الفواتير
+                </span>
               </div>
 
               {/* إدارة ثوابت البلدان */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.countriesConstantsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("countriesConstantsManagement")}
+                onClick={() =>
+                  handlePermissionChange("countriesConstantsManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.countriesConstantsManagement
                       ? "bg-[#5A66C1]"
@@ -1235,8 +1516,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1247,22 +1528,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة ثوابت البلدان</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة ثوابت البلدان
+                </span>
               </div>
 
               {/* إدارة ثوابت التصنيفات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.categoriesConstantsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("categoriesConstantsManagement")}
+                onClick={() =>
+                  handlePermissionChange("categoriesConstantsManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.categoriesConstantsManagement
                       ? "bg-[#5A66C1]"
@@ -1281,8 +1566,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1293,20 +1578,24 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة ثوابت التصنيفات</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة ثوابت التصنيفات
+                </span>
               </div>
 
               {/* إدارة الحسابات الافتراضية */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.applicationDefaultAccountsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("applicationDefaultAccountsManagement")}
+                onClick={() =>
+                  handlePermissionChange("applicationDefaultAccountsManagement")
+                }
               >
                 <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
@@ -1327,8 +1616,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1339,22 +1628,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة الحسابات الافتراضية</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة الحسابات الافتراضية
+                </span>
               </div>
 
               {/* إدارة الإعلانات */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.advertisementsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("advertisementsManagement")}
+                onClick={() =>
+                  handlePermissionChange("advertisementsManagement")
+                }
               >
-                 <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.advertisementsManagement
                       ? "bg-[#5A66C1]"
@@ -1373,8 +1666,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1385,22 +1678,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة الإعلانات</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة الإعلانات
+                </span>
               </div>
 
               {/* إدارة كوبونات الخصم */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.discountCouponsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("discountCouponsManagement")}
+                onClick={() =>
+                  handlePermissionChange("discountCouponsManagement")
+                }
               >
-               <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.discountCouponsManagement
                       ? "bg-[#5A66C1]"
@@ -1419,8 +1716,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1431,22 +1728,26 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة كوبونات الخصم</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة كوبونات الخصم
+                </span>
               </div>
 
               {/* إدارة الاشعارات المخصصة */}
               <div
                 className="relative flex items-center gap-2 p-[10px] rounded-[4px] cursor-pointer "
-                style={{ 
+                style={{
                   border: permissions.customNotificationsManagement
-                    ? '1px solid #5A66C1' 
-                    : '0.5px solid #A9B4BE' 
+                    ? "1px solid #5A66C1"
+                    : "0.5px solid #A9B4BE",
                 }}
-                onClick={() => handlePermissionChange("customNotificationsManagement")}
+                onClick={() =>
+                  handlePermissionChange("customNotificationsManagement")
+                }
               >
-                  <div
+                <div
                   className={`w-3 h-3 rounded-[2px] border-[0.7px] flex items-center justify-center ${
                     permissions.customNotificationsManagement
                       ? "bg-[#5A66C1]"
@@ -1465,8 +1766,8 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  ) : 
-                  <svg
+                  ) : (
+                    <svg
                       className="w-3 h-3 text-[#A9B4BE] border-[0.7px] border-[#A9B4BE] rounded-[2px]"
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -1477,9 +1778,11 @@ export const AddSupervisor = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                  }
+                  )}
                 </div>
-                <span className="text-sm text-[#5B738B] text-right">إدارة الاشعارات المخصصة</span>
+                <span className="text-sm text-[#5B738B] text-right">
+                  إدارة الاشعارات المخصصة
+                </span>
               </div>
             </div>
           </div>
@@ -1488,10 +1791,26 @@ export const AddSupervisor = () => {
         {/* Form Actions */}
         <div className="flex justify-end gap-4 pt-4">
           <button
-            type="submit"
-            className="px-[10px] py-3 bg-[#5A66C1] text-white rounded-[8px]"
+            type="button"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="px-[10px] py-3 bg-gray-500 text-white rounded-[8px] hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            إضافة المشرف
+            إلغاء
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-[10px] py-3 bg-[#5A66C1] text-white rounded-[8px] hover:bg-[#4A56B1] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                جاري الإضافة...
+              </>
+            ) : (
+              "إضافة المشرف"
+            )}
           </button>
         </div>
       </form>

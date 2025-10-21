@@ -1,48 +1,48 @@
 import { Routes, Route } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
 import { LayoutWrapper } from "../components/shared/Layout";
-import { AdminLayoutWrapper } from '../components/AdminDashboard';
+import { AdminLayoutWrapper } from "../components/AdminDashboard";
 
 // Import all screen components
-import { Drivers } from '../screens/Drivers';
-import { Cars } from '../screens/Cars';
-import { FinancialReports } from '../screens/FinancialReports';
-import { WalletReports } from '../screens/WalletReports';
-import { Dashboard } from '../components/Dashboard';
-import { Wallet } from '../screens/Wallet/Wallet';
-import { AddDriver } from '../screens/AddDriver/AddDriver';
-import { DriverDetails } from '../screens/DriverDetails/DriverDetails';
-import { AddNewCar } from '../screens/AddNewCar/AddNewCar';
-import { CarDetails } from '../screens/CarDetails/CarDetails';
-import { MoneyRefundRequests } from '../screens/MoneyRefundRequests/MoneyRefundRequests';
-import { WalletChargeRequests } from '../screens/ChargeRequests/WalletChargeRequests';
-import { ChargeWallet } from '../screens/ChargeWallet';
-import { PerolifeStationLocations } from '../screens/PerolifeStationLocations/perolifestationlocations';
-import { StoreScreen } from '../screens/Store';
-import { SubscriptionsScreen } from '../screens/Subscriptions';
-import { DeliveryFuelRequests } from '../screens/DeliveryFuelRequests';
-import { CreateDeliveryRequest } from '../screens/CreateDeliveryRequest';
-import LoginAndRegister from '../screens/Login And Register/LoginAndRegister';
-import { ServiceDistributerDashboard } from '../components/ServiceDistributerDashboard';
-import { StationWorkers } from '../screens/StationWorkers/StationWorkers';
-import { Stations } from '../screens/Stations';
-import { TestTransfer } from '../screens/TestTransfer';
-import StationWorkerDetails from '../screens/StationWorkerDetails/StationWorkerDetails';
-import { FuelStationRequests } from '../screens/FuelStationRequests';
-import { ServiceDistributerFinancialReports } from '../screens/ServiceDistributerFinancialReports';
-import { ServiceDistributerStationLocations } from '../screens/ServiceDistributerStationLocations';
-import { ServiceDistributerInvoices } from '../screens/ServiceDistributerInvoices';
-import { Invoices } from '../screens/Invoices';
-import { IconPreview } from '../screens/IconPreview';
+import { Drivers } from "../screens/Drivers";
+import { Cars } from "../screens/Cars";
+import { FinancialReports } from "../screens/FinancialReports";
+import { WalletReports } from "../screens/WalletReports";
+import { Dashboard } from "../components/Dashboard";
+import { Wallet } from "../screens/Wallet/Wallet";
+import { AddDriver } from "../screens/AddDriver/AddDriver";
+import { DriverDetails } from "../screens/DriverDetails/DriverDetails";
+import { AddNewCar } from "../screens/AddNewCar/AddNewCar";
+import { CarDetails } from "../screens/CarDetails/CarDetails";
+import { MoneyRefundRequests } from "../screens/MoneyRefundRequests/MoneyRefundRequests";
+import { WalletChargeRequests } from "../screens/ChargeRequests/WalletChargeRequests";
+import { ChargeWallet } from "../screens/ChargeWallet";
+import { PerolifeStationLocations } from "../screens/PerolifeStationLocations/perolifestationlocations";
+import { StoreScreen } from "../screens/Store";
+import { SubscriptionsScreen } from "../screens/Subscriptions";
+import { DeliveryFuelRequests } from "../screens/DeliveryFuelRequests";
+import { CreateDeliveryRequest } from "../screens/CreateDeliveryRequest";
+import LoginAndRegister from "../screens/Login And Register/LoginAndRegister";
+import { ServiceDistributerDashboard } from "../components/ServiceDistributerDashboard";
+import { StationWorkers } from "../screens/StationWorkers/StationWorkers";
+import { Stations } from "../screens/Stations";
+import { TestTransfer } from "../screens/TestTransfer";
+import StationWorkerDetails from "../screens/StationWorkerDetails/StationWorkerDetails";
+import { FuelStationRequests } from "../screens/FuelStationRequests";
+import { ServiceDistributerFinancialReports } from "../screens/ServiceDistributerFinancialReports";
+import { ServiceDistributerStationLocations } from "../screens/ServiceDistributerStationLocations";
+import { ServiceDistributerInvoices } from "../screens/ServiceDistributerInvoices";
+import { Invoices } from "../screens/Invoices";
+import { IconPreview } from "../screens/IconPreview";
 // admin dashboard
-import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
-import { Supervisors } from '../components/AdminDashboard/pages/supervisors/Supervisors';
-import { AddSupervisor } from '../components/AdminDashboard/pages/supervisors/AddSupervisor';
-import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisors/SupervisorDetails';
-import { Companies } from '../components/AdminDashboard/pages/companies/Companies';
-import { AddCompany } from '../components/AdminDashboard/pages/companies/AddCompany';
-import { CompanyDetails } from '../components/AdminDashboard/pages/companies/CompanyDetails';
-
+import { AdminDashboard } from "../components/AdminDashboard/AdminDashboard";
+import { Supervisors } from "../components/AdminDashboard/pages/supervisors/Supervisors";
+import { AddSupervisor } from "../components/AdminDashboard/pages/supervisors/AddSupervisor";
+import { SupervisorDetails } from "../components/AdminDashboard/pages/supervisors/SupervisorDetails";
+import { Companies } from "../components/AdminDashboard/pages/companies/Companies";
+import { AddCompany } from "../components/AdminDashboard/pages/companies/AddCompany";
+import { CompanyDetails } from "../components/AdminDashboard/pages/companies/CompanyDetails";
+import { Test } from "../screens/Test";
 
 // 404 Component
 const NotFound = () => (
@@ -66,7 +66,10 @@ export const AppRouter = () => {
         <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboard />} />
         <Route path={ROUTES.SUPERVISORS} element={<Supervisors />} />
         <Route path={ROUTES.ADD_SUPERVISOR} element={<AddSupervisor />} />
-        <Route path={ROUTES.SUPERVISOR_DETAILS} element={<SupervisorDetails />} />
+        <Route
+          path={ROUTES.SUPERVISOR_DETAILS}
+          element={<SupervisorDetails />}
+        />
         <Route path={ROUTES.COMPANIES} element={<Companies />} />
         <Route path={ROUTES.ADD_COMPANY} element={<AddCompany />} />
         <Route path={ROUTES.COMPANY_DETAILS} element={<CompanyDetails />} />
@@ -150,7 +153,8 @@ export const AppRouter = () => {
           element={<ServiceDistributerInvoices />}
         />
 
-        {/* Test Route - Companies-Drivers-Transfer */}
+        {/* Test Routes */}
+        <Route path={ROUTES.TEST} element={<Test />} />
         <Route path="/test-transfer" element={<TestTransfer />} />
 
         {/* Developer Tools */}

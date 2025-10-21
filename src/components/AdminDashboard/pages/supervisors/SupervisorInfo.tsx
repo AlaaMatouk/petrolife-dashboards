@@ -20,35 +20,39 @@ interface SupervisorActivity {
 const mockSupervisorActivities: SupervisorActivity[] = [
   {
     id: 1,
-    event: "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
+    event:
+      "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
     number: "1",
     date: "2025-01-01",
   },
-    {
-        id: 2,
-        event: "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
-        number: "2",
-        date: "2025-01-01",
-    },
-    {
-        id: 3,
-        event: "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
-        number: "3",
-        date: "2025-01-01",
-    },
-    {
-        id: 4,
-        event: "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
-        number: "4",
-        date: "2025-01-01",
-    },
-    {
-        id: 5,
-        event: "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
-        number: "5",
-        date: "2025-01-01",
-    },
-
+  {
+    id: 2,
+    event:
+      "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
+    number: "2",
+    date: "2025-01-01",
+  },
+  {
+    id: 3,
+    event:
+      "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
+    number: "3",
+    date: "2025-01-01",
+  },
+  {
+    id: 4,
+    event:
+      "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
+    number: "4",
+    date: "2025-01-01",
+  },
+  {
+    id: 5,
+    event:
+      "قام المشرف بإضافة اسم_المستخدم كعميل من خلال صلاحيته في إدارة الأفراد",
+    number: "5",
+    date: "2025-01-01",
+  },
 ];
 
 // Columns configuration for supervisor activity log
@@ -96,7 +100,9 @@ export const SupervisorInfo = ({
   const supervisorInfo = {
     name: getValueOrDash(supervisorData.supervisorName || supervisorData.name),
     supervisorCode: getValueOrDash(
-      supervisorData.supervisorCode || supervisorData.code
+      supervisorData.supervisorCode ||
+        supervisorData.code ||
+        supervisorData.employeeNumber
     ),
     email: getValueOrDash(supervisorData.email),
     phone: getValueOrDash(supervisorData.phone || supervisorData.phoneNumber),
@@ -110,6 +116,7 @@ export const SupervisorInfo = ({
       (supervisorData.accountStatus?.active ? "مفعل" : "غير مفعل"),
     isActive:
       supervisorData.accountStatus?.active ?? supervisorData.isActive ?? true,
+    permissions: supervisorData.permissions || [],
   };
 
   // Define all fields to display in 3-column layout
@@ -197,43 +204,29 @@ export const SupervisorInfo = ({
                   صلاحيات المشرف
                 </h3>
 
-                <div className="grid grid-cols-3 gap-3 w-full">
-                  {/* إدارة المشرفين */}
-                  <div
-                    className="flex items-center text-[#5B738B] text-[14px] font-normal [direction:rtl] p-[10px] rounded-[4px] gap-1 bg-white"
-                    style={{
-                      border: "0.5px solid #A9B4BE",
-                      direction: "rtl",
-                    }}
-                  >
-                    <img src={checkIcon} alt="supervisors-management" />
-                    ادارة المشرفين
+                {supervisorInfo.permissions.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-3 w-full">
+                    {supervisorInfo.permissions.map(
+                      (permission: string, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center text-[#5B738B] text-[14px] font-normal [direction:rtl] p-[10px] rounded-[4px] gap-1 bg-white"
+                          style={{
+                            border: "0.5px solid #A9B4BE",
+                            direction: "rtl",
+                          }}
+                        >
+                          <img src={checkIcon} alt={permission} />
+                          {permission}
+                        </div>
+                      )
+                    )}
                   </div>
-
-                  {/* إدارة الشركات */}
-                  <div
-                    className="flex items-center text-[#5B738B] text-[14px] font-normal [direction:rtl] p-[10px] rounded-[4px] gap-1 bg-white"
-                    style={{
-                      border: "0.5px solid #A9B4BE",
-                      direction: "rtl",
-                    }}
-                  >
-                    <img src={checkIcon} alt="supervisors-management" />
-                    ادارة الشركة
+                ) : (
+                  <div className="w-full p-4 text-center text-gray-500 bg-gray-50 rounded-lg [direction:rtl]">
+                    لا توجد صلاحيات محددة لهذا المشرف
                   </div>
-
-                  {/* إدارة الأفراد */}
-                  <div
-                    className="flex items-center text-[#5B738B] text-[14px] font-normal [direction:rtl] p-[10px] rounded-[4px] gap-1 bg-white"
-                    style={{
-                      border: "0.5px solid #A9B4BE",
-                      direction: "rtl",
-                    }}
-                  >
-                    <img src={checkIcon} alt="supervisors-management" />
-                    ادارة الافراد
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Edit Button */}
