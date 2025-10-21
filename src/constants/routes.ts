@@ -42,6 +42,7 @@ export const ROUTES = {
   STATION_WORKERS: '/service-distributer-station-workers',
   STATION_WORKER_DETAILS: '/service-distributer-station-worker/:id',
   STATIONS: '/service-distributer-stations',
+  ADD_STATIONS: '/service-distributer-stations/add',
   STATIONS_DETAILS: '/service-distributer-station/:id',
   FUEL_STATION_REQUESTS: '/fuel-station-requests',
   FUEL_STATION_REQUESTS_DETAILS: '/fuel-station-request/:id',

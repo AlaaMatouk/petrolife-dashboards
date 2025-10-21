@@ -41,6 +41,7 @@ import { AddSupervisor } from '../components/AdminDashboard/pages/supervisors/Ad
 import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisors/SupervisorDetails';
 import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
 import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
+import { AddStations } from '../screens/AddStations';
 
 
 // 404 Component
@@ -123,6 +124,7 @@ export const AppRouter = () => {
       <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
       <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
       <Route path={ROUTES.STATIONS} element={<Stations/>} />
+      <Route path={ROUTES.ADD_STATIONS} element={<AddStations/>} />
       <Route path={ROUTES.STATIONS_DETAILS} element={<StationsDetails/>} />
       <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
       <Route path={ROUTES.FUEL_STATION_REQUESTS_DETAILS} element={<FuelStationRequestsDetails/>}/>
