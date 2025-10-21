@@ -52,6 +52,17 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
+  '/service-providers': {
+    title: 'مزودي الخدمة',
+    titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن مزود خدمة...',
+  },
+  '/service-providers/add': {
+    title: 'مزودي الخدمة / اضافة مزود خدمة جديد',
+    titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+    showSearch: false,
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -84,6 +95,15 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'الأفراد / تفاصيل الفرد',
       titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /service-providers/:id)
+  if (pathname.startsWith('/service-providers/') && pathname !== '/service-providers/add') {
+    return {
+      title: 'مزودي الخدمة / تفاصيل مزود الخدمة',
+      titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }

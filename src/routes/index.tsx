@@ -46,6 +46,9 @@ import { Individuals } from '../components/AdminDashboard/pages/Individuals/Indi
 // @ts-ignore - JSX component imports
 import { AddIndividuals } from '../components/AdminDashboard/pages/Individuals/AddIndividuals';
 import { IndividualsDetails } from '../components/AdminDashboard/pages/Individuals/IndividualsDetails';
+import { ServiceProviders } from '../components/AdminDashboard/pages/service-providers/ServiceProviders';
+import { AddServiceProvider } from '../components/AdminDashboard/pages/service-providers/AddServiceProvider';
+import { ServiceProvidersDetails } from '../components/AdminDashboard/pages/service-providers/ServiceProvidersDetails';
 import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
 import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
 import { AddStations } from '../screens/AddStations';
@@ -80,6 +83,9 @@ export const AppRouter = () => {
         <Route path={ROUTES.INDIVIDUALS} element={<Individuals />} />
         <Route path={ROUTES.ADD_INDIVIDUAL} element={<AddIndividuals />} />
         <Route path={ROUTES.INDIVIDUAL_DETAILS} element={<IndividualsDetails />} />
+        <Route path={ROUTES.SERVICE_PROVIDERS} element={<ServiceProviders />} />
+        <Route path={ROUTES.ADD_SERVICE_PROVIDER} element={<AddServiceProvider />} />
+        <Route path={ROUTES.SERVICE_PROVIDER_DETAILS} element={<ServiceProvidersDetails />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}

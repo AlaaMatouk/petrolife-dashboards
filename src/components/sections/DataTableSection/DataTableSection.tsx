@@ -33,6 +33,11 @@ export interface DataTableSectionProps<T> {
   showTimeFilter?: boolean; // New prop to control TimeFilter visibility
   showAddButton?: boolean; // New prop to control Add button visibility
   filterOptions?: any[]; // New prop for RTLSelect filters
+  customFilterButton?: {
+    label: string;
+    count: number;
+    onClick: () => void;
+  }; // New prop for custom filter button with count
 }
 
 // Generic Action Menu Component
@@ -275,7 +280,8 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   itemsPerPage = 10,
   showTimeFilter = false,
   showAddButton = true,
-  filterOptions = []
+  filterOptions = [],
+  customFilterButton
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
@@ -458,7 +464,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
             ) : (
               // Show buttons for other entities
               <div className="inline-flex items-center gap-[var(--corner-radius-medium)] relative flex-[0_0_auto]">
-                {showAddButton && (
+                {showAddButton && !customFilterButton && (
                   <button
                     onClick={() => navigate(addNewRoute)}
                     className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
@@ -470,6 +476,21 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
                         </span>
                       </div>
                       <CirclePlus className="w-4 h-4 text-gray-500" />
+                    </div>
+                  </button>
+                )}
+
+                {customFilterButton && (
+                  <button
+                    onClick={customFilterButton.onClick}
+                    className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
+                  >
+                    <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
+                      <div className="inline-flex items-center justify-center gap-2.5 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
+                        <span className="w-fit mt-[-1.00px] font-[number:var(--body-body-2-font-weight)] text-color-mode-text-icons-t-sec text-left tracking-[var(--body-body-2-letter-spacing)] leading-[var(--body-body-2-line-height)] relative font-body-body-2 text-[length:var(--body-body-2-font-size)] whitespace-nowrap [direction:rtl] [font-style:var(--body-body-2-font-style)]">
+                          {customFilterButton.label} ({customFilterButton.count})
+                        </span>
+                      </div>
                     </div>
                   </button>
                 )}
