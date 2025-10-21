@@ -10,11 +10,12 @@ import {
   FileText,
   Trash2,
   User,
-  LucideIcon
+  LucideIcon,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { TimeFilter } from "../../shared/TimeFilter/TimeFilter";
 import { RTLSelect } from "../../shared/Form/RTLSelect";
+import { StatusToggle } from "../../shared/StatusToggle";
 
 // Generic props interface for DataTableSection
 export interface DataTableSectionProps<T> {
@@ -36,16 +37,20 @@ export interface DataTableSectionProps<T> {
 }
 
 // Generic Action Menu Component
-interface ActionMenuProps<T extends { id: number; driverCode?: string; stationCode?: string }> {
+interface ActionMenuProps<
+  T extends { id: number; driverCode?: string; stationCode?: string }
+> {
   item: T;
   entityName: string;
   viewDetailsRoute: (id: number) => string;
 }
 
-const ActionMenu = <T extends { id: number; driverCode?: string; stationCode?: string }>({ 
-  item, 
+const ActionMenu = <
+  T extends { id: number; driverCode?: string; stationCode?: string }
+>({
+  item,
   entityName,
-  viewDetailsRoute 
+  viewDetailsRoute,
 }: ActionMenuProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
@@ -53,7 +58,10 @@ const ActionMenu = <T extends { id: number; driverCode?: string; stationCode?: s
   const navigate = useNavigate();
 
   const handleAction = (action: string) => {
-    console.log(`${action} clicked for item:`, item.driverCode || item.stationCode);
+    console.log(
+      `${action} clicked for item:`,
+      item.driverCode || item.stationCode
+    );
     if (action === "view") {
       navigate(viewDetailsRoute(item.id));
     }
@@ -77,7 +85,7 @@ const ActionMenu = <T extends { id: number; driverCode?: string; stationCode?: s
 
     const newPosition = {
       top: rect.bottom + 4, // Position below the button
-      left: Math.max(4, left) // Ensure it doesn't go off-screen to the left
+      left: Math.max(4, left), // Ensure it doesn't go off-screen to the left
     };
 
     setMenuPosition(newPosition);
@@ -123,7 +131,7 @@ const ActionMenu = <T extends { id: number; driverCode?: string; stationCode?: s
               className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
               style={{
                 top: `${menuPosition.top}px`,
-                left: `${menuPosition.left}px`
+                left: `${menuPosition.left}px`,
               }}
             >
               <div className="py-1">
@@ -179,7 +187,7 @@ const ExportMenu = () => {
 
     const newPosition = {
       top: rect.bottom + 4, // Position below the button
-      left: Math.max(4, left) // Ensure it doesn't go off-screen to the left
+      left: Math.max(4, left), // Ensure it doesn't go off-screen to the left
     };
 
     setMenuPosition(newPosition);
@@ -231,7 +239,7 @@ const ExportMenu = () => {
               className="fixed w-40 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden"
               style={{
                 top: `${menuPosition.top}px`,
-                left: `${menuPosition.left}px`
+                left: `${menuPosition.left}px`,
               }}
             >
               <div className="py-1">
@@ -260,7 +268,15 @@ const ExportMenu = () => {
 };
 
 // Generic DataTableSection Component
-export const DataTableSection = <T extends { id: number; driverCode?: string; stationCode?: string; accountStatus?: { active: boolean; text: string }; stationStatus?: { active: boolean; text: string } }>({
+export const DataTableSection = <
+  T extends {
+    id: number;
+    driverCode?: string;
+    stationCode?: string;
+    accountStatus?: { active: boolean; text: string };
+    stationStatus?: { active: boolean; text: string };
+  }
+>({
   title,
   entityName,
   entityNamePlural,
@@ -275,7 +291,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   itemsPerPage = 10,
   showTimeFilter = false,
   showAddButton = true,
-  filterOptions = []
+  filterOptions = [],
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
@@ -283,26 +299,33 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("الكل");
-  
+
   // Initialize filters state based on filterOptions
   const initialFilters = filterOptions.reduce((acc, filter) => {
-    const key = filter.label === "نوع التقرير" ? "reportType" : 
-                filter.label === "اسم المنتج" ? "productName" :
-                filter.label === "قائمة المحطات" ? "stationList" :
-                filter.label === "المدينة" ? "city" :
-                filter.label === "رقم العملية" ? "operationNumber" : 
-                filter.label.toLowerCase().replace(/\s+/g, "");
+    const key =
+      filter.label === "نوع التقرير"
+        ? "reportType"
+        : filter.label === "اسم المنتج"
+        ? "productName"
+        : filter.label === "قائمة المحطات"
+        ? "stationList"
+        : filter.label === "المدينة"
+        ? "city"
+        : filter.label === "رقم العملية"
+        ? "operationNumber"
+        : filter.label.toLowerCase().replace(/\s+/g, "");
     acc[key] = filter.value;
     return acc;
   }, {} as Record<string, string>);
-  
-  const [filters, setFilters] = useState<Record<string, string>>(initialFilters);
-  
+
+  const [filters, setFilters] =
+    useState<Record<string, string>>(initialFilters);
+
   // Handle filter changes
   const handleFilterChange = (filterKey: string, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterKey]: value
+      [filterKey]: value,
     }));
   };
 
@@ -344,16 +367,16 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
     if (onToggleStatus) {
       onToggleStatus(itemId);
       // Update local state
-      setData(prevData =>
-        prevData.map(item => {
+      setData((prevData) =>
+        prevData.map((item) => {
           if (item.id === itemId) {
             if (item.accountStatus) {
               return {
                 ...item,
                 accountStatus: {
                   active: !item.accountStatus.active,
-                  text: !item.accountStatus.active ? "مفعل" : "معطل"
-                }
+                  text: !item.accountStatus.active ? "مفعل" : "معطل",
+                },
               };
             }
             if ((item as any).stationStatus) {
@@ -361,8 +384,8 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
                 ...item,
                 stationStatus: {
                   active: !(item as any).stationStatus.active,
-                  text: !(item as any).stationStatus.active ? "مفعل" : "معطل"
-                }
+                  text: !(item as any).stationStatus.active ? "مفعل" : "معطل",
+                },
               };
             }
           }
@@ -373,52 +396,37 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   };
 
   // Calculate paginated data
-  const paginatedData = Array.isArray(data) 
+  const paginatedData = Array.isArray(data)
     ? data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
     : [];
 
   // Enhance columns with ActionMenu
-  const enhancedColumns = columns.map(col => {
+  const enhancedColumns = columns.map((col) => {
     if (col.key === "actions") {
       return {
         ...col,
         render: (_: any, row: T) => (
-          <ActionMenu 
-            item={row} 
+          <ActionMenu
+            item={row}
             entityName={entityName}
             viewDetailsRoute={viewDetailsRoute}
           />
-        )
+        ),
       };
     }
-    if ((col.key === "accountStatus" || col.key === "stationStatus") && onToggleStatus) {
+    if (
+      (col.key === "accountStatus" || col.key === "stationStatus") &&
+      onToggleStatus
+    ) {
       return {
         ...col,
         render: (value: any, row: T) => (
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleToggleStatus(row.id)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                  value.active ? "bg-green-600" : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    value.active ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-              <span
-                className={`text-sm font-medium ${
-                  value.active ? "text-green-700" : "text-gray-500"
-                }`}
-              >
-                {value.text}
-              </span>
-            </div>
-          </div>
-        )
+          <StatusToggle
+            isActive={value.active}
+            onToggle={() => handleToggleStatus(row.id)}
+            statusText={value.text}
+          />
+        ),
       };
     }
     return col;
@@ -495,21 +503,37 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
               <RTLSelect
                 key={index}
                 label={filter.label}
-                value={filters[filter.label === "نوع التقرير" ? "reportType" : 
-                              filter.label === "اسم المنتج" ? "productName" :
-                              filter.label === "قائمة المحطات" ? "stationList" :
-                              filter.label === "المدينة" ? "city" :
-                              filter.label === "رقم العملية" ? "operationNumber" : 
-                              filter.label.toLowerCase().replace(/\s+/g, "")]}
-                onChange={(value) => handleFilterChange(
-                  filter.label === "نوع التقرير" ? "reportType" : 
-                  filter.label === "اسم المنتج" ? "productName" :
-                  filter.label === "قائمة المحطات" ? "stationList" :
-                  filter.label === "المدينة" ? "city" :
-                  filter.label === "رقم العملية" ? "operationNumber" : 
-                  filter.label.toLowerCase().replace(/\s+/g, ""), 
-                  value
-                )}
+                value={
+                  filters[
+                    filter.label === "نوع التقرير"
+                      ? "reportType"
+                      : filter.label === "اسم المنتج"
+                      ? "productName"
+                      : filter.label === "قائمة المحطات"
+                      ? "stationList"
+                      : filter.label === "المدينة"
+                      ? "city"
+                      : filter.label === "رقم العملية"
+                      ? "operationNumber"
+                      : filter.label.toLowerCase().replace(/\s+/g, "")
+                  ]
+                }
+                onChange={(value) =>
+                  handleFilterChange(
+                    filter.label === "نوع التقرير"
+                      ? "reportType"
+                      : filter.label === "اسم المنتج"
+                      ? "productName"
+                      : filter.label === "قائمة المحطات"
+                      ? "stationList"
+                      : filter.label === "المدينة"
+                      ? "city"
+                      : filter.label === "رقم العملية"
+                      ? "operationNumber"
+                      : filter.label.toLowerCase().replace(/\s+/g, ""),
+                    value
+                  )
+                }
                 options={filter.options}
                 placeholder={filter.value}
               />
@@ -557,4 +581,3 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
     </section>
   );
 };
-
