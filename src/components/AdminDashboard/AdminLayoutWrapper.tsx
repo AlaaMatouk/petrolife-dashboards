@@ -30,6 +30,17 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
+  '/companies': {
+    title: 'الشركات',
+    titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن شركة...',
+  },
+  '/companies/add': {
+    title: 'الشركات / اضافة شركة جديدة',
+    titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+    showSearch: false,
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -44,6 +55,15 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'المشرفين / تفاصيل المشرف',
       titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /companies/:id)
+  if (pathname.startsWith('/companies/') && pathname !== '/companies/add') {
+    return {
+      title: 'الشركات / تفاصيل الشركة',
+      titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }

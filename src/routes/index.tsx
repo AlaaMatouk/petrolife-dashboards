@@ -39,6 +39,9 @@ import { AdminDashboard } from '../components/AdminDashboard/AdminDashboard';
 import { Supervisors } from '../components/AdminDashboard/pages/supervisors/Supervisors';
 import { AddSupervisor } from '../components/AdminDashboard/pages/supervisors/AddSupervisor';
 import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisors/SupervisorDetails';
+import { Companies } from '../components/AdminDashboard/pages/companies/Companies';
+import { AddCompany } from '../components/AdminDashboard/pages/companies/AddCompany';
+import { CompanyDetails } from '../components/AdminDashboard/pages/companies/CompanyDetails';
 import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
 import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
 import { AddStations } from '../screens/AddStations';
@@ -67,6 +70,9 @@ export const AppRouter = () => {
         <Route path={ROUTES.SUPERVISORS} element={<Supervisors />} />
         <Route path={ROUTES.ADD_SUPERVISOR} element={<AddSupervisor />} />
         <Route path={ROUTES.SUPERVISOR_DETAILS} element={<SupervisorDetails />} />
+        <Route path={ROUTES.COMPANIES} element={<Companies />} />
+        <Route path={ROUTES.ADD_COMPANY} element={<AddCompany />} />
+        <Route path={ROUTES.COMPANY_DETAILS} element={<CompanyDetails />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}
