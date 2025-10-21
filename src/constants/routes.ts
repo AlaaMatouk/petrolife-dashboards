@@ -41,16 +41,17 @@ export const ROUTES = {
   TEST: "/test",
 
   // Service Distributer Dashboard
-  SERVICE_DISTRIBUTER_DASHBOARD: "/service-distributer",
-  STATION_WORKERS: "/service-distributer-station-workers",
-  STATION_WORKER_DETAILS: "/service-distributer-station-worker/:id",
-  STATIONS: "/service-distributer-stations",
-  FUEL_STATION_REQUESTS: "/fuel-station-requests",
-  SERVICE_DISTRIBUTER_FINANCIAL_REPORTS:
-    "/service-distributer-financial-reports",
-  SERVICE_DISTRIBUTER_STATION_LOCATIONS:
-    "/service-distributer-station-locations",
-  SERVICE_DISTRIBUTER_INVOICES: "/service-distributer-invoices",
+  SERVICE_DISTRIBUTER_DASHBOARD: '/service-distributer',
+  STATION_WORKERS: '/service-distributer-station-workers',
+  STATION_WORKER_DETAILS: '/service-distributer-station-worker/:id',
+  STATIONS: '/service-distributer-stations',
+  ADD_STATIONS: '/service-distributer-stations/add',
+  STATIONS_DETAILS: '/service-distributer-station/:id',
+  FUEL_STATION_REQUESTS: '/fuel-station-requests',
+  FUEL_STATION_REQUESTS_DETAILS: '/fuel-station-request/:id',
+  SERVICE_DISTRIBUTER_FINANCIAL_REPORTS: '/service-distributer-financial-reports',
+  SERVICE_DISTRIBUTER_STATION_LOCATIONS: '/service-distributer-station-locations',
+  SERVICE_DISTRIBUTER_INVOICES: '/service-distributer-invoices',
 
   // Admin Dashboard
   ADMIN_DASHBOARD: "/admin-dashboard",
@@ -60,6 +61,9 @@ export const ROUTES = {
   COMPANIES: "/companies",
   COMPANY_DETAILS: "/companies/:id",
   ADD_COMPANY: "/companies/add",
+  INDIVIDUALS: '/individuals',
+  INDIVIDUAL_DETAILS: '/individuals/:id',
+  ADD_INDIVIDUAL: '/individuals/add',
   PEOPLE: "/people",
   SERVICE_PROVIDERS: "/serviceproviders",
   PETROLIFE_DRIVERS: "/petrolife-drivers",

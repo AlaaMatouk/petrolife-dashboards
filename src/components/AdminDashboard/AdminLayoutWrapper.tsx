@@ -41,6 +41,17 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
+  '/individuals': {
+    title: 'الأفراد',
+    titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن فرد...',
+  },
+  '/individuals/add': {
+    title: 'الأفراد / اضافة فرد جديد',
+    titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
+    showSearch: false,
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -64,6 +75,15 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'الشركات / تفاصيل الشركة',
       titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /individuals/:id)
+  if (pathname.startsWith('/individuals/') && pathname !== '/individuals/add') {
+    return {
+      title: 'الأفراد / تفاصيل الفرد',
+      titleIcon: <img src="/img/side-icons-8.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }

@@ -206,7 +206,7 @@ export const adminNavigationMenuData = {
           id: "people",
           label: "الافراد",
           icon: "/img/side-icons-7.svg",
-          href: ROUTES.PEOPLE,
+          href: ROUTES.INDIVIDUALS,
         },
         {
           id: "service-providers",
