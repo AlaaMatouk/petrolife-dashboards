@@ -2599,6 +2599,164 @@ export const getCompaniesCountByType = async (): Promise<{
 };
 
 /**
+ * Fetch supervisors from users collection
+ * Filters users where isAdmin === true OR isSuperAdmin === true
+ * @returns Promise with array of supervisor data
+ */
+export const fetchSupervisorsFromUsers = async (): Promise<any[]> => {
+  try {
+    console.log("\n👔 FETCHING SUPERVISORS FROM USERS COLLECTION");
+    console.log("====================================");
+
+    const usersRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersRef);
+
+    const supervisors: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Filter by isAdmin or isSuperAdmin
+      if (data.isAdmin === true || data.isSuperAdmin === true) {
+        supervisors.push({
+          id: doc.id,
+          supervisorCode: data.uid || data.id || doc.id || "-",
+          supervisorName: data.name || data.fullName || data.displayName || "-",
+          phone: data.phoneNumber || data.phone || "-",
+          email: data.email || "-",
+          city: data.city || data.location || "-",
+          accountStatus: {
+            active: data.isActive === true,
+            text: data.isActive === true ? "مفعل" : "معطل",
+          },
+          // Keep original data for reference
+          ...data,
+        });
+      }
+    });
+
+    console.log(`✅ Found ${supervisors.length} supervisors/admins`);
+    console.log("====================================\n");
+
+    return supervisors;
+  } catch (error) {
+    console.error("❌ Error fetching supervisors:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all companies with enriched data (cars and drivers count)
+ * @returns Promise with array of companies with counts
+ */
+export const fetchAllCompaniesWithCounts = async (): Promise<any[]> => {
+  try {
+    console.log("\n🏢 FETCHING ALL COMPANIES WITH COUNTS");
+    console.log("====================================");
+
+    // Fetch companies, cars, and drivers in parallel
+    const [companiesSnapshot, carsSnapshot, driversSnapshot] =
+      await Promise.all([
+        getDocs(collection(db, "companies")),
+        getDocs(collection(db, "companies-cars")),
+        getDocs(collection(db, "companies-drivers")),
+      ]);
+
+    console.log(`📦 Total companies: ${companiesSnapshot.size}`);
+    console.log(`🚗 Total cars in DB: ${carsSnapshot.size}`);
+    console.log(`👤 Total drivers in DB: ${driversSnapshot.size}`);
+
+    // Build companies array with enriched data
+    const companies: any[] = [];
+
+    companiesSnapshot.forEach((companyDoc) => {
+      const companyData = companyDoc.data();
+      const companyEmail = companyData.email || "";
+
+      // Count cars for this company (filter by email)
+      let carsCount = 0;
+      carsSnapshot.forEach((carDoc) => {
+        const carData = carDoc.data();
+        const carEmail =
+          carData.email || carData.companyEmail || carData.createdUserId || "";
+        if (
+          carEmail &&
+          companyEmail &&
+          carEmail.toLowerCase() === companyEmail.toLowerCase()
+        ) {
+          carsCount++;
+        }
+      });
+
+      // Count drivers for this company (filter by createdUserId matching company email)
+      let driversCount = 0;
+      driversSnapshot.forEach((driverDoc) => {
+        const driverData = driverDoc.data();
+        const driverCompanyEmail =
+          driverData.createdUserId ||
+          driverData.email ||
+          driverData.companyEmail ||
+          "";
+        if (
+          driverCompanyEmail &&
+          companyEmail &&
+          driverCompanyEmail.toLowerCase() === companyEmail.toLowerCase()
+        ) {
+          driversCount++;
+        }
+      });
+
+      // Extract subscription title (handle object with ar/en keys)
+      let subscriptionTitle = "-";
+      if (companyData.selectedSubscription?.title) {
+        const title = companyData.selectedSubscription.title;
+        if (typeof title === "string") {
+          subscriptionTitle = title;
+        } else if (typeof title === "object" && title.ar) {
+          subscriptionTitle = title.ar;
+        } else if (typeof title === "object" && title.en) {
+          subscriptionTitle = title.en;
+        }
+      }
+
+      // Extract city (handle object with ar/en keys)
+      let cityName = "-";
+      const cityData =
+        companyData.formattedLocation?.address?.city || companyData.city;
+      if (cityData) {
+        if (typeof cityData === "string") {
+          cityName = cityData;
+        } else if (typeof cityData === "object" && cityData.ar) {
+          cityName = cityData.ar;
+        } else if (typeof cityData === "object" && cityData.en) {
+          cityName = cityData.en;
+        }
+      }
+
+      companies.push({
+        id: companyDoc.id,
+        companyCode: companyData.id || companyDoc.id || "-",
+        companyName: companyData.name || companyData.brandName || "-",
+        phone: companyData.phoneNumber || companyData.phone || "-",
+        email: companyData.email || "-",
+        city: cityName,
+        cars: carsCount,
+        drivers: driversCount,
+        subscriptions: subscriptionTitle,
+      });
+    });
+
+    console.log(`✅ Processed ${companies.length} companies with counts`);
+    console.log("====================================\n");
+
+    return companies;
+  } catch (error) {
+    console.error("❌ Error fetching companies with counts:", error);
+    throw error;
+  }
+};
+
+/**
  * Calculate total users count by type from all collections
  * @returns Promise with users breakdown
  */
@@ -2625,11 +2783,11 @@ export const getTotalUsersByType = async (): Promise<{
       getDocs(collection(db, "stationscompany")),
     ]);
 
-    // Count supervisors (users where isSupervisory === true)
+    // Count supervisors/admins (users where isAdmin === true OR isSuperAdmin === true)
     let supervisorsCount = 0;
     usersSnapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.isSupervisory === true) {
+      if (data.isAdmin === true || data.isSuperAdmin === true) {
         supervisorsCount++;
       }
     });
@@ -3499,26 +3657,42 @@ export const fetchNotifications = async () => {
  */
 export const fetchSupervisorById = async (supervisorId: string) => {
   try {
-    console.log('Fetching supervisor by ID:', supervisorId);
-    
-    // Import mock data from Supervisors.tsx to avoid duplication
-    const { mockSupervisorsData } = await import('../components/AdminDashboard/pages/supervisors/Supervisors');
-    
-    // Find supervisor by ID
-    const supervisor = mockSupervisorsData.find(s => s.id === parseInt(supervisorId));
-    
-    if (!supervisor) {
-      throw new Error('Supervisor not found');
+    console.log("Fetching supervisor by ID:", supervisorId);
+
+    // Fetch the specific user document from Firestore
+    const userDocRef = doc(db, "users", supervisorId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("Supervisor not found");
     }
-    
-    console.log('Supervisor data fetched (mock):', supervisor);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+    const data = userDoc.data();
+
+    // Verify user is admin or super admin
+    if (data.isAdmin !== true && data.isSuperAdmin !== true) {
+      throw new Error("User is not a supervisor/admin");
+    }
+
+    const supervisor = {
+      id: userDoc.id,
+      supervisorCode: data.uid || data.id || userDoc.id || "-",
+      supervisorName: data.name || data.fullName || data.displayName || "-",
+      phone: data.phoneNumber || data.phone || "-",
+      email: data.email || "-",
+      city: data.city || data.location || "-",
+      accountStatus: {
+        active: data.isActive === true,
+        text: data.isActive === true ? "مفعل" : "معطل",
+      },
+      ...data,
+    };
+
+    console.log("Supervisor data fetched:", supervisor);
+
     return supervisor;
   } catch (error) {
-    console.error('Error fetching supervisor by ID:', error);
+    console.error("Error fetching supervisor by ID:", error);
     throw error;
   }
 };
@@ -3530,26 +3704,102 @@ export const fetchSupervisorById = async (supervisorId: string) => {
  */
 export const fetchCompanyById = async (companyId: string) => {
   try {
-    console.log('Fetching company by ID:', companyId);
-    
-    // Import mock data from Companies.tsx to avoid duplication
-    const { mockCompaniesData } = await import('../components/AdminDashboard/pages/companies/Companies');
-    
-    // Find company by ID
-    const company = mockCompaniesData.find(c => c.id === parseInt(companyId));
-    
-    if (!company) {
-      throw new Error('Company not found');
+    console.log("Fetching company by ID:", companyId);
+
+    // Fetch the specific company document from Firestore
+    const companyDocRef = doc(db, "companies", companyId);
+    const companyDoc = await getDoc(companyDocRef);
+
+    if (!companyDoc.exists()) {
+      throw new Error("Company not found");
     }
-    
-    console.log('Company data fetched (mock):', company);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+    const companyData = companyDoc.data();
+    const companyEmail = companyData.email || "";
+
+    // Fetch cars and drivers for this company in parallel
+    const [carsSnapshot, driversSnapshot] = await Promise.all([
+      getDocs(collection(db, "companies-cars")),
+      getDocs(collection(db, "companies-drivers")),
+    ]);
+
+    // Count cars for this company
+    let carsCount = 0;
+    carsSnapshot.forEach((carDoc) => {
+      const carData = carDoc.data();
+      const carEmail =
+        carData.email || carData.companyEmail || carData.createdUserId || "";
+      if (
+        carEmail &&
+        companyEmail &&
+        carEmail.toLowerCase() === companyEmail.toLowerCase()
+      ) {
+        carsCount++;
+      }
+    });
+
+    // Count drivers for this company (filter by createdUserId matching company email)
+    let driversCount = 0;
+    driversSnapshot.forEach((driverDoc) => {
+      const driverData = driverDoc.data();
+      const driverCompanyEmail =
+        driverData.createdUserId ||
+        driverData.email ||
+        driverData.companyEmail ||
+        "";
+      if (
+        driverCompanyEmail &&
+        companyEmail &&
+        driverCompanyEmail.toLowerCase() === companyEmail.toLowerCase()
+      ) {
+        driversCount++;
+      }
+    });
+
+    // Extract subscription title (handle object with ar/en keys)
+    let subscriptionTitle = "-";
+    if (companyData.selectedSubscription?.title) {
+      const title = companyData.selectedSubscription.title;
+      if (typeof title === "string") {
+        subscriptionTitle = title;
+      } else if (typeof title === "object" && title.ar) {
+        subscriptionTitle = title.ar;
+      } else if (typeof title === "object" && title.en) {
+        subscriptionTitle = title.en;
+      }
+    }
+
+    // Extract city (handle object with ar/en keys)
+    let cityName = "-";
+    const cityData =
+      companyData.formattedLocation?.address?.city || companyData.city;
+    if (cityData) {
+      if (typeof cityData === "string") {
+        cityName = cityData;
+      } else if (typeof cityData === "object" && cityData.ar) {
+        cityName = cityData.ar;
+      } else if (typeof cityData === "object" && cityData.en) {
+        cityName = cityData.en;
+      }
+    }
+
+    const company = {
+      id: companyDoc.id,
+      companyCode: companyData.id || companyDoc.id || "-",
+      companyName: companyData.name || companyData.brandName || "-",
+      phone: companyData.phoneNumber || companyData.phone || "-",
+      email: companyData.email || "-",
+      city: cityName,
+      cars: carsCount,
+      drivers: driversCount,
+      subscriptions: subscriptionTitle,
+    };
+
+    console.log("Company data fetched:", company);
+
     return company;
   } catch (error) {
-    console.error('Error fetching company by ID:', error);
+    console.error("Error fetching company by ID:", error);
     throw error;
   }
 };

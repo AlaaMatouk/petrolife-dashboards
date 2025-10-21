@@ -1,9 +1,10 @@
 import { DataTableSection } from "../../../sections/DataTableSection";
 import { Building2 } from "lucide-react";
+import { fetchAllCompaniesWithCounts } from "../../../../services/firestore";
 
 // Define the Company data type
 export interface Company {
-  id: number;
+  id: string;
   companyName: string;
   companyCode: string;
   cars: number;
@@ -210,13 +211,13 @@ export const mockCompaniesData: Company[] = [
   },
 ];
 
-// Mock data fetching function - replace with real API call
+// Fetch real companies data from Firestore with counts
 const fetchCompanies = async (): Promise<Company[]> => {
-  return mockCompaniesData;
+  return await fetchAllCompaniesWithCounts();
 };
 
 // Handle status toggle
-const handleToggleStatus = (id: number) => {
+const handleToggleStatus = (id: string) => {
   console.log(`Toggle status for company with id: ${id}`);
   // Add your status toggle logic here
 };
