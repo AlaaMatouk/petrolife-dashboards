@@ -9,7 +9,7 @@ import { fetchAllClients } from "../../../../services/firestore";
  * @property {string} individualCode - Client Code (uid)
  * @property {string} email - Email address
  * @property {string} phone - Phone number
- * @property {string} city - City (address)
+ * @property {string} city - City
  * @property {{active: boolean, text: string}} accountStatus - Account status (isActive)
  *
  */
@@ -65,7 +65,7 @@ const fetchIndividuals = async () => {
       individualName: client.name || "-", // اسم العميل
       phone: client.phoneNumber || "-", // رقم الهاتف
       email: client.email || "-", // البريد الإلكتروني
-      city: client.address || "-", // المدينة
+      city: client.city || "-", // المدينة
       accountStatus: {
         active: client.isActive !== undefined ? client.isActive : true, // حالة الحساب
         text:

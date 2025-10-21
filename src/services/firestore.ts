@@ -1918,7 +1918,8 @@ export const fetchUserSubscriptions = async (): Promise<any[]> => {
     // Query by company.email (nested field)
     const q = query(
       subscriptionsCollection,
-      where("company.email", "==", companyEmail)
+      where("company.email", "==", companyEmail),
+      orderBy("createdDate", "desc")
     );
     const subscriptionsSnapshot = await getDocs(q);
 
@@ -2085,7 +2086,8 @@ export const fetchServices = async (): Promise<any[]> => {
     console.log("📋 Fetching services from Firestore...");
 
     const servicesCollection = collection(db, "services");
-    const servicesSnapshot = await getDocs(servicesCollection);
+    const q = query(servicesCollection, orderBy("createdDate", "desc"));
+    const servicesSnapshot = await getDocs(q);
 
     const services = servicesSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -2306,7 +2308,8 @@ export const fetchAllClients = async (): Promise<any[]> => {
     console.log("\n👥 Fetching ALL clients data from Firestore...");
 
     const clientsRef = collection(db, "clients");
-    const querySnapshot = await getDocs(clientsRef);
+    const q = query(clientsRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
 
     const clientsData: any[] = [];
 
@@ -2609,7 +2612,8 @@ export const fetchSupervisorsFromUsers = async (): Promise<any[]> => {
     console.log("====================================");
 
     const usersRef = collection(db, "users");
-    const querySnapshot = await getDocs(usersRef);
+    const q = query(usersRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
 
     const supervisors: any[] = [];
 
@@ -2657,7 +2661,9 @@ export const fetchAllCompaniesWithCounts = async (): Promise<any[]> => {
     // Fetch companies, cars, and drivers in parallel
     const [companiesSnapshot, carsSnapshot, driversSnapshot] =
       await Promise.all([
-        getDocs(collection(db, "companies")),
+        getDocs(
+          query(collection(db, "companies"), orderBy("createdDate", "desc"))
+        ),
         getDocs(collection(db, "companies-cars")),
         getDocs(collection(db, "companies-drivers")),
       ]);
@@ -3832,9 +3838,8 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
     console.log("📍 Fetching fuel stations from Firestore (carstations)...");
 
     const carStationsRef = collection(db, "carstations");
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(
-      carStationsRef
-    );
+    const q = query(carStationsRef, orderBy("createdDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
 
     const fuelStations: FuelStation[] = [];
 

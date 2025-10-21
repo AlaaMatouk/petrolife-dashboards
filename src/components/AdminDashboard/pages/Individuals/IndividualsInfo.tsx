@@ -107,7 +107,11 @@ const fetchIndividualActivities = async () => {
   return mockIndividualActivities;
 };
 
-export const IndividualsInfo = ({ individualData }: { individualData: any }) => {
+export const IndividualsInfo = ({
+  individualData,
+}: {
+  individualData: any;
+}) => {
   const navigate = useNavigate();
 
   // Helper function to get value or dash
@@ -116,6 +120,48 @@ export const IndividualsInfo = ({ individualData }: { individualData: any }) => 
       return "-";
     }
     return String(value);
+  };
+
+  // Helper function to format Firestore Timestamp
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "-";
+
+    try {
+      // Handle Firestore Timestamp
+      if (timestamp?.toDate && typeof timestamp.toDate === "function") {
+        return timestamp.toDate().toLocaleDateString("ar-SA", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      // Handle Date object
+      if (timestamp instanceof Date) {
+        return timestamp.toLocaleDateString("ar-SA", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      // Handle string date
+      if (typeof timestamp === "string") {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString("ar-SA", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        }
+      }
+
+      return String(timestamp);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "-";
+    }
   };
 
   // Extract individual information from Firestore data
@@ -129,12 +175,16 @@ export const IndividualsInfo = ({ individualData }: { individualData: any }) => 
         individualData.city
     ),
     address: getValueOrDash(individualData.address || individualData.location),
-    createdAt: getValueOrDash(
-      individualData.createdAt?.toDate?.()?.toLocaleDateString('ar-EG') ||
+    createdAt: formatDate(
+      individualData.createdDate ||
         individualData.createdAt ||
         individualData.accountCreationDate
     ),
-    image: individualData.image || individualData.profileImage || individualData.photo,
+    image:
+      individualData.profilePhoto ||
+      individualData.image ||
+      individualData.profileImage ||
+      individualData.photo,
   };
 
   // Define all fields to display in 3-column layout
@@ -215,18 +265,18 @@ export const IndividualsInfo = ({ individualData }: { individualData: any }) => 
             <form className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
               {/* Client Image Section - Full Width Row */}
               <div className="flex mt-[-20px] items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
-                    {individualInfo.image ? (
-                      <img 
-                        src={individualInfo.image} 
-                        alt="صورة العميل" 
-                        className="w-32 h-32 object-cover rounded-full border-2 border-gray-300"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full border-2 border-gray-300">
-                        <User className="w-12 h-12 text-gray-400" />
-                      </div>
-                    )}
-                </div>
+                {individualInfo.image ? (
+                  <img
+                    src={individualInfo.image}
+                    alt="صورة العميل"
+                    className="w-32 h-32 object-cover rounded-full border-4 border-blue-500 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-full border-4 border-gray-300 shadow-lg">
+                    <User className="w-16 h-16 text-gray-400" />
+                  </div>
+                )}
+              </div>
 
               {/* Dynamic fields in 3-column layout */}
               {renderFieldRows()}
@@ -260,7 +310,9 @@ export const IndividualsInfo = ({ individualData }: { individualData: any }) => 
           columns={activityColumns}
           fetchData={fetchIndividualActivities}
           addNewRoute=""
-          viewDetailsRoute={(id: number | string) => `/individual-activity/${id}`}
+          viewDetailsRoute={(id: number | string) =>
+            `/individual-activity/${id}`
+          }
           loadingMessage="جاري تحميل سجل الفرد..."
           itemsPerPage={5}
           showTimeFilter={false}
@@ -270,4 +322,3 @@ export const IndividualsInfo = ({ individualData }: { individualData: any }) => 
     </div>
   );
 };
-

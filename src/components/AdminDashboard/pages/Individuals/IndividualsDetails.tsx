@@ -45,7 +45,7 @@ export const IndividualsDetails = (): JSX.Element => {
           individualName: client.name || "-",
           phone: client.phoneNumber || "-",
           email: client.email || "-",
-          city: client.address || "-",
+          city: client.city || "-",
           accountStatus: {
             active: client.isActive !== undefined ? client.isActive : true,
             text:
