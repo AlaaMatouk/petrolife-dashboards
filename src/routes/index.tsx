@@ -42,6 +42,9 @@ import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisor
 import { Companies } from '../components/AdminDashboard/pages/companies/Companies';
 import { AddCompany } from '../components/AdminDashboard/pages/companies/AddCompany';
 import { CompanyDetails } from '../components/AdminDashboard/pages/companies/CompanyDetails';
+import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
+import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
+import { AddStations } from '../screens/AddStations';
 
 
 // 404 Component
@@ -119,37 +122,23 @@ export const AppRouter = () => {
 
         {/* Settings */}
         <Route path={ROUTES.SETTINGS} element={<NotFound />} />
+        
+      {/* Service Distributer  */}
+      {/* Service Distributer Dashboard */}
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
+      {/* Service Distributer Station WOrkers */}
+      <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
+      <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
+      <Route path={ROUTES.STATIONS} element={<Stations/>} />
+      <Route path={ROUTES.ADD_STATIONS} element={<AddStations/>} />
+      <Route path={ROUTES.STATIONS_DETAILS} element={<StationsDetails/>} />
+      <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
+      <Route path={ROUTES.FUEL_STATION_REQUESTS_DETAILS} element={<FuelStationRequestsDetails/>}/>
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS} element={<ServiceDistributerFinancialReports/>} />
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS} element={<ServiceDistributerStationLocations />} />
+      <Route path={ROUTES.SERVICE_DISTRIBUTER_INVOICES} element={<ServiceDistributerInvoices />} />
 
-        {/* Service Distributer  */}
-        {/* Service Distributer Dashboard */}
-        <Route
-          path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD}
-          element={<ServiceDistributerDashboard />}
-        />
-        {/* Service Distributer Station WOrkers */}
-        <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
-        <Route
-          path={ROUTES.STATION_WORKER_DETAILS}
-          element={<StationWorkerDetails />}
-        />
-        <Route path={ROUTES.STATIONS} element={<Stations />} />
-        <Route
-          path={ROUTES.FUEL_STATION_REQUESTS}
-          element={<FuelStationRequests />}
-        />
-        <Route
-          path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS}
-          element={<ServiceDistributerFinancialReports />}
-        />
-        <Route
-          path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS}
-          element={<ServiceDistributerStationLocations />}
-        />
-        <Route
-          path={ROUTES.SERVICE_DISTRIBUTER_INVOICES}
-          element={<ServiceDistributerInvoices />}
-        />
-
+      
         {/* Test Route - Companies-Drivers-Transfer */}
         <Route path="/test-transfer" element={<TestTransfer />} />
 
