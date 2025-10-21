@@ -42,6 +42,10 @@ import { SupervisorDetails } from '../components/AdminDashboard/pages/supervisor
 import { Companies } from '../components/AdminDashboard/pages/companies/Companies';
 import { AddCompany } from '../components/AdminDashboard/pages/companies/AddCompany';
 import { CompanyDetails } from '../components/AdminDashboard/pages/companies/CompanyDetails';
+import { Individuals } from '../components/AdminDashboard/pages/Individuals/Individuals';
+// @ts-ignore - JSX component imports
+import { AddIndividuals } from '../components/AdminDashboard/pages/Individuals/AddIndividuals';
+import { IndividualsDetails } from '../components/AdminDashboard/pages/Individuals/IndividualsDetails';
 
 
 // 404 Component
@@ -70,6 +74,9 @@ export const AppRouter = () => {
         <Route path={ROUTES.COMPANIES} element={<Companies />} />
         <Route path={ROUTES.ADD_COMPANY} element={<AddCompany />} />
         <Route path={ROUTES.COMPANY_DETAILS} element={<CompanyDetails />} />
+        <Route path={ROUTES.INDIVIDUALS} element={<Individuals />} />
+        <Route path={ROUTES.ADD_INDIVIDUAL} element={<AddIndividuals />} />
+        <Route path={ROUTES.INDIVIDUAL_DETAILS} element={<IndividualsDetails />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}
