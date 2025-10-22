@@ -1,41 +1,192 @@
 import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../../../context/ToastContext";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "../../../../config/firebase";
 
 export const AddIndividuals = () => {
-  // const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    individualName: "",
-    individualCode: "",
-    email: "",
-    phone: "",
-    city: "",
-    password: "",
-    nationalId: "",
-    taxNumber: "",
-    address: ""
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [addressFile, setAddressFile] = useState<File | null>(null);
-  const [nationalIdFile, setNationalIdFile] = useState<File | null>(null);
-  const [taxCertificateFile, setTaxCertificateFile] = useState<File | null>(null);
+  const navigate = useNavigate();
+  const { addToast } = useToast();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phoneNumber: "",
+    city: "",
+    address: "",
+  });
+
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Add your submit logic here
-    console.log("Form data:", formData, { 
-      imageFile, 
-      addressFile, 
-      nationalIdFile, 
-      taxCertificateFile 
-    });
+  // Validate form data
+  const validateForm = (): string[] => {
+    const errors: string[] = [];
 
-    // After successful submission, navigate back to individuals list
-    // navigate("/individuals");
+    if (!formData.name.trim()) {
+      errors.push("اسم العميل مطلوب");
+    }
+
+    if (!formData.email.trim()) {
+      errors.push("البريد الإلكتروني مطلوب");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push("البريد الإلكتروني غير صحيح");
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      errors.push("رقم الهاتف مطلوب");
+    }
+
+    if (!profilePhotoFile) {
+      errors.push("الصورة الشخصية مطلوبة");
+    }
+
+    return errors;
+  };
+
+  // Check if email already exists
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      const clientsRef = collection(db, "clients");
+      const q = query(clientsRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
+    }
+  };
+
+  // Upload image to Firebase Storage
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileName = `clients/profile-photos/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, fileName);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate form
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      addToast({
+        title: "خطأ في التحقق",
+        message: validationErrors.join(", "),
+        type: "error",
+      });
+      return;
+    }
+
+    // Check if email already exists
+    const emailExists = await checkEmailExists(formData.email);
+    if (emailExists) {
+      addToast({
+        title: "خطأ في البيانات",
+        message: "البريد الإلكتروني مستخدم بالفعل",
+        type: "error",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("لا يوجد مستخدم مسجل الدخول حالياً");
+      }
+
+      // Upload profile photo to Firebase Storage
+      let profilePhotoUrl = "";
+      if (profilePhotoFile) {
+        profilePhotoUrl = await uploadImage(profilePhotoFile);
+      }
+
+      // Create client document
+      const clientData = {
+        // Basic info
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        city: formData.city || "",
+        address: formData.address.trim() || "",
+        profilePhoto: profilePhotoUrl,
+
+        // Auto-generated UID (will be set by document ID)
+        uid: "", // This will be updated after document creation
+
+        // Default values
+        isActive: true,
+        type: "Customer",
+
+        // Timestamps and user info
+        createdDate: serverTimestamp(),
+        createdUserId: currentUser.email || currentUser.uid,
+
+        // Account status for display
+        accountStatus: {
+          active: true,
+          text: "مفعل",
+        },
+      };
+
+      // Add document to Firestore
+      const docRef = await addDoc(collection(db, "clients"), clientData);
+
+      // Update the document with its own ID as uid
+      // Note: We're not using updateDoc here to match the existing pattern
+      // The uid field can be set to the document ID if needed
+
+      // Success message
+      addToast({
+        title: "تم بنجاح",
+        message: "تم إضافة العميل بنجاح",
+        type: "success",
+      });
+
+      // Clear form
+      setFormData({
+        name: "",
+        email: "",
+        phoneNumber: "",
+        city: "",
+        address: "",
+      });
+      setProfilePhotoFile(null);
+
+      // Navigate back to individuals list
+      navigate("/individuals");
+    } catch (error) {
+      console.error("Error adding client:", error);
+      addToast({
+        title: "خطأ",
+        message: "فشل في إضافة العميل. يرجى المحاولة مرة أخرى.",
+        type: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate("/individuals");
   };
 
   return (
@@ -45,19 +196,19 @@ export const AddIndividuals = () => {
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Individual Name */}
+          {/* Client Name */}
           <div>
             <label
-              htmlFor="individualName"
+              htmlFor="name"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
-              اسم العميل
+              اسم العميل <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              id="individualName"
-              name="individualName"
-              value={formData.individualName}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -71,7 +222,7 @@ export const AddIndividuals = () => {
               htmlFor="email"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
-              البريد الالكتروني
+              البريد الالكتروني <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -88,16 +239,16 @@ export const AddIndividuals = () => {
           {/* Phone */}
           <div>
             <label
-              htmlFor="phone"
+              htmlFor="phoneNumber"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
-              رقم الهاتف
+              رقم الهاتف <span className="text-red-500">*</span>
             </label>
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -105,8 +256,8 @@ export const AddIndividuals = () => {
             />
           </div>
 
-           {/* City */}
-           <div>
+          {/* City */}
+          <div>
             <label
               htmlFor="city"
               className="block text-sm font-normal text-[#5B738B] mb-1"
@@ -118,7 +269,6 @@ export const AddIndividuals = () => {
               name="city"
               value={formData.city}
               onChange={handleChange}
-              required
               className="w-full px-4 py-2 border border-gray-300 text-[#5B738B]  rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
             >
               <option value="">اختر المدينة</option>
@@ -135,9 +285,9 @@ export const AddIndividuals = () => {
               <option value="حائل">حائل</option>
             </select>
           </div>
-          
-             {/* Address */}
-             <div>
+
+          {/* Address */}
+          <div>
             <label
               htmlFor="address"
               className="block text-sm font-normal text-[#5B738B] mb-1"
@@ -150,25 +300,25 @@ export const AddIndividuals = () => {
               name="address"
               value={formData.address}
               onChange={handleChange}
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
               placeholder="العنوان بالتفصيل هنا"
             />
           </div>
-          {/* Image */}
+
+          {/* Profile Photo */}
           <div>
             <label
-              htmlFor="individualImage"
+              htmlFor="profilePhoto"
               className="block text-sm font-normal text-[#5B738B] mb-1"
             >
-              الصورة الشخصية
+              الصورة الشخصية <span className="text-red-500">*</span>
             </label>
             <input
               type="file"
-              id="individualImage"
-              name="individualImage"
+              id="profilePhoto"
+              name="profilePhoto"
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              onChange={(e) => setProfilePhotoFile(e.target.files?.[0] || null)}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
             />
@@ -178,14 +328,29 @@ export const AddIndividuals = () => {
         {/* Form Actions */}
         <div className="flex justify-end gap-4 pt-4">
           <button
-            type="submit"
-            className="px-[10px] py-3 bg-[#5A66C1] text-white rounded-[8px]"
+            type="button"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="px-[10px] py-3 bg-gray-500 text-white rounded-[8px] hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            إضافة العميل
+            إلغاء
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-[10px] py-3 bg-[#5A66C1] text-white rounded-[8px] hover:bg-[#4A56B1] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                جاري الإضافة...
+              </>
+            ) : (
+              "إضافة العميل"
+            )}
           </button>
         </div>
       </form>
     </div>
   );
 };
-

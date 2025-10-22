@@ -72,6 +72,12 @@ export interface StatsCardsSectionProps {
   carWashData?: CarWashData;
   usersData?: UsersData;
   companiesData?: CompaniesData;
+  tireChangeData?: CarWashData; // Reuse CarWashData interface for tire change
+  oilChangeData?: CarWashData; // Reuse CarWashData interface for oil change
+  purchaseCostData?: number; // Total purchase cost
+  driversData?: { active: number; inactive: number; total: number };
+  carsData?: CarWashData; // Reuse CarWashData interface for cars
+  ordersData?: { completed: number; canceled: number; total: number };
 }
 
 const StatsCardsSection = ({
@@ -84,6 +90,12 @@ const StatsCardsSection = ({
   carWashData,
   usersData,
   companiesData,
+  tireChangeData,
+  oilChangeData,
+  purchaseCostData,
+  driversData,
+  carsData,
+  ordersData,
 }: StatsCardsSectionProps) => {
   const [selectedOptions, setSelectedOptions] = useState<{
     [key: number]: number;
@@ -193,15 +205,71 @@ const StatsCardsSection = ({
       };
     }
 
+    // Update purchase cost data
+    if (
+      stat.title === "التكلفة الإجمالية للمشتريات" &&
+      purchaseCostData !== undefined
+    ) {
+      return {
+        ...stat,
+        amount:
+          new Intl.NumberFormat("en-US").format(purchaseCostData) + " ر.س",
+      };
+    }
+
+    // Update drivers data
+    if (stat.title === "السائقين النشطين / المعطلين" && driversData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "نشطين", count: driversData.active },
+          { name: "معطلين", count: driversData.inactive },
+        ],
+      };
+    }
+
+    // Update cars data
+    if (stat.title === "السيارات" && carsData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "صغيرة", count: carsData.small },
+          { name: "متوسطة", count: carsData.medium },
+          { name: "كبيرة", count: carsData.large },
+          { name: "VIP", count: carsData.vip },
+        ],
+        total: {
+          name: "الاجمالي",
+          count:
+            carsData.small + carsData.medium + carsData.large + carsData.vip,
+        },
+      };
+    }
+
+    // Update orders data
+    if (stat.title === "الطلبات المكتملة / الملغية" && ordersData) {
+      return {
+        ...stat,
+        categories: [
+          { name: "مكتملة", count: ordersData.completed },
+          { name: "ملغية", count: ordersData.canceled },
+        ],
+      };
+    }
+
     return stat;
   });
 
   return (
-    <section className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${style}`}>
+    <section
+      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ${style}`}
+      style={{ direction: "rtl" }}
+    >
       {updatedStatsData.map((stat, index) => (
         <div
           key={index}
           className="relative w-full bg-color-mode-surface-bg-screen rounded-[16px] rounded-bl-[28px] border-[0.2px] border-solid border-[#A9B4BE] p-6 flex flex-col justify-between"
+          style={{ direction: "ltr" }}
         >
           {/* Upper row - title */}
           {!stat.total && !stat.options ? (
