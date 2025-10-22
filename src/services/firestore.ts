@@ -206,12 +206,11 @@ export const fetchCompaniesDriversTransfer = async () => {
     }
 
     const userEmail = currentUser.email;
-    const userId = currentUser.uid;
 
     // console.log('ℹ️ CURRENT USER INFO:');
     // console.log('========================================');
     // console.log('Email:', userEmail);
-    // console.log('UID:', userId);
+    // console.log('UID:', currentUser.uid);
     // console.log('========================================\n');
 
     // if (allTransferData.length > 0) {
@@ -3819,8 +3818,25 @@ export interface FuelStation {
     lng?: number;
     address?: {
       city?: string;
+      state?: string;
+      country?: string;
+      road?: string;
+      postcode?: string;
     };
+    options?: any[];
   };
+  // Additional fields from carstations collection
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  isActive?: boolean;
+  type?: string;
+  options?: any[];
+  balance?: number;
+  uId?: string;
+  createdDate?: any;
+  createdUserId?: string;
 }
 
 /**
@@ -3859,6 +3875,8 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
         lat: latitude,
         lng: longitude,
         hasFormattedLocation: !!data.formattedLocation,
+        phoneNumber: data.phoneNumber,
+        isActive: data.isActive,
       });
 
       // Only add stations with valid coordinates
@@ -3870,6 +3888,18 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
           latitude,
           longitude,
           formattedLocation: data.formattedLocation,
+          // Include all additional fields from the document
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          isActive: data.isActive,
+          type: data.type,
+          options: data.options,
+          balance: data.balance,
+          uId: data.uId,
+          createdDate: data.createdDate,
+          createdUserId: data.createdUserId,
         });
       }
     });
@@ -3881,6 +3911,97 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
     return fuelStations;
   } catch (error) {
     console.error("❌ Error fetching fuel stations:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch fuel stations filtered by current user's email
+ * Only returns stations where createdUserId matches current user's email
+ * @returns Promise with array of user's fuel stations
+ */
+export const fetchUserFuelStations = async (): Promise<FuelStation[]> => {
+  try {
+    console.log("📍 Fetching user's fuel stations from Firestore...");
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) {
+      console.log("⚠️ No authenticated user found");
+      return [];
+    }
+    
+    const userEmail = currentUser.email;
+    console.log("👤 Current user email:", userEmail);
+
+    // Query with filter at Firestore level
+    const carStationsRef = collection(db, "carstations");
+    const q = query(
+      carStationsRef,
+      where("createdUserId", "==", userEmail)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const fuelStations: FuelStation[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Extract location data from formattedLocation or direct fields
+      const formattedLocation = data.formattedLocation || {};
+      const stationName =
+        data.name || data.email || formattedLocation.name || "Unknown Station";
+      const cityName =
+        formattedLocation.address?.city ||
+        data.address?.city ||
+        data.city ||
+        "Unknown City";
+      const latitude = formattedLocation.lat || data.latitude || 0;
+      const longitude = formattedLocation.lng || data.longitude || 0;
+
+      console.log(`Station ${doc.id}:`, {
+        name: stationName,
+        city: cityName,
+        lat: latitude,
+        lng: longitude,
+        hasFormattedLocation: !!data.formattedLocation,
+        phoneNumber: data.phoneNumber,
+        isActive: data.isActive,
+        createdUserId: data.createdUserId,
+      });
+
+      // Only add stations with valid coordinates
+      if (latitude !== 0 && longitude !== 0) {
+        fuelStations.push({
+          id: doc.id,
+          stationName,
+          cityName,
+          latitude,
+          longitude,
+          formattedLocation: data.formattedLocation,
+          // Include all additional fields from the document
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          isActive: data.isActive,
+          type: data.type,
+          options: data.options,
+          balance: data.balance,
+          uId: data.uId,
+          createdDate: data.createdDate,
+          createdUserId: data.createdUserId,
+        });
+      }
+    });
+
+    console.log(
+      `✅ Fetched ${fuelStations.length} fuel stations for user ${userEmail}`
+    );
+
+    return fuelStations;
+  } catch (error) {
+    console.error("❌ Error fetching user fuel stations:", error);
     throw error;
   }
 };
@@ -3947,12 +4068,11 @@ export const fetchInvoices = async (): Promise<any[]> => {
         try {
           const dateObj = date.toDate ? date.toDate() : new Date(date);
           const day = String(dateObj.getDate()).padStart(2, "0");
-          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
           const year = dateObj.getFullYear();
-          const hours = String(dateObj.getHours()).padStart(2, "0");
+          const hoursNum = dateObj.getHours();
           const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-          const ampm = hours >= 12 ? "م" : "ص";
-          const displayHours = hours % 12 || 12;
+          const ampm = hoursNum >= 12 ? "م" : "ص";
+          const displayHours = hoursNum % 12 || 12;
 
           const monthNames = [
             "يناير",

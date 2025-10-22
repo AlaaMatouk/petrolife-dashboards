@@ -24,10 +24,10 @@ export interface DataTableSectionProps<T> {
   icon: LucideIcon;
   columns: any[];
   fetchData: () => Promise<T[]>;
-  onToggleStatus?: (id: number) => void;
+  onToggleStatus?: (id: number | string) => void;
   addNewRoute: string;
-  viewDetailsRoute: (id: number) => string;
-  loadingMessage: string;
+  viewDetailsRoute: (id: number | string) => string;
+  loadingMessage?: string;
   errorMessage?: string;
   itemsPerPage?: number;
   showTimeFilter?: boolean; // New prop to control TimeFilter visibility
@@ -36,13 +36,13 @@ export interface DataTableSectionProps<T> {
 }
 
 // Generic Action Menu Component
-interface ActionMenuProps<T extends { id: number; driverCode?: string; stationCode?: string }> {
+interface ActionMenuProps<T extends { id: number | string; driverCode?: string; stationCode?: string }> {
   item: T;
   entityName: string;
-  viewDetailsRoute: (id: number) => string;
+  viewDetailsRoute: (id: number | string) => string;
 }
 
-const ActionMenu = <T extends { id: number; driverCode?: string; stationCode?: string }>({ 
+const ActionMenu = <T extends { id: number | string; driverCode?: string; stationCode?: string }>({ 
   item, 
   entityName,
   viewDetailsRoute 
@@ -260,7 +260,7 @@ const ExportMenu = () => {
 };
 
 // Generic DataTableSection Component
-export const DataTableSection = <T extends { id: number; driverCode?: string; stationCode?: string; accountStatus?: { active: boolean; text: string }; stationStatus?: { active: boolean; text: string } }>({
+export const DataTableSection = <T extends { id: number | string; driverCode?: string; stationCode?: string; accountStatus?: { active: boolean; text: string }; stationStatus?: { active: boolean; text: string } }>({
   title,
   entityName,
   entityNamePlural,
@@ -270,7 +270,6 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
   onToggleStatus,
   addNewRoute,
   viewDetailsRoute,
-  loadingMessage,
   errorMessage,
   itemsPerPage = 10,
   showTimeFilter = false,
@@ -340,7 +339,7 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
     setCurrentPage(page);
   };
 
-  const handleToggleStatus = (itemId: number) => {
+  const handleToggleStatus = (itemId: number | string) => {
     if (onToggleStatus) {
       onToggleStatus(itemId);
       // Update local state
@@ -426,23 +425,6 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center w-full py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">{loadingMessage}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800 text-center [direction:rtl]">{error}</p>
-        </div>
-      )}
-
       {/* Main Data Table Section */}
       <div className="flex flex-col items-start gap-[var(--corner-radius-extra-large)] pt-[var(--corner-radius-large)] pr-[var(--corner-radius-large)] pb-[var(--corner-radius-large)] pl-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto] bg-color-mode-surface-bg-screen rounded-[var(--corner-radius-large)] border-[0.3px] border-solid border-color-mode-text-icons-t-placeholder">
         <header className="flex flex-col items-end gap-[var(--corner-radius-extra-large)] relative self-stretch w-full flex-[0_0_auto]">
@@ -518,12 +500,22 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
         )}
 
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
+          {/* Error Message */}
+          {error && !isLoading && (
+            <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 text-center [direction:rtl]">{error}</p>
+            </div>
+          )}
+
+          {/* Table Content */}
           <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
             {/* Desktop Table View */}
             <div className="hidden lg:block w-full">
               <Table
                 columns={enhancedColumns}
                 data={paginatedData}
+                loading={isLoading}
+                emptyMessage="لا توجد بيانات"
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -535,23 +527,33 @@ export const DataTableSection = <T extends { id: number; driverCode?: string; st
                   (col) => col.priority === "high" || col.priority === "medium"
                 )}
                 data={paginatedData}
+                loading={isLoading}
+                emptyMessage="لا توجد بيانات"
                 className="relative self-stretch w-full  flex-[0_0_auto]"
               />
             </div>
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4 w-full">
-              <div className="text-center text-gray-500 py-8">
-                عرض الجوال غير متوفر حالياً
-              </div>
+              {isLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="text-color-mode-text-icons-t-sec">جاري التحميل...</div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  عرض الجوال غير متوفر حالياً
+                </div>
+              )}
             </div>
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(data.length / itemsPerPage) || 1}
-            onPageChange={handlePageChange}
-          />
+          {!isLoading && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(data.length / itemsPerPage) || 1}
+              onPageChange={handlePageChange}
+            />
+          )}
         </main>
       </div>
     </section>
