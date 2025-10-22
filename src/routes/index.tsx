@@ -14,7 +14,7 @@ import { AddDriver } from "../screens/AddDriver/AddDriver";
 import { DriverDetails } from "../screens/DriverDetails/DriverDetails";
 import { AddNewCar } from "../screens/AddNewCar/AddNewCar";
 import { CarDetails } from "../screens/CarDetails/CarDetails";
-import { MoneyRefundRequests } from "../screens/MoneyRefundRequests/MoneyRefundRequests";
+import { MoneyReq } from "../components/AdminDashboard/pages/wallet-requests/MoneyReq";
 import { WalletChargeRequests } from "../screens/ChargeRequests/WalletChargeRequests";
 import { ChargeWallet } from "../screens/ChargeWallet";
 import { PerolifeStationLocations } from "../screens/PerolifeStationLocations/perolifestationlocations";
@@ -42,17 +42,20 @@ import { SupervisorDetails } from "../components/AdminDashboard/pages/supervisor
 import { Companies } from "../components/AdminDashboard/pages/companies/Companies";
 import { AddCompany } from "../components/AdminDashboard/pages/companies/AddCompany";
 import { CompanyDetails } from "../components/AdminDashboard/pages/companies/CompanyDetails";
-import { Test } from "../screens/Test";import { Individuals } from '../components/AdminDashboard/pages/Individuals/Individuals';
+import { Test } from "../screens/Test";
+import { Individuals } from "../components/AdminDashboard/pages/Individuals/Individuals";
 // @ts-ignore - JSX component imports
-import { AddIndividuals } from '../components/AdminDashboard/pages/Individuals/AddIndividuals';
-import { IndividualsDetails } from '../components/AdminDashboard/pages/Individuals/IndividualsDetails';
-import { ServiceProviders } from '../components/AdminDashboard/pages/service-providers/ServiceProviders';
-import { AddServiceProvider } from '../components/AdminDashboard/pages/service-providers/AddServiceProvider';
-import { ServiceProvidersDetails } from '../components/AdminDashboard/pages/service-providers/ServiceProvidersDetails';
-import { StationsDetails } from '../screens/StationsDetails/StationsDetails';
-import { FuelStationRequestsDetails } from '../screens/FuelStationRequestsDetails';
-import { AddStations } from '../screens/AddStations';
-
+import { AddIndividuals } from "../components/AdminDashboard/pages/Individuals/AddIndividuals";
+import { IndividualsDetails } from "../components/AdminDashboard/pages/Individuals/IndividualsDetails";
+import { ServiceProviders } from "../components/AdminDashboard/pages/service-providers/ServiceProviders";
+import { AddServiceProvider } from "../components/AdminDashboard/pages/service-providers/AddServiceProvider";
+import { ServiceProvidersDetails } from "../components/AdminDashboard/pages/service-providers/ServiceProvidersDetails";
+import { StationsDetails } from "../screens/StationsDetails/StationsDetails";
+import { FuelStationRequestsDetails } from "../screens/FuelStationRequestsDetails";
+import { AddStations } from "../screens/AddStations";
+import { WalletReq } from "../components/AdminDashboard/pages/wallet-requests/WalletReq";
+import { ReqRevision } from "../components/AdminDashboard/pages/wallet-requests/ReqRevision";
+import { RefundRevision } from "../components/AdminDashboard/pages/wallet-requests/RefundRevision";
 
 // 404 Component
 const NotFound = () => (
@@ -85,10 +88,23 @@ export const AppRouter = () => {
         <Route path={ROUTES.COMPANY_DETAILS} element={<CompanyDetails />} />
         <Route path={ROUTES.INDIVIDUALS} element={<Individuals />} />
         <Route path={ROUTES.ADD_INDIVIDUAL} element={<AddIndividuals />} />
-        <Route path={ROUTES.INDIVIDUAL_DETAILS} element={<IndividualsDetails />} />
+        <Route
+          path={ROUTES.INDIVIDUAL_DETAILS}
+          element={<IndividualsDetails />}
+        />
         <Route path={ROUTES.SERVICE_PROVIDERS} element={<ServiceProviders />} />
-        <Route path={ROUTES.ADD_SERVICE_PROVIDER} element={<AddServiceProvider />} />
-        <Route path={ROUTES.SERVICE_PROVIDER_DETAILS} element={<ServiceProvidersDetails />} />
+        <Route
+          path={ROUTES.ADD_SERVICE_PROVIDER}
+          element={<AddServiceProvider />}
+        />
+        <Route
+          path={ROUTES.SERVICE_PROVIDER_DETAILS}
+          element={<ServiceProvidersDetails />}
+        />
+        <Route path={ROUTES.WALLET_REQUESTS} element={<WalletReq />} />
+        <Route path={ROUTES.WALLET_REQUEST_DETAILS} element={<ReqRevision />} />
+        <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyReq />} />
+        <Route path={ROUTES.REFUND_REQUEST_DETAILS} element={<RefundRevision />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}
@@ -116,10 +132,7 @@ export const AppRouter = () => {
           path={ROUTES.CREATE_DELIVERY_REQUEST}
           element={<CreateDeliveryRequest />}
         />
-        <Route
-          path={ROUTES.REFUND_REQUESTS}
-          element={<MoneyRefundRequests />}
-        />
+
         <Route
           path={ROUTES.CHARGE_REQUESTS}
           element={<WalletChargeRequests />}
@@ -138,23 +151,43 @@ export const AppRouter = () => {
 
         {/* Settings */}
         <Route path={ROUTES.SETTINGS} element={<NotFound />} />
-        
-      {/* Service Distributer  */}
-      {/* Service Distributer Dashboard */}
-      <Route path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD} element={<ServiceDistributerDashboard />} />
-      {/* Service Distributer Station WOrkers */}
-      <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
-      <Route path={ROUTES.STATION_WORKER_DETAILS} element={<StationWorkerDetails/>} />
-      <Route path={ROUTES.STATIONS} element={<Stations/>} />
-      <Route path={ROUTES.ADD_STATIONS} element={<AddStations/>} />
-      <Route path={ROUTES.STATIONS_DETAILS} element={<StationsDetails/>} />
-      <Route path={ROUTES.FUEL_STATION_REQUESTS} element={<FuelStationRequests/>} />
-      <Route path={ROUTES.FUEL_STATION_REQUESTS_DETAILS} element={<FuelStationRequestsDetails/>}/>
-      <Route path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS} element={<ServiceDistributerFinancialReports/>} />
-      <Route path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS} element={<ServiceDistributerStationLocations />} />
-      <Route path={ROUTES.SERVICE_DISTRIBUTER_INVOICES} element={<ServiceDistributerInvoices />} />
 
-      
+        {/* Service Distributer  */}
+        {/* Service Distributer Dashboard */}
+        <Route
+          path={ROUTES.SERVICE_DISTRIBUTER_DASHBOARD}
+          element={<ServiceDistributerDashboard />}
+        />
+        {/* Service Distributer Station WOrkers */}
+        <Route path={ROUTES.STATION_WORKERS} element={<StationWorkers />} />
+        <Route
+          path={ROUTES.STATION_WORKER_DETAILS}
+          element={<StationWorkerDetails />}
+        />
+        <Route path={ROUTES.STATIONS} element={<Stations />} />
+        <Route path={ROUTES.ADD_STATIONS} element={<AddStations />} />
+        <Route path={ROUTES.STATIONS_DETAILS} element={<StationsDetails />} />
+        <Route
+          path={ROUTES.FUEL_STATION_REQUESTS}
+          element={<FuelStationRequests />}
+        />
+        <Route
+          path={ROUTES.FUEL_STATION_REQUESTS_DETAILS}
+          element={<FuelStationRequestsDetails />}
+        />
+        <Route
+          path={ROUTES.SERVICE_DISTRIBUTER_FINANCIAL_REPORTS}
+          element={<ServiceDistributerFinancialReports />}
+        />
+        <Route
+          path={ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS}
+          element={<ServiceDistributerStationLocations />}
+        />
+        <Route
+          path={ROUTES.SERVICE_DISTRIBUTER_INVOICES}
+          element={<ServiceDistributerInvoices />}
+        />
+
         {/* Test Routes */}
         <Route path={ROUTES.TEST} element={<Test />} />
         <Route path="/test-transfer" element={<TestTransfer />} />

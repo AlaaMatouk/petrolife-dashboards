@@ -63,6 +63,24 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
+  '/wallet-requests': {
+    title: 'طلبات المحافظ',
+    titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن طلب...',
+  },
+  '/wallet-requests/moneyrefundrequests': {
+    title: 'طلبات استرداد الاموال',
+    titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن طلب استرداد...',
+  },
+  '/fuel-delivery-requests': {
+    title: 'طلبات توصيل الوقود',
+    titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن طلب توصيل...',
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -104,6 +122,34 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'مزودي الخدمة / تفاصيل مزود الخدمة',
       titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /wallet-requests/:id)
+  if (pathname.startsWith('/wallet-requests/') && pathname !== '/wallet-requests/moneyrefundrequests') {
+    return {
+      title: 'طلبات المحافظ / مراجعة الطلب',
+      titleIcon: <img src="/img/side-icons-3.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /wallet-requests/moneyrefundrequests)
+  if (pathname === '/wallet-requests/moneyrefundrequests') {
+    return {
+      title: 'طلبات المحافظ/طلبات استرداد الاموال',
+      titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
+      showSearch: true,
+      searchPlaceholder: 'بحث عن طلب استرداد...',
+    };
+  }
+
+  // Match dynamic routes (e.g., /wallet-requests/moneyrefundrequests/:id)
+  if (pathname.startsWith('/wallet-requests/moneyrefundrequests/') && pathname !== '/wallet-requests/moneyrefundrequests') {
+    return {
+      title: 'طلبات المحافظ/طلبات استرداد الاموال / مراجعة طلب الاسترداد',
+      titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }
