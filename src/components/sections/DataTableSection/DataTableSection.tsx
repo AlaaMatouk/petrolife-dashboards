@@ -11,6 +11,8 @@ import {
   Trash2,
   User,
   LucideIcon,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { TimeFilter } from "../../shared/TimeFilter/TimeFilter";
@@ -39,6 +41,7 @@ export interface DataTableSectionProps<T> {
     count: number;
     onClick: () => void;
   }; // New prop for custom filter button with count
+  customActionButtons?: boolean; // New prop to show Accept/Reject buttons instead of View/Delete
 }
 
 // Generic Action Menu Component
@@ -48,6 +51,7 @@ interface ActionMenuProps<
   item: T;
   entityName: string;
   viewDetailsRoute: (id: number) => string;
+  customActionButtons?: boolean;
 }
 
 const ActionMenu = <
@@ -56,6 +60,7 @@ const ActionMenu = <
   item,
   entityName,
   viewDetailsRoute,
+  customActionButtons = false,
 }: ActionMenuProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
@@ -70,6 +75,20 @@ const ActionMenu = <
     if (action === "view") {
       navigate(viewDetailsRoute(item.id));
     }
+    setIsOpen(false);
+  };
+
+  const handleAcceptRequest = () => {
+    console.log("Accepting request for:", item);
+    // TODO: Implement accept request logic
+    alert(`تم قبول طلب الانضمام بنجاح`);
+    setIsOpen(false);
+  };
+
+  const handleRejectRequest = () => {
+    console.log("Rejecting request for:", item);
+    // TODO: Implement reject request logic
+    alert(`تم رفض طلب الانضمام`);
     setIsOpen(false);
   };
 
@@ -140,20 +159,41 @@ const ActionMenu = <
               }}
             >
               <div className="py-1">
-                <button
-                  onClick={() => handleAction("view")}
-                  className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
-                >
-                  <span>عرض بيانات {entityName}</span>
-                  <User className="w-4 h-4 text-gray-500" />
-                </button>
-                <button
-                  onClick={() => handleAction("delete")}
-                  className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center justify-end gap-2 transition-colors"
-                >
-                  <span>حذف {entityName}</span>
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {customActionButtons ? (
+                  <>
+                    <button
+                      onClick={handleAcceptRequest}
+                      className="w-full px-4 py-2 text-right text-sm text-green-600 hover:bg-green-50 flex items-center justify-end gap-2 transition-colors"
+                    >
+                      <span>قبول طلب الانضمام</span>
+                      <CheckCircle className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleRejectRequest}
+                      className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center justify-end gap-2 transition-colors"
+                    >
+                      <span>رفض طلب الانضمام</span>
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleAction("view")}
+                      className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
+                    >
+                      <span>عرض بيانات {entityName}</span>
+                      <User className="w-4 h-4 text-gray-500" />
+                    </button>
+                    <button
+                      onClick={() => handleAction("delete")}
+                      className="w-full px-4 py-2 text-right text-sm text-red-600 hover:bg-red-50 flex items-center justify-end gap-2 transition-colors"
+                    >
+                      <span>حذف {entityName}</span>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>,
             document.body
@@ -297,7 +337,8 @@ export const DataTableSection = <
   showTimeFilter = false,
   showAddButton = true,
   filterOptions = [],
-  customFilterButton
+  customFilterButton,
+  customActionButtons = false
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
@@ -416,6 +457,7 @@ export const DataTableSection = <
             item={row}
             entityName={entityName}
             viewDetailsRoute={viewDetailsRoute}
+            customActionButtons={customActionButtons}
           />
         ),
       };

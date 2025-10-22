@@ -187,6 +187,7 @@ export const AddServiceProvider = () => {
         errorMessage="فشل في تحميل مزودي الخدمة"
         itemsPerPage={10}
         showAddButton={false}
+        customActionButtons={true}
       />
     </div>
   );
