@@ -3,62 +3,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { DataTableSection } from "../../../sections/DataTableSection";
 import exportIcon from "../../../../assets/imgs/icons/export-icon.svg";
+import { fetchOrdersForClient } from "../../../../services/firestore";
 
-// Mock data type for individual activity log
-const mockIndividualActivities = [
-  {
-    id: 1,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 2,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 3,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 4,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 5,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-];
-
-// Columns configuration for individual activity log
+// Columns configuration for individual activity log (Financial Transactions)
 const activityColumns = [
   {
     key: "export",
@@ -102,9 +49,137 @@ const activityColumns = [
   },
 ];
 
-// Mock data fetching function
-const fetchIndividualActivities = async () => {
-  return mockIndividualActivities;
+// Fetch real orders data for the specific client
+const fetchIndividualActivities = async (clientId: string) => {
+  try {
+    console.log("\n🔄 ========================================");
+    console.log("INDIVIDUALS INFO - FETCHING ACTIVITIES");
+    console.log("========================================");
+    console.log("🔄 Fetching orders for client:", clientId);
+    console.log("🔄 Client ID type:", typeof clientId);
+    console.log("🔄 Client ID value:", JSON.stringify(clientId));
+
+    // Fetch orders from Firestore filtered by client ID/email
+    const orders = await fetchOrdersForClient(clientId);
+
+    // Map orders data to table format
+    const mappedActivities = orders.map((order, index) => {
+      // Calculate cumulative cost (sum of all previous orders + current)
+      const cumulativeCost = orders
+        .slice(0, index + 1)
+        .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
+
+      // Format date
+      const formatDate = (date: any) => {
+        if (!date) return "-";
+
+        try {
+          // Handle Firestore Timestamp
+          if (date?.toDate && typeof date.toDate === "function") {
+            return date.toDate().toLocaleDateString("ar-SA", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+
+          // Handle Date object
+          if (date instanceof Date) {
+            return date.toLocaleDateString("ar-SA", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+
+          // Handle string date
+          if (typeof date === "string") {
+            const parsedDate = new Date(date);
+            if (!isNaN(parsedDate.getTime())) {
+              return parsedDate.toLocaleDateString("ar-SA", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+            }
+          }
+
+          return String(date);
+        } catch (error) {
+          console.error("Error formatting date:", error);
+          return "-";
+        }
+      };
+
+      // Get service type/operation type
+      const getOperationType = (order: any) => {
+        if (order.service?.title) return order.service.title;
+        if (order.selectedOption?.name?.ar) return order.selectedOption.name.ar;
+        if (order.selectedOption?.name) {
+          // Handle case where name is an object with ar/en
+          if (typeof order.selectedOption.name === "object") {
+            return (
+              order.selectedOption.name.ar ||
+              order.selectedOption.name.en ||
+              "خدمة غير محددة"
+            );
+          }
+          return order.selectedOption.name;
+        }
+        if (order.fuelType) return order.fuelType;
+        if (order.category) return order.category;
+        return "خدمة غير محددة";
+      };
+
+      // Helper function to safely extract string values from objects
+      const safeStringValue = (value: any): string => {
+        if (!value) return "-";
+        if (typeof value === "string") return value;
+        if (typeof value === "object") {
+          // Handle localized objects like {ar: "text", en: "text"}
+          if (value.ar) return value.ar;
+          if (value.en) return value.en;
+          // If it's an object but no ar/en, convert to string
+          return JSON.stringify(value);
+        }
+        return String(value);
+      };
+
+      return {
+        id: order.id,
+        operationNumber: order.refId || order.id,
+        operationType: getOperationType(order),
+        driverName: safeStringValue(
+          order.driverName || order.assignedDriver?.name
+        ),
+        operationDate: formatDate(order.orderDate || order.createdAt),
+        operationCost: parseFloat(order.totalPrice) || 0,
+        operationStatus: cumulativeCost,
+        export: "تصدير",
+      };
+    });
+
+    console.log(
+      `✅ Mapped ${mappedActivities.length} activities for client ${clientId}`
+    );
+
+    // Additional validation to ensure all values are strings
+    const validatedActivities = mappedActivities.map((activity) => ({
+      ...activity,
+      operationNumber: String(activity.operationNumber || ""),
+      operationType: String(activity.operationType || ""),
+      driverName: String(activity.driverName || ""),
+      operationDate: String(activity.operationDate || ""),
+      operationCost: Number(activity.operationCost) || 0,
+      operationStatus: Number(activity.operationStatus) || 0,
+      export: String(activity.export || ""),
+    }));
+
+    return validatedActivities;
+  } catch (error) {
+    console.error("❌ Error fetching individual activities:", error);
+    return [];
+  }
 };
 
 export const IndividualsInfo = ({
@@ -114,11 +189,35 @@ export const IndividualsInfo = ({
 }) => {
   const navigate = useNavigate();
 
+  // Debug logging for individual data
+  console.log("\n👤 ========================================");
+  console.log("INDIVIDUALS INFO - COMPONENT RENDERED");
+  console.log("========================================");
+  console.log("👤 Individual Data:", individualData);
+  console.log("👤 Individual ID:", individualData?.id);
+  console.log("👤 Individual Code:", individualData?.individualCode);
+  console.log("👤 Individual Name:", individualData?.individualName);
+  console.log("👤 Individual Email:", individualData?.email);
+
+  // Determine which identifier to use for fetching orders
+  const clientIdentifier =
+    individualData.email || individualData.id || individualData.individualCode;
+  console.log("👤 Using identifier for orders:", clientIdentifier);
+
   // Helper function to get value or dash
   const getValueOrDash = (value: any) => {
     if (value === null || value === undefined || value === "") {
       return "-";
     }
+
+    // Handle objects with ar/en properties
+    if (typeof value === "object" && value !== null) {
+      if (value.ar) return value.ar;
+      if (value.en) return value.en;
+      // If it's an object but no ar/en, convert to string
+      return JSON.stringify(value);
+    }
+
     return String(value);
   };
 
@@ -308,7 +407,7 @@ export const IndividualsInfo = ({
           entityNamePlural="أنشطة"
           icon={Wallet}
           columns={activityColumns}
-          fetchData={fetchIndividualActivities}
+          fetchData={() => fetchIndividualActivities(clientIdentifier)}
           addNewRoute=""
           viewDetailsRoute={(id: number | string) =>
             `/individual-activity/${id}`

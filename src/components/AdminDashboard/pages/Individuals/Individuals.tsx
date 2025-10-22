@@ -59,23 +59,39 @@ const fetchIndividuals = async () => {
     const clientsData = await fetchAllClients();
 
     // Map the Firebase data to match the table structure
-    return clientsData.map((client) => ({
-      id: client.id, // Document ID
-      individualCode: client.uid || client.id, // كود العميل (uid or fallback to id)
-      individualName: client.name || "-", // اسم العميل
-      phone: client.phoneNumber || "-", // رقم الهاتف
-      email: client.email || "-", // البريد الإلكتروني
-      city: client.city || "-", // المدينة
-      accountStatus: {
-        active: client.isActive !== undefined ? client.isActive : true, // حالة الحساب
-        text:
-          client.isActive !== undefined
-            ? client.isActive
-              ? "مفعل"
-              : "معطل"
-            : "مفعل",
-      },
-    }));
+    return clientsData.map((client) => {
+      // Helper function to safely extract string values
+      const safeStringValue = (value: any): string => {
+        if (!value) return "-";
+        if (typeof value === "string") return value;
+        if (typeof value === "object") {
+          // Handle localized objects like {ar: "text", en: "text"}
+          if (value.ar) return value.ar;
+          if (value.en) return value.en;
+          // If it's an object but no ar/en, convert to string
+          return JSON.stringify(value);
+        }
+        return String(value);
+      };
+
+      return {
+        id: client.id, // Document ID
+        individualCode: client.uid || client.id, // كود العميل (uid or fallback to id)
+        individualName: safeStringValue(client.name), // اسم العميل
+        phone: safeStringValue(client.phoneNumber), // رقم الهاتف
+        email: safeStringValue(client.email), // البريد الإلكتروني
+        city: safeStringValue(client.city), // المدينة
+        accountStatus: {
+          active: client.isActive !== undefined ? client.isActive : true, // حالة الحساب
+          text:
+            client.isActive !== undefined
+              ? client.isActive
+                ? "مفعل"
+                : "معطل"
+              : "مفعل",
+        },
+      };
+    });
   } catch (error) {
     console.error("Error fetching individuals:", error);
     return [];
