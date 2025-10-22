@@ -23,7 +23,6 @@ export const ROUTES = {
   FUEL_DELIVERY: "/fuel-delivery",
   CREATE_DELIVERY_REQUEST: "/create-delivery-request",
   USED_STATIONS: "/used-stations",
-  REFUND_REQUESTS: "/moneyrefundrequests",
   CHARGE_REQUESTS: "/walletchargerequests",
   PEROLIFE_STATION_LOCATIONS: "/perolifestationlocations",
 
@@ -74,6 +73,9 @@ export const ROUTES = {
   PETROLIFE_PRODUCTS: '/petrolife-products',
   PETROLIFE_COUPONS: '/petrolife-coupons',
   WALLET_REQUESTS: '/wallet-requests',
+  WALLET_REQUEST_DETAILS: '/wallet-requests/:id',
+  REFUND_REQUESTS: "/wallet-requests/moneyrefundrequests",
+  REFUND_REQUEST_DETAILS: "/wallet-requests/moneyrefundrequests/:id",
   FUEL_DELIVERY_REQUESTS: '/fuel-delivery-requests',
   ADMIN_FINANCIAL_REPORTS: '/admin-financial-reports',
   ADMIN_INVOICE_REPORTS: '/admin-invoice-reports',
