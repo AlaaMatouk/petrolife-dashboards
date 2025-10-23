@@ -56,6 +56,9 @@ import { AddStations } from "../screens/AddStations";
 import { WalletReq } from "../components/AdminDashboard/pages/wallet-requests/WalletReq";
 import { ReqRevision } from "../components/AdminDashboard/pages/wallet-requests/ReqRevision";
 import { RefundRevision } from "../components/AdminDashboard/pages/wallet-requests/RefundRevision";
+import { FuelDelivery } from "../components/AdminDashboard/pages/fuel-delivery/FuelDelivery";
+import { ReceivedDeliveryReq } from "../components/AdminDashboard/pages/fuel-delivery/ReceivedDeliveryReq";
+import { ReceivedDeliveryRevision } from "../components/AdminDashboard/pages/fuel-delivery/ReceivedDeliveryRevision";
 
 // 404 Component
 const NotFound = () => (
@@ -105,6 +108,9 @@ export const AppRouter = () => {
         <Route path={ROUTES.WALLET_REQUEST_DETAILS} element={<ReqRevision />} />
         <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyReq />} />
         <Route path={ROUTES.REFUND_REQUEST_DETAILS} element={<RefundRevision />} />
+        <Route path={ROUTES.FUEL_DELIVERY_REQUESTS} element={<FuelDelivery />} />
+        <Route path={ROUTES.RECEIVED_DELIVERY_REQUESTS} element={<ReceivedDeliveryReq />} />
+        <Route path={ROUTES.RECEIVED_DELIVERY_REQUEST_DETAILS} element={<ReceivedDeliveryRevision />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}
