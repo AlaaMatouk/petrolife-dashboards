@@ -81,6 +81,12 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     showSearch: true,
     searchPlaceholder: 'بحث عن طلب توصيل...',
   },
+  '/fuel-delivery-requests/received-delivery-requests': {
+    title: 'طلبات التوصيل المستلمة',
+    titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث عن طلب توصيل مستلم...',
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -150,6 +156,27 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'طلبات المحافظ/طلبات استرداد الاموال / مراجعة طلب الاسترداد',
       titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /fuel-delivery-requests/:id)
+  if (pathname.startsWith('/fuel-delivery-requests/') && 
+      pathname !== '/fuel-delivery-requests' && 
+      pathname !== '/fuel-delivery-requests/received-delivery-requests') {
+    return {
+      title: 'طلبات توصيل الوقود / معاينة طلب التوصيل',
+      titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /fuel-delivery-requests/received-delivery-requests/:id)
+  if (pathname.startsWith('/fuel-delivery-requests/received-delivery-requests/') && 
+      pathname !== '/fuel-delivery-requests/received-delivery-requests') {
+    return {
+      title: 'طلبات التوصيل المستلمة / تفاصيل الطلب',
+      titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }

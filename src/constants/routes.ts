@@ -77,6 +77,8 @@ export const ROUTES = {
   REFUND_REQUESTS: "/wallet-requests/moneyrefundrequests",
   REFUND_REQUEST_DETAILS: "/wallet-requests/moneyrefundrequests/:id",
   FUEL_DELIVERY_REQUESTS: '/fuel-delivery-requests',
+  RECEIVED_DELIVERY_REQUESTS: '/fuel-delivery-requests/received-delivery-requests',
+  RECEIVED_DELIVERY_REQUEST_DETAILS: '/fuel-delivery-requests/received-delivery-requests/:id',
   ADMIN_FINANCIAL_REPORTS: '/admin-financial-reports',
   ADMIN_INVOICE_REPORTS: '/admin-invoice-reports',
   ADMIN_SERVICE_PROVIDER_REPORTS: '/admin-service-provider-reports',
