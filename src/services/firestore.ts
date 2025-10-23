@@ -4868,3 +4868,81 @@ export const fetchStationsCompanyById = async (
     throw error;
   }
 };
+
+/**
+ * Interface for stations company join request data
+ */
+export interface StationsCompanyRequestData {
+  id: string;
+  providerName: string;
+  type: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  stations: number;
+  status: string;
+  createdAt?: any;
+  updatedAt?: any;
+  [key: string]: any; // Allow additional fields
+}
+
+/**
+ * Fetch all stations company join requests from Firestore
+ * @returns Promise with array of join request data
+ */
+export const fetchStationsCompanyRequests = async (): Promise<
+  StationsCompanyRequestData[]
+> => {
+  try {
+    console.log("📋 Fetching stations company join requests...");
+
+    // Fetch all documents from stations-company-requests collection
+    const requestsSnapshot = await getDocs(
+      collection(db, "stations-company-requests")
+    );
+
+    console.log(`📊 Fetched ${requestsSnapshot.size} join request documents`);
+
+    // Process join requests data
+    const joinRequestsData: StationsCompanyRequestData[] = [];
+
+    requestsSnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Transform the data to match our interface
+      const requestData: StationsCompanyRequestData = {
+        id: doc.id,
+        providerName:
+          data.providerName || data.name || data.companyName || "غير محدد",
+        type: data.type || data.providerType || data.serviceType || "غير محدد",
+        address: data.address || data.location || "غير محدد",
+        phoneNumber:
+          data.phoneNumber || data.phone || data.mobile || "غير محدد",
+        email: data.email || data.emailAddress || "غير محدد",
+        stations:
+          data.stations || data.stationsCount || data.numberOfStations || 0,
+        status: data.status || data.requestStatus || "معلق",
+        createdAt: data.createdAt || data.created_at,
+        updatedAt: data.updatedAt || data.updated_at,
+        ...data, // Include all other fields
+      };
+
+      joinRequestsData.push(requestData);
+    });
+
+    // Sort by creation date (newest first)
+    joinRequestsData.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log(
+      `✅ Successfully fetched ${joinRequestsData.length} join requests`
+    );
+    return joinRequestsData;
+  } catch (error) {
+    console.error("❌ Error fetching stations company join requests:", error);
+    throw error;
+  }
+};
