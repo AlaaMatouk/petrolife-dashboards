@@ -1,5 +1,6 @@
 import React from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { LoadingSpinner } from "../shared/Spinner/LoadingSpinner";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -30,12 +31,9 @@ export const Table = <T extends Record<string, any>>({
   loading = false,
   emptyMessage = "لا توجد بيانات",
 }: TableProps<T>) => {
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-color-mode-text-icons-t-sec">جاري التحميل...</div>
-      </div>
+      <LoadingSpinner size="md" message="جاري التحميل..." className="py-8" />
     );
   }
 
@@ -47,19 +45,24 @@ export const Table = <T extends Record<string, any>>({
     );
   }
 
-  const hasAnyLabels = columns.some(column => column.label);
+  const hasAnyLabels = columns.some((column) => column.label);
 
   return (
     <div className={`w-full items ${className}`}>
       <div className="overflow-x-auto ">
-        <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+        <table
+          className="w-full"
+          style={{ borderCollapse: "separate", borderSpacing: 0 }}
+        >
           {hasAnyLabels && (
             <thead>
               <tr>
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-4 py-3 text-center bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
+                    className={`px-4 py-3 text-center bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${
+                      column.width || "w-auto"
+                    } ${headerClassName}`}
                   >
                     {column.label && (
                       <div className="flex items-center justify-end gap-2">
@@ -79,18 +82,22 @@ export const Table = <T extends Record<string, any>>({
               <tr
                 key={rowIndex}
                 className={`hover:bg-gray-50 transition-colors ${rowClassName}`}
-                style={{ 
-                  borderBottom: '1px solid var(--border-light, #e5e7eb)',
-                  borderBottomWidth: '1px',
-                  borderBottomStyle: 'solid',
-                  borderBottomColor: 'var(--border-light, #e5e7eb)'
+                style={{
+                  borderBottom: "1px solid var(--border-light, #e5e7eb)",
+                  borderBottomWidth: "1px",
+                  borderBottomStyle: "solid",
+                  borderBottomColor: "var(--border-light, #e5e7eb)",
                 }}
               >
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`align-middle py-3 px-4 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
-                    style={{ borderBottom: '1px solid var(--border-light, #e5e7eb)' }}
+                    className={`align-middle py-3 px-4 text-sm text-center ${
+                      column.width || "w-auto"
+                    } ${cellClassName}`}
+                    style={{
+                      borderBottom: "1px solid var(--border-light, #e5e7eb)",
+                    }}
                   >
                     <div className="flex items-center justify-end">
                       {column.render

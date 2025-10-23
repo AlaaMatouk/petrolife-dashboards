@@ -523,6 +523,163 @@ export const fetchOrdersForCompany = async (companyId: string) => {
 };
 
 /**
+ * Fetch orders data for a specific client from Firestore orders collection
+ * Filtered by clientId or clientEmail matching the provided client identifier
+ * @param clientId - The client ID or email to filter orders by
+ * @returns Promise with filtered and enriched orders data for the specific client
+ */
+export const fetchOrdersForClient = async (clientId: string) => {
+  try {
+    console.log("\n🔄 ========================================");
+    console.log("FETCHING ORDERS FOR CLIENT:", clientId);
+    console.log("========================================");
+
+    const ordersRef = collection(db, "orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    console.log(`📊 Orders query snapshot size: ${querySnapshot.size}`);
+    console.log(`📊 Orders query snapshot empty: ${querySnapshot.empty}`);
+
+    const allOrdersData: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const orderData = {
+        id: doc.id,
+        ...doc.data(),
+      };
+      allOrdersData.push(orderData);
+
+      // Log first few orders for debugging
+      if (allOrdersData.length <= 3) {
+        console.log(`\n📦 Order ${allOrdersData.length}:`);
+        console.log(`  - ID: ${orderData.id}`);
+        console.log(`  - ClientId: ${orderData.clientId || "N/A"}`);
+        console.log(`  - ClientEmail: ${orderData.clientEmail || "N/A"}`);
+        console.log(`  - CompanyUid: ${orderData.companyUid || "N/A"}`);
+        console.log(`  - TotalPrice: ${orderData.totalPrice || "N/A"}`);
+        console.log(`  - OrderDate: ${orderData.orderDate || "N/A"}`);
+      }
+    });
+
+    console.log("✅ ORDERS DATA FETCHED SUCCESSFULLY!");
+    console.log(`📌 Total Orders Found: ${allOrdersData.length}`);
+
+    // Filter orders where client.email matches the provided client email
+    const filteredOrders = allOrdersData.filter((order) => {
+      const orderClientEmail = order.client?.email || order.clientEmail;
+      const orderClientId = order.clientId;
+      const orderCompanyUid = order.companyUid;
+
+      // Primary filter: Check if client.email matches the provided clientId (which should be email)
+      const emailMatch =
+        orderClientEmail && clientId && orderClientEmail === clientId;
+
+      // Fallback filters for other possible identifiers
+      const idMatch = orderClientId && clientId && orderClientId === clientId;
+      const uidMatch =
+        orderCompanyUid && clientId && orderCompanyUid === clientId;
+
+      const matches = emailMatch || idMatch || uidMatch;
+
+      if (matches) {
+        console.log(`\n✅ MATCHING ORDER FOUND:`);
+        console.log(`  - Order ID: ${order.id}`);
+        console.log(`  - Client Email: ${orderClientEmail}`);
+        console.log(`  - ClientId: ${orderClientId}`);
+        console.log(`  - CompanyUid: ${orderCompanyUid}`);
+        console.log(`  - TotalPrice: ${order.totalPrice}`);
+        console.log(
+          `  - Match Type: ${emailMatch ? "EMAIL" : idMatch ? "ID" : "UID"}`
+        );
+      }
+
+      return matches;
+    });
+
+    console.log(
+      `\n📌 FILTERED ORDERS FOR CLIENT ${clientId}: ${filteredOrders.length}`
+    );
+
+    if (filteredOrders.length === 0) {
+      console.log("⚠️ WARNING: No orders found for this client!");
+      console.log("🔍 Available client identifiers in orders:");
+
+      // Check different possible email field locations
+      const uniqueClientEmailsFromClient = [
+        ...new Set(allOrdersData.map((o) => o.client?.email).filter(Boolean)),
+      ];
+      const uniqueClientEmailsDirect = [
+        ...new Set(allOrdersData.map((o) => o.clientEmail).filter(Boolean)),
+      ];
+      const uniqueClientIds = [
+        ...new Set(allOrdersData.map((o) => o.clientId).filter(Boolean)),
+      ];
+      const uniqueCompanyUids = [
+        ...new Set(allOrdersData.map((o) => o.companyUid).filter(Boolean)),
+      ];
+
+      console.log(
+        "  - Client Emails (client.email):",
+        uniqueClientEmailsFromClient.slice(0, 5)
+      );
+      console.log(
+        "  - Client Emails (clientEmail):",
+        uniqueClientEmailsDirect.slice(0, 5)
+      );
+      console.log("  - ClientIds:", uniqueClientIds.slice(0, 5));
+      console.log("  - CompanyUids:", uniqueCompanyUids.slice(0, 5));
+      console.log(`  - Searching for: "${clientId}"`);
+    }
+
+    // Enrich orders with driver data
+    const enrichedOrders = await Promise.all(
+      filteredOrders.map(async (order) => {
+        let driverPhone = "-";
+        let driverName = "-";
+
+        // Get driver email from assignedDriver
+        const driverEmail = order.assignedDriver?.email;
+
+        if (driverEmail) {
+          try {
+            // Query companies-drivers collection for driver info
+            const driversRef = collection(db, "companies-drivers");
+            const driverQuery = query(
+              driversRef,
+              where("email", "==", driverEmail)
+            );
+            const driverSnapshot = await getDocs(driverQuery);
+
+            if (!driverSnapshot.empty) {
+              const driverDoc = driverSnapshot.docs[0];
+              const driverData = driverDoc.data();
+              driverName = driverData.name || "-";
+              driverPhone = driverData.phone || "-";
+            }
+          } catch (driverError) {
+            console.warn("⚠️ Error fetching driver data:", driverError);
+          }
+        }
+
+        return {
+          ...order,
+          driverName,
+          driverPhone,
+        };
+      })
+    );
+
+    console.log(`📌 Total Enriched Orders: ${enrichedOrders.length}`);
+
+    return enrichedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching orders data for client:", error);
+    throw error;
+  }
+};
+
+/**
  * Create a new delivery order in Firestore
  * @param orderData - Order form data
  * @returns Promise with the created order document
@@ -2417,25 +2574,48 @@ export const fetchCurrentCompany = async (): Promise<any> => {
  */
 export const fetchAllClients = async (): Promise<any[]> => {
   try {
-    console.log("\n👥 Fetching ALL clients data from Firestore...");
+    console.log("\n👥 ========================================");
+    console.log("FETCHING ALL CLIENTS DATA FROM FIRESTORE");
+    console.log("========================================");
 
     const clientsRef = collection(db, "clients");
     const q = query(clientsRef, orderBy("createdDate", "desc"));
     const querySnapshot = await getDocs(q);
 
+    console.log(`📊 Query snapshot size: ${querySnapshot.size}`);
+    console.log(`📊 Query snapshot empty: ${querySnapshot.empty}`);
+
     const clientsData: any[] = [];
 
     querySnapshot.forEach((doc) => {
-      clientsData.push({
+      const clientData = {
         id: doc.id,
         ...doc.data(),
-      });
+      };
+      clientsData.push(clientData);
+
+      // Log each client's key fields
+      console.log(`\n👤 Client ${clientsData.length}:`);
+      console.log(`  - ID: ${clientData.id}`);
+      console.log(`  - Name: ${clientData.name || "N/A"}`);
+      console.log(`  - Email: ${clientData.email || "N/A"}`);
+      console.log(`  - Phone: ${clientData.phoneNumber || "N/A"}`);
+      console.log(`  - UID: ${clientData.uid || "N/A"}`);
+      console.log(`  - IsActive: ${clientData.isActive}`);
+      console.log(`  - CreatedDate: ${clientData.createdDate || "N/A"}`);
     });
 
-    console.log(`✅ Fetched ${clientsData.length} clients`);
+    console.log(`\n✅ TOTAL CLIENTS FETCHED: ${clientsData.length}`);
+
+    if (clientsData.length === 0) {
+      console.log("⚠️ WARNING: No clients found in the collection!");
+      console.log("🔍 Checking if 'clients' collection exists...");
+    }
+
     return clientsData;
   } catch (error) {
     console.error("❌ Error fetching all clients:", error);
+    console.error("Error details:", error);
     throw error;
   }
 };
