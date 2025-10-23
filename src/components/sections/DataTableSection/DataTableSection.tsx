@@ -27,9 +27,9 @@ export interface DataTableSectionProps<T> {
   icon: LucideIcon;
   columns: any[];
   fetchData: () => Promise<T[]>;
-  onToggleStatus?: (id: number) => void;
+  onToggleStatus?: (id: string | number) => void;
   addNewRoute: string;
-  viewDetailsRoute: (id: number) => string;
+  viewDetailsRoute: (id: string | number) => string;
   loadingMessage: string;
   errorMessage?: string;
   itemsPerPage?: number;
@@ -48,16 +48,16 @@ export interface DataTableSectionProps<T> {
 
 // Generic Action Menu Component
 interface ActionMenuProps<
-  T extends { id: number; driverCode?: string; stationCode?: string }
+  T extends { id: string | number; driverCode?: string; stationCode?: string }
 > {
   item: T;
   entityName: string;
-  viewDetailsRoute: (id: number) => string;
+  viewDetailsRoute: (id: string | number) => string;
   customActionButtons?: boolean;
 }
 
 const ActionMenu = <
-  T extends { id: number; driverCode?: string; stationCode?: string }
+  T extends { id: string | number; driverCode?: string; stationCode?: string }
 >({
   item,
   entityName,
@@ -317,7 +317,7 @@ const ExportMenu = () => {
 // Generic DataTableSection Component
 export const DataTableSection = <
   T extends {
-    id: number;
+    id: string | number;
     driverCode?: string;
     stationCode?: string;
     accountStatus?: { active: boolean; text: string };
@@ -562,7 +562,11 @@ export const DataTableSection = <
 
                 {showFuelDeliveryButton && (
                   <button
-                    onClick={() => navigate("/fuel-delivery-requests/received-delivery-requests")}
+                    onClick={() =>
+                      navigate(
+                        "/fuel-delivery-requests/received-delivery-requests"
+                      )
+                    }
                     className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
                   >
                     <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">

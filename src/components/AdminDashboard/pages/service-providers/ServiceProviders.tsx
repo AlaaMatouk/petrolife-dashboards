@@ -8,7 +8,7 @@ import {
 
 // Define the ServiceProvider data type (compatible with existing interface)
 export interface ServiceProvider {
-  id: number;
+  id: string | number; // Allow both string (Firestore ID) and number (fallback)
   clientCode: string;
   providerName: string;
   type: string;
@@ -124,7 +124,7 @@ export const mockServiceProvidersData: ServiceProvider[] = [
     email: "info@eastern.com",
     stations: 10,
     sales: "30",
-    accountStatus: { active: false, text: "معلق" },
+    accountStatus: { active: false, text: "معطل" },
   },
   {
     id: 6,
@@ -168,7 +168,7 @@ export const mockServiceProvidersData: ServiceProvider[] = [
     email: "info@northern.com",
     stations: 11,
     sales: "30",
-    accountStatus: { active: false, text: "معلق" },
+    accountStatus: { active: false, text: "معطل" },
   },
   {
     id: 10,
@@ -217,7 +217,7 @@ const fetchServiceProviders = async (): Promise<ServiceProvider[]> => {
     // Transform Firestore data to match the existing ServiceProvider interface
     const transformedData: ServiceProvider[] = firestoreData.map(
       (item, index) => ({
-        id: index + 1, // Use index as ID for compatibility
+        id: item.id || item.uId || `sp-${index + 1}`, // Use actual Firestore ID or fallback
         clientCode: item.clientCode,
         providerName: item.providerName,
         type: item.type,
@@ -227,7 +227,8 @@ const fetchServiceProviders = async (): Promise<ServiceProvider[]> => {
         sales: item.ordersCount.toString(), // Convert to string as expected by interface
         accountStatus: {
           active: item.status === "نشط" || item.status === "active",
-          text: item.status,
+          text:
+            item.status === "نشط" || item.status === "active" ? "مفعل" : "معطل",
         },
       })
     );
@@ -244,7 +245,7 @@ const fetchServiceProviders = async (): Promise<ServiceProvider[]> => {
 };
 
 // Handle status toggle
-const handleToggleStatus = (id: number) => {
+const handleToggleStatus = (id: string | number) => {
   console.log(`Toggle status for service provider with id: ${id}`);
   // Add your status toggle logic here
 };
@@ -252,7 +253,7 @@ const handleToggleStatus = (id: number) => {
 export const ServiceProviders = () => {
   const navigate = useNavigate();
 
-  // Calculate count of pending join requests (معلق status)
+  // Calculate count of disabled accounts (معطل status)
   const pendingCount = mockServiceProvidersData.filter(
     (provider) => !provider.accountStatus.active
   ).length;
