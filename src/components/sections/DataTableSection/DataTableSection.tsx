@@ -484,16 +484,6 @@ export const DataTableSection = <
 
   return (
     <section className="flex flex-col items-start gap-5 w-full">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center w-full py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">{loadingMessage}</p>
-          </div>
-        </div>
-      )}
-
       {/* Error Message */}
       {error && (
         <div className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -552,7 +542,9 @@ export const DataTableSection = <
 
                 {showMoneyRefundButton && (
                   <button
-                    onClick={() => navigate("/wallet-requests/moneyrefundrequests")}
+                    onClick={() =>
+                      navigate("/wallet-requests/moneyrefundrequests")
+                    }
                     className="inline-flex flex-col items-start gap-2.5 pt-[var(--corner-radius-small)] pb-[var(--corner-radius-small)] px-2.5 relative flex-[0_0_auto] rounded-[var(--corner-radius-small)] border-[0.8px] border-solid border-color-mode-text-icons-t-placeholder hover:bg-color-mode-surface-bg-icon-gray transition-colors"
                   >
                     <div className="flex items-center gap-[var(--corner-radius-small)] relative self-stretch w-full flex-[0_0_auto]">
@@ -631,6 +623,7 @@ export const DataTableSection = <
               <Table
                 columns={enhancedColumns}
                 data={paginatedData}
+                loading={isLoading}
                 className="relative self-stretch w-full flex-[0_0_auto]"
               />
             </div>
@@ -642,6 +635,7 @@ export const DataTableSection = <
                   (col) => col.priority === "high" || col.priority === "medium"
                 )}
                 data={paginatedData}
+                loading={isLoading}
                 className="relative self-stretch w-full  flex-[0_0_auto]"
               />
             </div>
