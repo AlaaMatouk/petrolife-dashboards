@@ -13,6 +13,7 @@ import {
   LucideIcon,
   CheckCircle,
   XCircle,
+  Edit,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { TimeFilter } from "../../shared/TimeFilter/TimeFilter";
@@ -44,6 +45,7 @@ export interface DataTableSectionProps<T> {
   customActionButtons?: boolean; // New prop to show Accept/Reject buttons instead of View/Delete
   showMoneyRefundButton?: boolean; // New prop to show money refund requests button
   showFuelDeliveryButton?: boolean; // New prop to show fuel delivery requests button
+  showModifyButton?: boolean; // New prop to show Modify button instead of action menu
 }
 
 // Generic Action Menu Component
@@ -54,6 +56,7 @@ interface ActionMenuProps<
   entityName: string;
   viewDetailsRoute: (id: number) => string;
   customActionButtons?: boolean;
+  showModifyButton?: boolean;
 }
 
 const ActionMenu = <
@@ -63,6 +66,7 @@ const ActionMenu = <
   entityName,
   viewDetailsRoute,
   customActionButtons = false,
+  showModifyButton = false,
 }: ActionMenuProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRef, setButtonRef] = useState<HTMLButtonElement | null>(null);
@@ -92,6 +96,13 @@ const ActionMenu = <
     // TODO: Implement reject request logic
     alert(`تم رفض طلب الانضمام`);
     setIsOpen(false);
+  };
+
+  const handleModifyService = () => {
+    console.log("Modifying service:", item);
+    // TODO: Implement modify service logic
+    // alert(`تعديل الخدمة: ${item.id}`);
+    navigate(`/application-services/${item.id}`);
   };
 
   const updateMenuPosition = () => {
@@ -176,6 +187,16 @@ const ActionMenu = <
                     >
                       <span>رفض طلب الانضمام</span>
                       <XCircle className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : showModifyButton ? (
+                  <>
+                    <button
+                      onClick={handleModifyService}
+                      className="w-full px-4 py-2 text-right text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-end gap-2 transition-colors"
+                    >
+                      <span>تعديل الخدمة</span>
+                      <Edit className="w-4 h-4" />
                     </button>
                   </>
                 ) : (
@@ -343,6 +364,7 @@ export const DataTableSection = <
   customActionButtons = false,
   showMoneyRefundButton = false,
   showFuelDeliveryButton = false,
+  showModifyButton = false,
 }: DataTableSectionProps<T>): JSX.Element => {
   const navigate = useNavigate();
   const [data, setData] = useState<T[]>([]);
@@ -462,6 +484,7 @@ export const DataTableSection = <
             entityName={entityName}
             viewDetailsRoute={viewDetailsRoute}
             customActionButtons={customActionButtons}
+            showModifyButton={showModifyButton}
           />
         ),
       };

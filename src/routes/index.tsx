@@ -59,6 +59,10 @@ import { RefundRevision } from "../components/AdminDashboard/pages/wallet-reques
 import { FuelDelivery } from "../components/AdminDashboard/pages/fuel-delivery/FuelDelivery";
 import { ReceivedDeliveryReq } from "../components/AdminDashboard/pages/fuel-delivery/ReceivedDeliveryReq";
 import { ReceivedDeliveryRevision } from "../components/AdminDashboard/pages/fuel-delivery/ReceivedDeliveryRevision";
+import { Services } from "../components/AdminDashboard/pages/services/Services";
+import { ServiceDetails } from "../components/AdminDashboard/pages/services/ServiceDetails";
+import { AddService } from "../components/AdminDashboard/pages/services/AddService";
+import { AddChoice } from "../components/AdminDashboard/pages/services/AddChoice";
 
 // 404 Component
 const NotFound = () => (
@@ -107,10 +111,26 @@ export const AppRouter = () => {
         <Route path={ROUTES.WALLET_REQUESTS} element={<WalletReq />} />
         <Route path={ROUTES.WALLET_REQUEST_DETAILS} element={<ReqRevision />} />
         <Route path={ROUTES.REFUND_REQUESTS} element={<MoneyReq />} />
-        <Route path={ROUTES.REFUND_REQUEST_DETAILS} element={<RefundRevision />} />
-        <Route path={ROUTES.FUEL_DELIVERY_REQUESTS} element={<FuelDelivery />} />
-        <Route path={ROUTES.RECEIVED_DELIVERY_REQUESTS} element={<ReceivedDeliveryReq />} />
-        <Route path={ROUTES.RECEIVED_DELIVERY_REQUEST_DETAILS} element={<ReceivedDeliveryRevision />} />
+        <Route
+          path={ROUTES.REFUND_REQUEST_DETAILS}
+          element={<RefundRevision />}
+        />
+        <Route
+          path={ROUTES.FUEL_DELIVERY_REQUESTS}
+          element={<FuelDelivery />}
+        />
+        <Route
+          path={ROUTES.RECEIVED_DELIVERY_REQUESTS}
+          element={<ReceivedDeliveryReq />}
+        />
+        <Route
+          path={ROUTES.RECEIVED_DELIVERY_REQUEST_DETAILS}
+          element={<ReceivedDeliveryRevision />}
+        />
+        <Route path={ROUTES.APPLICATION_SERVICES} element={<Services />} />
+        <Route path={ROUTES.APPLICATION_SERVICE_DETAILS} element={<ServiceDetails />} />
+        <Route path={ROUTES.ADD_SERVICE} element={<AddService />} />
+        <Route path={ROUTES.ADD_CHOICE} element={<AddChoice />} />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}

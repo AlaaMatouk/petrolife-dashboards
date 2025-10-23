@@ -87,6 +87,17 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     showSearch: true,
     searchPlaceholder: 'بحث عن طلب توصيل مستلم...',
   },
+  '/application-services': {
+    title: 'خدمات التطبيق',
+    titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث في الخدمات...',
+  },
+  '/application-services/add-choice': {
+    title: 'خدمات التطبيق / إضافة خيار جديد',
+    titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+    showSearch: false,
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -177,6 +188,16 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'طلبات التوصيل المستلمة / تفاصيل الطلب',
       titleIcon: <img src="/img/side-icons-7.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /application-services/:id)
+  if (pathname.startsWith('/application-services/') && 
+      pathname !== '/application-services') {
+    return {
+      title: 'خدمات التطبيق / تفاصيل الخدمة',
+      titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }
