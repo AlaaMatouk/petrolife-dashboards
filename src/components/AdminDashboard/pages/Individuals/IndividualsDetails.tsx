@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 import { IndividualsInfo } from "./IndividualsInfo";
-import { mockIndividualsData } from "./Individuals";
+import { fetchAllClients } from "../../../../services/firestore";
 
 interface OutletContext {
   searchQuery: string;
@@ -20,35 +20,56 @@ export const IndividualsDetails = (): JSX.Element => {
   useEffect(() => {
     const loadIndividualData = async () => {
       if (!id) {
-        setError('Individual ID is missing');
+        setError("Individual ID is missing");
         setIsLoading(false);
         return;
       }
 
       try {
         setIsLoading(true);
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Find individual by ID from mock data
-        const individual = mockIndividualsData.find(ind => ind.id === parseInt(id));
-        
-        if (!individual) {
-          throw new Error('Individual not found');
+
+        // Fetch all clients from Firebase
+        const clientsData = await fetchAllClients();
+
+        // Find individual by ID
+        const client = clientsData.find((c) => c.id === id);
+
+        if (!client) {
+          throw new Error("Individual not found");
         }
-        
-        console.log('Individual data fetched (mock):', individual);
-        
+
+        // Map Firebase data to component format
+        const individual = {
+          id: client.id,
+          individualCode: client.uid || client.id,
+          individualName: client.name || "-",
+          phone: client.phoneNumber || "-",
+          email: client.email || "-",
+          city: client.city || "-",
+          accountStatus: {
+            active: client.isActive !== undefined ? client.isActive : true,
+            text:
+              client.isActive !== undefined
+                ? client.isActive
+                  ? "مفعل"
+                  : "معطل"
+                : "مفعل",
+          },
+          // Include any other fields that might be needed
+          ...client,
+        };
+
+        console.log("Individual data fetched from Firebase:", individual);
+
         setIndividualData(individual);
         setError(null);
-        
+
         // Update the header title with individual name
-        const individualName = individual?.individualName || 'الفرد';
+        const individualName = individual?.individualName || "الفرد";
         setDynamicTitle(`الأفراد / ${individualName}`);
       } catch (err: any) {
-        console.error('Error loading individual:', err);
-        setError(err.message || 'Failed to load individual data');
+        console.error("Error loading individual:", err);
+        setError(err.message || "Failed to load individual data");
       } finally {
         setIsLoading(false);
       }
