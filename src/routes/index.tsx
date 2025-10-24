@@ -64,6 +64,8 @@ import { ServiceDetails } from "../components/AdminDashboard/pages/services/Serv
 import { AddService } from "../components/AdminDashboard/pages/services/AddService";
 import { AddChoice } from "../components/AdminDashboard/pages/services/AddChoice";
 import { FinancialReport } from "../components/AdminDashboard/pages/financial-report";
+import { ServiceProviderReport } from "../components/AdminDashboard/pages/service-provider-report";
+import { WalletReport } from "../components/AdminDashboard/pages/wallet-report";
 
 // 404 Component
 const NotFound = () => (
@@ -138,6 +140,14 @@ export const AppRouter = () => {
         <Route
           path={ROUTES.ADMIN_FINANCIAL_REPORTS}
           element={<FinancialReport />}
+        />
+        <Route
+          path={ROUTES.ADMIN_SERVICE_PROVIDER_REPORTS}
+          element={<ServiceProviderReport />}
+        />
+        <Route
+          path={ROUTES.ADMIN_WALLET_REPORTS}
+          element={<WalletReport />}
         />
       </Route>
 

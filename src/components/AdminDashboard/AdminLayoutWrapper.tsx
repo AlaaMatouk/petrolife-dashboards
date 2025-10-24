@@ -104,6 +104,18 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     showSearch: true,
     searchPlaceholder: 'بحث في تقارير المبيعات...',
   },
+  '/admin-service-provider-reports': {
+    title: 'تقارير مزودي الخدمة',
+    titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث في تقارير مزودي الخدمة...',
+  },
+  '/admin-wallet-reports': {
+    title: 'تقارير المحافظ',
+    titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث في تقارير المحافظ...',
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -215,6 +227,28 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'تقارير المبيعات / تفاصيل التقرير',
       titleIcon: <img src="/img/side-icons-20.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /admin-service-provider-reports/:id)
+  if (pathname.startsWith('/admin-service-provider-reports/') && 
+      pathname !== '/admin-service-provider-reports' && 
+      pathname !== '/admin-service-provider-reports/add') {
+    return {
+      title: 'تقارير مزودي الخدمة / تفاصيل التقرير',
+      titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /admin-wallet-reports/:id)
+  if (pathname.startsWith('/admin-wallet-reports/') && 
+      pathname !== '/admin-wallet-reports' && 
+      pathname !== '/admin-wallet-reports/add') {
+    return {
+      title: 'تقارير المحافظ / تفاصيل التقرير',
+      titleIcon: <img src="/img/side-icons-6.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }
