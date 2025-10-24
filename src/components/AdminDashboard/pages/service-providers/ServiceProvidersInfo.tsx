@@ -99,7 +99,6 @@ const stationColumns = [
     label: "اسم المحطة",
     priority: "medium" as const,
   },
-
 ];
 
 // Mock data fetching function
@@ -107,7 +106,9 @@ const fetchStationLocations = async (): Promise<StationLocation[]> => {
   return mockStationLocations;
 };
 
-export const ServiceProvidersInfo = ({ providerData }: ServiceProvidersInfoProps): JSX.Element => {
+export const ServiceProvidersInfo = ({
+  providerData,
+}: ServiceProvidersInfoProps): JSX.Element => {
   const navigate = useNavigate();
 
   // Handler for toggling station status
@@ -127,22 +128,33 @@ export const ServiceProvidersInfo = ({ providerData }: ServiceProvidersInfoProps
   // Extract service provider information
   const providerInfo = {
     name: getValueOrDash(providerData.providerName || providerData.name),
-    clientCode: getValueOrDash(providerData.clientCode || providerData.providerCode || providerData.code),
-    distinguishedClientNumber: getValueOrDash(providerData.distinguishedClientNumber || providerData.specialClientNumber),
+    clientCode: getValueOrDash(
+      providerData.clientCode || providerData.providerCode || providerData.code
+    ),
+    distinguishedClientNumber: getValueOrDash(
+      providerData.distinguishedClientNumber || providerData.specialClientNumber
+    ),
     email: getValueOrDash(providerData.email),
     phone: getValueOrDash(providerData.phone || providerData.phoneNumber),
     type: getValueOrDash(providerData.type || providerData.serviceType),
     stations: getValueOrDash(providerData.stations),
     sales: getValueOrDash(providerData.sales),
-    accountStatus: providerData.accountStatus?.text || getValueOrDash(providerData.status),
+    accountStatus:
+      providerData.accountStatus?.text || getValueOrDash(providerData.status),
     address: getValueOrDash(providerData.address),
     city: getValueOrDash(providerData.city),
     commercialRegNumber: getValueOrDash(providerData.commercialRegNumber),
     taxNumber: getValueOrDash(providerData.taxNumber),
-    joinDate: getValueOrDash(providerData.joinDate || providerData.registrationDate || providerData.createdAt),
-    nationalAddressDoc: providerData.nationalAddressDoc || providerData.nationalAddressDocument,
+    joinDate: getValueOrDash(
+      providerData.joinDate ||
+        providerData.registrationDate ||
+        providerData.createdAt
+    ),
+    nationalAddressDoc:
+      providerData.nationalAddressDoc || providerData.nationalAddressDocument,
     taxNumberDoc: providerData.taxNumberDoc || providerData.taxDocument,
-    commercialRegDoc: providerData.commercialRegDoc || providerData.commercialRegDocument,
+    commercialRegDoc:
+      providerData.commercialRegDoc || providerData.commercialRegDocument,
     logo: providerData.logo || providerData.image || providerData.profileImage,
   };
 
@@ -153,12 +165,14 @@ export const ServiceProvidersInfo = ({ providerData }: ServiceProvidersInfoProps
     { label: "اسم مزود الخدمة", value: providerInfo.name },
     { label: "تاريخ الانضمام", value: providerInfo.joinDate },
     { label: "العنوان", value: providerInfo.address },
-    
+
     { label: "المدينة", value: providerInfo.city },
-    { label: "رقم العميل المميز", value: providerInfo.distinguishedClientNumber },
+    {
+      label: "رقم العميل المميز",
+      value: providerInfo.distinguishedClientNumber,
+    },
     { label: "الرقم الضريبي", value: providerInfo.taxNumber },
     { label: "السجل التجاري", value: providerInfo.commercialRegNumber },
-
   ];
 
   // Helper function to render field
@@ -230,9 +244,9 @@ export const ServiceProvidersInfo = ({ providerData }: ServiceProvidersInfoProps
               {/* Provider Logo Section - Full Width Row */}
               <div className="flex mt-[-20px] items-center justify-end relative self-stretch w-full flex-[0_0_auto]">
                 {providerInfo.logo ? (
-                  <img 
-                    src={providerInfo.logo} 
-                    alt="شعار مزود الخدمة" 
+                  <img
+                    src={providerInfo.logo}
+                    alt="شعار مزود الخدمة"
                     className="w-32 h-32 object-cover rounded-full border-2 border-gray-300"
                   />
                 ) : (
@@ -351,4 +365,3 @@ export const ServiceProvidersInfo = ({ providerData }: ServiceProvidersInfoProps
     </div>
   );
 };
-

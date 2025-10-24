@@ -1,174 +1,92 @@
 import { FileText } from "lucide-react";
 import { DataTableSection } from "../../../sections/DataTableSection/DataTableSection";
 import { ROUTES } from "../../../../constants/routes";
+import {
+  fetchStationsCompanyRequests,
+  StationsCompanyRequestData,
+} from "../../../../services/firestore";
 
 interface RegistrationRequest {
-  id: number;
-  requestNumber: string;
+  id: string;
   providerName: string;
-  email: string;
-  phone: string;
+  type: string;
   address: string;
-  providerType: string;
+  phoneNumber: string;
+  email: string;
+  stations: number;
+  status: string;
 }
 
-// Mock data for registration requests
-const mockRegistrationRequests: RegistrationRequest[] = [
-  {
-    id: 1,
-    requestNumber: "5",
-    providerName: "شركة النقل السريع",
-    email: "fast@transport.com",
-    phone: "0501234567",
-    address: "الرياض، حي الملز، شارع الملك فهد",
-    providerType: "توزيع الوقود",
-  },
-  {
-    id: 2,
-    requestNumber: "3",
-    providerName: "مؤسسة الصيانة المتقدمة",
-    email: "advanced@maintenance.com",
-    phone: "0507654321",
-    address: "جدة، حي الروضة، شارع فلسطين",
-    providerType: "صيانة المحطات",
-  },
-  {
-    id: 3,
-    requestNumber: "7",
-    providerName: "شركة اللوجستيات الحديثة",
-    email: "modern@logistics.com",
-    phone: "0551234567",
-    address: "الدمام، حي الفيصلية، طريق الملك فهد",
-    providerType: "خدمات لوجستية",
-  },
-  {
-    id: 4,
-    requestNumber: "4",
-    providerName: "مؤسسة النقل المتخصص",
-    email: "specialized@transport.com",
-    phone: "0541234567",
-    address: "مكة المكرمة، حي العزيزية، شارع إبراهيم الخليل",
-    providerType: "نقل الوقود",
-  },
-  {
-    id: 5,
-    requestNumber: "6",
-    providerName: "شركة الخدمات الصناعية",
-    email: "industrial@services.com",
-    phone: "0561234567",
-    address: "المدينة المنورة، حي العزيزية، طريق الملك عبدالله",
-    providerType: "خدمات صناعية",
-  },
-  {
-    id: 6,
-    requestNumber: "8",
-    providerName: "شركة التوزيع الذكي",
-    email: "smart@distribution.com",
-    phone: "0551112233",
-    address: "الخبر، حي الثقبة، شارع الأمير تركي",
-    providerType: "توزيع الوقود",
-  },
-  {
-    id: 7,
-    requestNumber: "2",
-    providerName: "مؤسسة النقل المتطور",
-    email: "advanced@transport.com",
-    phone: "0544445566",
-    address: "الطائف، حي الوسام، طريق الملك فيصل",
-    providerType: "نقل متخصص",
-  },
-  {
-    id: 8,
-    requestNumber: "9",
-    providerName: "شركة الصيانة الشاملة",
-    email: "complete@maintenance.com",
-    phone: "0567778899",
-    address: "أبها، حي المنسك، شارع الملك فهد",
-    providerType: "صيانة شاملة",
-  },
-  {
-    id: 9,
-    requestNumber: "5",
-    providerName: "مؤسسة اللوجستيات المتقدمة",
-    email: "logistics@advanced.com",
-    phone: "0533334444",
-    address: "تبوك، حي السليمانية، طريق الملك خالد",
-    providerType: "خدمات لوجستية",
-  },
-  {
-    id: 10,
-    requestNumber: "10",
-    providerName: "شركة النقل السريع المحدودة",
-    email: "express@transport.com",
-    phone: "0522223333",
-    address: "بريدة، حي الإسكان، شارع الملك عبدالعزيز",
-    providerType: "نقل الوقود",
-  },
-  {
-    id: 11,
-    requestNumber: "4",
-    providerName: "مؤسسة الخدمات المتكاملة",
-    email: "integrated@services.com",
-    phone: "0555556666",
-    address: "حائل، حي الزهرة، طريق الملك فهد",
-    providerType: "خدمات صناعية",
-  },
-  {
-    id: 12,
-    requestNumber: "6",
-    providerName: "شركة التوزيع الوطنية",
-    email: "national@distribution.com",
-    phone: "0544447777",
-    address: "الجبيل، حي الدانة، شارع الخليج",
-    providerType: "توزيع الوقود",
-  },
-];
-
-// Table columns definition
+// Table columns definition - updated to match requirements
 const columns = [
   {
     key: "actions",
-    priority: "high",
+    priority: "high" as const,
   },
   {
-    key: "requestNumber",
+    key: "stations",
     label: "المحطات",
-    priority: "high",
+    priority: "high" as const,
   },
   {
     key: "email",
     label: "البريد الإلكتروني",
-    priority: "medium",
+    priority: "medium" as const,
   },
   {
-    key: "phone",
+    key: "phoneNumber",
     label: "رقم الهاتف",
-    priority: "medium",
+    priority: "medium" as const,
   },
   {
     key: "address",
     label: "العنوان",
-    priority: "medium",
+    priority: "medium" as const,
   },
   {
-    key: "providerType",
+    key: "type",
     label: "نوع المزود",
-    priority: "high",
+    priority: "high" as const,
   },
   {
     key: "providerName",
     label: "اسم مزود الخدمة",
-    priority: "high",
+    priority: "high" as const,
   },
 ];
 
-// Fetch function
+// Fetch function - now uses real Firestore data
 const fetchRegistrationRequests = async (): Promise<RegistrationRequest[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockRegistrationRequests);
-    }, 500);
-  });
+  try {
+    console.log("🔄 Fetching stations company join requests from Firestore...");
+
+    // Fetch real data from Firestore
+    const firestoreData: StationsCompanyRequestData[] =
+      await fetchStationsCompanyRequests();
+
+    // Transform Firestore data to match the RegistrationRequest interface
+    const transformedData: RegistrationRequest[] = firestoreData.map(
+      (item) => ({
+        id: item.id,
+        providerName: item.providerName,
+        type: item.type,
+        address: item.address,
+        phoneNumber: item.phoneNumber,
+        email: item.email,
+        stations: item.stations,
+        status: item.status,
+      })
+    );
+
+    console.log(
+      `✅ Successfully fetched ${transformedData.length} join requests`
+    );
+    return transformedData;
+  } catch (error) {
+    console.error("❌ Error fetching join requests:", error);
+    // Return empty array on error to prevent crashes
+    return [];
+  }
 };
 
 export const AddServiceProvider = () => {

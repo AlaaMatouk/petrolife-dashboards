@@ -1,10 +1,14 @@
 import { DataTableSection } from "../../../sections/DataTableSection";
 import { Truck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  fetchStationsCompanyData,
+  ServiceProviderData,
+} from "../../../../services/firestore";
 
-// Define the ServiceProvider data type
+// Define the ServiceProvider data type (compatible with existing interface)
 export interface ServiceProvider {
-  id: number;
+  id: string | number; // Allow both string (Firestore ID) and number (fallback)
   clientCode: string;
   providerName: string;
   type: string;
@@ -120,7 +124,7 @@ export const mockServiceProvidersData: ServiceProvider[] = [
     email: "info@eastern.com",
     stations: 10,
     sales: "30",
-    accountStatus: { active: false, text: "معلق" },
+    accountStatus: { active: false, text: "معطل" },
   },
   {
     id: 6,
@@ -164,7 +168,7 @@ export const mockServiceProvidersData: ServiceProvider[] = [
     email: "info@northern.com",
     stations: 11,
     sales: "30",
-    accountStatus: { active: false, text: "معلق" },
+    accountStatus: { active: false, text: "معطل" },
   },
   {
     id: 10,
@@ -201,15 +205,47 @@ export const mockServiceProvidersData: ServiceProvider[] = [
   },
 ];
 
-// Fetch service providers data - replace with actual Firestore fetch when ready
+// Fetch service providers data from Firestore
 const fetchServiceProviders = async (): Promise<ServiceProvider[]> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return mockServiceProvidersData;
+  try {
+    console.log("🔄 Fetching service providers from Firestore...");
+
+    // Fetch real data from Firestore
+    const firestoreData: ServiceProviderData[] =
+      await fetchStationsCompanyData();
+
+    // Transform Firestore data to match the existing ServiceProvider interface
+    const transformedData: ServiceProvider[] = firestoreData.map(
+      (item, index) => ({
+        id: item.id || item.uId || `sp-${index + 1}`, // Use actual Firestore ID or fallback
+        clientCode: item.clientCode,
+        providerName: item.providerName,
+        type: item.type,
+        phone: item.phoneNumber,
+        email: item.email,
+        stations: item.stationsCount,
+        sales: item.ordersCount.toString(), // Convert to string as expected by interface
+        accountStatus: {
+          active: item.status === "نشط" || item.status === "active",
+          text:
+            item.status === "نشط" || item.status === "active" ? "مفعل" : "معطل",
+        },
+      })
+    );
+
+    console.log(
+      `✅ Successfully fetched ${transformedData.length} service providers`
+    );
+    return transformedData;
+  } catch (error) {
+    console.error("❌ Error fetching service providers:", error);
+    // Return empty array on error to prevent crashes
+    return [];
+  }
 };
 
 // Handle status toggle
-const handleToggleStatus = (id: number) => {
+const handleToggleStatus = (id: string | number) => {
   console.log(`Toggle status for service provider with id: ${id}`);
   // Add your status toggle logic here
 };
@@ -217,7 +253,7 @@ const handleToggleStatus = (id: number) => {
 export const ServiceProviders = () => {
   const navigate = useNavigate();
 
-  // Calculate count of pending join requests (معلق status)
+  // Calculate count of disabled accounts (معطل status)
   const pendingCount = mockServiceProvidersData.filter(
     (provider) => !provider.accountStatus.active
   ).length;
@@ -249,4 +285,3 @@ export const ServiceProviders = () => {
     />
   );
 };
-

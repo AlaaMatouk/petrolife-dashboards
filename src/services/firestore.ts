@@ -4651,3 +4651,298 @@ const calculateCompanyWalletBalance = async (
     return 0;
   }
 };
+
+/**
+ * Service Provider (Stations Company) data interface
+ */
+export interface ServiceProviderData {
+  id: string;
+  clientCode: string;
+  providerName: string;
+  type: string;
+  phoneNumber: string;
+  email: string;
+  status: string;
+  stationsCount: number;
+  ordersCount: number;
+  uId?: string;
+}
+
+/**
+ * Fetch all stations company data with related counts
+ * @returns Promise with array of service provider data
+ */
+export const fetchStationsCompanyData = async (): Promise<
+  ServiceProviderData[]
+> => {
+  try {
+    console.log("🏢 Fetching stations company data with related counts...");
+
+    // Fetch all collections in parallel for better performance
+    const [stationsCompanySnapshot, carStationsSnapshot, ordersSnapshot] =
+      await Promise.all([
+        getDocs(collection(db, "stationscompany")),
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+    console.log(
+      `📊 Fetched ${stationsCompanySnapshot.size} stations company documents`
+    );
+    console.log(
+      `🏪 Fetched ${carStationsSnapshot.size} car stations documents`
+    );
+    console.log(`📋 Fetched ${ordersSnapshot.size} orders documents`);
+
+    // Process stations company data
+    const serviceProvidersData: ServiceProviderData[] = [];
+
+    stationsCompanySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Get company UID for counting related data
+      const companyUid = data.uId || data.uid || doc.id;
+
+      // Count related car stations
+      let stationsCount = 0;
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyUid) {
+          stationsCount++;
+        }
+      });
+
+      // Count related orders
+      let ordersCount = 0;
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const orderCreatedUserId =
+          orderData.createdUserId || orderData.uId || orderData.uid;
+        if (orderCreatedUserId === companyUid) {
+          ordersCount++;
+        }
+      });
+
+      // Create service provider data object
+      const serviceProvider: ServiceProviderData = {
+        id: data.id || doc.id,
+        clientCode: data.id || data.uId || doc.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+
+      serviceProvidersData.push(serviceProvider);
+    });
+
+    console.log(
+      `✅ Processed ${serviceProvidersData.length} service providers with counts`
+    );
+
+    return serviceProvidersData;
+  } catch (error) {
+    console.error("❌ Error fetching stations company data:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a single stations company by ID
+ * @param id - The company ID
+ * @returns Promise with service provider data or null
+ */
+export const fetchStationsCompanyById = async (
+  id: string
+): Promise<ServiceProviderData | null> => {
+  try {
+    console.log(`🔍 Fetching stations company with ID: ${id}`);
+
+    // Try to find by document ID first
+    const docRef = doc(db, "stationscompany", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const companyUid = data.uId || data.uid || docSnap.id;
+
+      // Count related data
+      const [carStationsSnapshot, ordersSnapshot] = await Promise.all([
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+      let stationsCount = 0;
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyUid) {
+          stationsCount++;
+        }
+      });
+
+      let ordersCount = 0;
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const orderCreatedUserId =
+          orderData.createdUserId || orderData.uId || orderData.uid;
+        if (orderCreatedUserId === companyUid) {
+          ordersCount++;
+        }
+      });
+
+      return {
+        id: data.id || docSnap.id,
+        clientCode: data.id || data.uId || docSnap.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+    }
+
+    // If not found by document ID, try to find by custom ID field
+    const q = query(collection(db, "stationscompany"), where("id", "==", id));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+      const companyUid = data.uId || data.uid || doc.id;
+
+      // Count related data (same logic as above)
+      const [carStationsSnapshot, ordersSnapshot] = await Promise.all([
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+      let stationsCount = 0;
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyUid) {
+          stationsCount++;
+        }
+      });
+
+      let ordersCount = 0;
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const orderCreatedUserId =
+          orderData.createdUserId || orderData.uId || orderData.uid;
+        if (orderCreatedUserId === companyUid) {
+          ordersCount++;
+        }
+      });
+
+      return {
+        id: data.id || doc.id,
+        clientCode: data.id || data.uId || doc.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+    }
+
+    console.log(`❌ No stations company found with ID: ${id}`);
+    return null;
+  } catch (error) {
+    console.error("❌ Error fetching stations company by ID:", error);
+    throw error;
+  }
+};
+
+/**
+ * Interface for stations company join request data
+ */
+export interface StationsCompanyRequestData {
+  id: string;
+  providerName: string;
+  type: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  stations: number;
+  status: string;
+  createdAt?: any;
+  updatedAt?: any;
+  [key: string]: any; // Allow additional fields
+}
+
+/**
+ * Fetch all stations company join requests from Firestore
+ * @returns Promise with array of join request data
+ */
+export const fetchStationsCompanyRequests = async (): Promise<
+  StationsCompanyRequestData[]
+> => {
+  try {
+    console.log("📋 Fetching stations company join requests...");
+
+    // Fetch all documents from stations-company-requests collection
+    const requestsSnapshot = await getDocs(
+      collection(db, "stations-company-requests")
+    );
+
+    console.log(`📊 Fetched ${requestsSnapshot.size} join request documents`);
+
+    // Process join requests data
+    const joinRequestsData: StationsCompanyRequestData[] = [];
+
+    requestsSnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Transform the data to match our interface
+      const requestData: StationsCompanyRequestData = {
+        id: doc.id,
+        providerName:
+          data.providerName || data.name || data.companyName || "غير محدد",
+        type: data.type || data.providerType || data.serviceType || "غير محدد",
+        address: data.address || data.location || "غير محدد",
+        phoneNumber:
+          data.phoneNumber || data.phone || data.mobile || "غير محدد",
+        email: data.email || data.emailAddress || "غير محدد",
+        stations:
+          data.stations || data.stationsCount || data.numberOfStations || 0,
+        status: data.status || data.requestStatus || "معلق",
+        createdAt: data.createdAt || data.created_at,
+        updatedAt: data.updatedAt || data.updated_at,
+        ...data, // Include all other fields
+      };
+
+      joinRequestsData.push(requestData);
+    });
+
+    // Sort by creation date (newest first)
+    joinRequestsData.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log(
+      `✅ Successfully fetched ${joinRequestsData.length} join requests`
+    );
+    return joinRequestsData;
+  } catch (error) {
+    console.error("❌ Error fetching stations company join requests:", error);
+    throw error;
+  }
+};

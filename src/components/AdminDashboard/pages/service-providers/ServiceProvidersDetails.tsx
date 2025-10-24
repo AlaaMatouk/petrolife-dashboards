@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 import { ServiceProvidersInfo } from ".";
-import { mockServiceProvidersData } from "./ServiceProviders";
+import {
+  fetchStationsCompanyById,
+  ServiceProviderData,
+} from "../../../../services/firestore";
 
 interface OutletContext {
   searchQuery: string;
@@ -12,7 +15,9 @@ interface OutletContext {
 export const ServiceProvidersDetails = (): JSX.Element => {
   const { id } = useParams<{ id: string }>();
   const { setDynamicTitle } = useOutletContext<OutletContext>();
-  const [providerData, setProviderData] = useState<any>(null);
+  const [providerData, setProviderData] = useState<ServiceProviderData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,34 +25,38 @@ export const ServiceProvidersDetails = (): JSX.Element => {
   useEffect(() => {
     const loadProviderData = async () => {
       if (!id) {
-        setError('Service Provider ID is missing');
+        setError("Service Provider ID is missing");
         setIsLoading(false);
         return;
       }
 
       try {
         setIsLoading(true);
-        // TODO: Replace with actual Firestore fetch when ready
-        // const data: any = await fetchServiceProviderById(id);
-        
-        // Find the provider from mock data based on ID
-        const provider = mockServiceProvidersData.find(p => p.id === Number(id));
-        
-        if (!provider) {
-          setError('Service Provider not found');
+        setError(null);
+
+        console.log(`🔍 Loading service provider with ID: ${id}`);
+
+        // Fetch real data from Firestore
+        const data: ServiceProviderData | null = await fetchStationsCompanyById(
+          id
+        );
+
+        if (!data) {
+          setError("Service Provider not found");
           setIsLoading(false);
           return;
         }
-        
-        setProviderData(provider);
-        setError(null);
-        
+
+        setProviderData(data);
+
         // Update the header title with provider name
-        const providerName = provider.providerName || 'مزود الخدمة';
+        const providerName = data.providerName || "مزود الخدمة";
         setDynamicTitle(`مزودي الخدمة / ${providerName}`);
+
+        console.log(`✅ Successfully loaded service provider: ${providerName}`);
       } catch (err: any) {
-        console.error('Error loading service provider:', err);
-        setError(err.message || 'Failed to load service provider data');
+        console.error("❌ Error loading service provider:", err);
+        setError(err.message || "Failed to load service provider data");
       } finally {
         setIsLoading(false);
       }
@@ -86,4 +95,3 @@ export const ServiceProvidersDetails = (): JSX.Element => {
     </div>
   );
 };
-
