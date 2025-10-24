@@ -98,6 +98,12 @@ const ADMIN_PAGE_CONFIGS: Record<string, PageConfig> = {
     titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
     showSearch: false,
   },
+  '/admin-financial-reports': {
+    title: 'تقارير المبيعات',
+    titleIcon: <img src="/img/side-icons-20.svg" alt="" className="w-5 h-5" />,
+    showSearch: true,
+    searchPlaceholder: 'بحث في تقارير المبيعات...',
+  },
 };
 
 // Helper to get config for dynamic routes
@@ -198,6 +204,17 @@ const getPageConfig = (pathname: string): PageConfig | null => {
     return {
       title: 'خدمات التطبيق / تفاصيل الخدمة',
       titleIcon: <img src="/img/side-icons-9.svg" alt="" className="w-5 h-5" />,
+      showSearch: false,
+    };
+  }
+
+  // Match dynamic routes (e.g., /admin-financial-reports/:id)
+  if (pathname.startsWith('/admin-financial-reports/') && 
+      pathname !== '/admin-financial-reports' && 
+      pathname !== '/admin-financial-reports/add') {
+    return {
+      title: 'تقارير المبيعات / تفاصيل التقرير',
+      titleIcon: <img src="/img/side-icons-20.svg" alt="" className="w-5 h-5" />,
       showSearch: false,
     };
   }

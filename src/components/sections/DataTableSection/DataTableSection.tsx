@@ -386,6 +386,12 @@ export const DataTableSection = <
         ? "city"
         : filter.label === "رقم العملية"
         ? "operationNumber"
+        : filter.label === "كود العميل"
+        ? "clientCode"
+        : filter.label === "نوع العميل"
+        ? "clientType"
+        : filter.label === "نوع المركبة"
+        ? "vehicleType"
         : filter.label.toLowerCase().replace(/\s+/g, "");
     acc[key] = filter.value;
     return acc;
@@ -622,45 +628,62 @@ export const DataTableSection = <
 
         {/* RTLSelect Filters Section */}
         {filterOptions.length > 0 && (
-          <div className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
-            {filterOptions.map((filter, index) => (
-              <RTLSelect
-                key={index}
-                label={filter.label}
-                value={
-                  filters[
-                    filter.label === "نوع التقرير"
-                      ? "reportType"
-                      : filter.label === "اسم المنتج"
-                      ? "productName"
-                      : filter.label === "قائمة المحطات"
-                      ? "stationList"
-                      : filter.label === "المدينة"
-                      ? "city"
-                      : filter.label === "رقم العملية"
-                      ? "operationNumber"
-                      : filter.label.toLowerCase().replace(/\s+/g, "")
-                  ]
-                }
-                onChange={(value) =>
-                  handleFilterChange(
-                    filter.label === "نوع التقرير"
-                      ? "reportType"
-                      : filter.label === "اسم المنتج"
-                      ? "productName"
-                      : filter.label === "قائمة المحطات"
-                      ? "stationList"
-                      : filter.label === "المدينة"
-                      ? "city"
-                      : filter.label === "رقم العملية"
-                      ? "operationNumber"
-                      : filter.label.toLowerCase().replace(/\s+/g, ""),
-                    value
-                  )
-                }
-                options={filter.options}
-                placeholder={filter.value}
-              />
+          <div className="flex flex-col gap-4 relative self-stretch w-full flex-[0_0_auto]">
+            {Array.from({ length: Math.ceil(filterOptions.length / 5) }, (_, rowIndex) => (
+              <div key={rowIndex} className="flex items-center gap-[13px] relative self-stretch w-full flex-[0_0_auto]">
+                {filterOptions.slice(rowIndex * 5, (rowIndex + 1) * 5).map((filter, index) => (
+                  <div key={rowIndex * 5 + index} className="flex-1 min-w-0">
+                    <RTLSelect
+                      label={filter.label}
+                      value={
+                        filters[
+                          filter.label === "نوع التقرير"
+                            ? "reportType"
+                            : filter.label === "اسم المنتج"
+                            ? "productName"
+                            : filter.label === "قائمة المحطات"
+                            ? "stationList"
+                            : filter.label === "المدينة"
+                            ? "city"
+                            : filter.label === "رقم العملية"
+                            ? "operationNumber"
+                            : filter.label === "كود العميل"
+                            ? "clientCode"
+                            : filter.label === "نوع العميل"
+                            ? "clientType"
+                            : filter.label === "نوع المركبة"
+                            ? "vehicleType"
+                            : filter.label.toLowerCase().replace(/\s+/g, "")
+                        ]
+                      }
+                      onChange={(value) =>
+                        handleFilterChange(
+                          filter.label === "نوع التقرير"
+                            ? "reportType"
+                            : filter.label === "اسم المنتج"
+                            ? "productName"
+                            : filter.label === "قائمة المحطات"
+                            ? "stationList"
+                            : filter.label === "المدينة"
+                            ? "city"
+                            : filter.label === "رقم العملية"
+                            ? "operationNumber"
+                            : filter.label === "كود العميل"
+                            ? "clientCode"
+                            : filter.label === "نوع العميل"
+                            ? "clientType"
+                            : filter.label === "نوع المركبة"
+                            ? "vehicleType"
+                            : filter.label.toLowerCase().replace(/\s+/g, ""),
+                          value
+                        )
+                      }
+                      options={filter.options}
+                      placeholder={filter.value}
+                    />
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
         )}
@@ -668,22 +691,22 @@ export const DataTableSection = <
         <main className="flex flex-col items-start gap-7 relative self-stretch w-full flex-[0_0_auto]">
           <div className="flex flex-col items-end gap-[var(--corner-radius-large)] relative self-stretch w-full flex-[0_0_auto]">
             {/* Desktop Table View */}
-            <div className="hidden lg:block w-full">
+            <div className="hidden lg:block w-full overflow-x-auto">
               <Table
                 columns={enhancedColumns}
                 data={paginatedData}
-                className="relative self-stretch w-full flex-[0_0_auto]"
+                className="relative w-full flex-[0_0_auto]"
               />
             </div>
 
             {/* Tablet Responsive Table View */}
-            <div className="hidden md:block lg:hidden w-full">
+            <div className="hidden md:block lg:hidden w-full overflow-x-auto">
               <Table
                 columns={enhancedColumns.filter(
                   (col) => col.priority === "high" || col.priority === "medium"
                 )}
                 data={paginatedData}
-                className="relative self-stretch w-full  flex-[0_0_auto]"
+                className="relative w-full flex-[0_0_auto]"
               />
             </div>
 

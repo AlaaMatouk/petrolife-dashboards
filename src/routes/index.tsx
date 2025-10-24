@@ -63,6 +63,7 @@ import { Services } from "../components/AdminDashboard/pages/services/Services";
 import { ServiceDetails } from "../components/AdminDashboard/pages/services/ServiceDetails";
 import { AddService } from "../components/AdminDashboard/pages/services/AddService";
 import { AddChoice } from "../components/AdminDashboard/pages/services/AddChoice";
+import { FinancialReport } from "../components/AdminDashboard/pages/financial-report";
 
 // 404 Component
 const NotFound = () => (
@@ -128,9 +129,16 @@ export const AppRouter = () => {
           element={<ReceivedDeliveryRevision />}
         />
         <Route path={ROUTES.APPLICATION_SERVICES} element={<Services />} />
-        <Route path={ROUTES.APPLICATION_SERVICE_DETAILS} element={<ServiceDetails />} />
+        <Route
+          path={ROUTES.APPLICATION_SERVICE_DETAILS}
+          element={<ServiceDetails />}
+        />
         <Route path={ROUTES.ADD_SERVICE} element={<AddService />} />
         <Route path={ROUTES.ADD_CHOICE} element={<AddChoice />} />
+        <Route
+          path={ROUTES.ADMIN_FINANCIAL_REPORTS}
+          element={<FinancialReport />}
+        />
       </Route>
 
       {/* All Protected Routes with Layout Wrapper */}
