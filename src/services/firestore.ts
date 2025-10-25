@@ -12,8 +12,11 @@ import {
   arrayUnion,
   where,
   orderBy,
+  setDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { onAuthStateChanged } from "firebase/auth";
 import { db, auth, storage } from "../config/firebase";
 
 /**
@@ -206,12 +209,11 @@ export const fetchCompaniesDriversTransfer = async () => {
     }
 
     const userEmail = currentUser.email;
-    const userId = currentUser.uid;
 
     // console.log('ℹ️ CURRENT USER INFO:');
     // console.log('========================================');
     // console.log('Email:', userEmail);
-    // console.log('UID:', userId);
+    // console.log('UID:', currentUser.uid);
     // console.log('========================================\n');
 
     // if (allTransferData.length > 0) {
@@ -3360,6 +3362,67 @@ const uploadFileToStorage = async (
 };
 
 /**
+ * Parse Google Maps link to extract latitude and longitude
+ * Supports formats:
+ * - https://www.google.com/maps?q=24.620178,46.709404
+ * - https://maps.google.com/?q=24.620178,46.709404
+ * - https://goo.gl/maps/... (after redirect)
+ * @param googleMapsLink - Google Maps URL
+ * @returns Object with lat and lng, or null if parsing fails
+ */
+const parseGoogleMapsLink = (googleMapsLink: string): { lat: number; lng: number } | null => {
+  try {
+    if (!googleMapsLink || typeof googleMapsLink !== 'string') {
+      return null;
+    }
+
+    // Clean the URL
+    const url = googleMapsLink.trim();
+    
+    // Handle different Google Maps URL formats
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    // Format 1: https://www.google.com/maps?q=24.620178,46.709404
+    const qMatch = url.match(/[?&]q=([^&]+)/);
+    if (qMatch) {
+      const coords = qMatch[1].split(',');
+      if (coords.length === 2) {
+        lat = parseFloat(coords[0]);
+        lng = parseFloat(coords[1]);
+      }
+    }
+
+    // Format 2: https://maps.google.com/maps/@24.620178,46.709404,15z
+    const atMatch = url.match(/@([^,]+),([^,]+)/);
+    if (atMatch && !lat && !lng) {
+      lat = parseFloat(atMatch[1]);
+      lng = parseFloat(atMatch[2]);
+    }
+
+    // Format 3: https://www.google.com/maps/place/.../@24.620178,46.709404,15z
+    const placeMatch = url.match(/@([^,]+),([^,]+),/);
+    if (placeMatch && !lat && !lng) {
+      lat = parseFloat(placeMatch[1]);
+      lng = parseFloat(placeMatch[2]);
+    }
+
+    // Validate coordinates
+    if (lat !== null && lng !== null && 
+        !isNaN(lat) && !isNaN(lng) &&
+        lat >= -90 && lat <= 90 &&
+        lng >= -180 && lng <= 180) {
+      return { lat, lng };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error parsing Google Maps link:', error);
+    return null;
+  }
+};
+
+/**
  * Convert Arabic city name to city object with ID and bilingual names
  */
 const getCityObject = (
@@ -3725,6 +3788,17 @@ export interface AddCarData {
   plateLetters: string;
   plateNumbers: string;
   carCondition: string;
+}
+
+export interface AddStationData {
+  stationName: string;
+  email: string;
+  phone: string;
+  address: string;
+  location: string; // Google Maps link
+  secretNumber: string; // Password for Firebase Auth
+  selectedCategories: string[]; // Array of category IDs
+  categoryPrices: { [categoryId: string]: { price: number; companyPrice: number; desc: string } };
 }
 
 /**
@@ -4192,8 +4266,25 @@ export interface FuelStation {
     lng?: number;
     address?: {
       city?: string;
+      state?: string;
+      country?: string;
+      road?: string;
+      postcode?: string;
     };
+    options?: any[];
   };
+  // Additional fields from carstations collection
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  isActive?: boolean;
+  type?: string;
+  options?: any[];
+  balance?: number;
+  uId?: string;
+  createdDate?: any;
+  createdUserId?: string;
 }
 
 /**
@@ -4205,9 +4296,100 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
     console.log("📍 Fetching fuel stations from Firestore (carstations)...");
 
     const carStationsRef = collection(db, "carstations");
-    const q = query(carStationsRef, orderBy("createdDate", "desc"));
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(
+      carStationsRef
+    );
 
+    const fuelStations: FuelStation[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Extract location data from formattedLocation or direct fields
+      const formattedLocation = data.formattedLocation || {};
+      const stationName =
+        data.name || data.email || formattedLocation.name || "Unknown Station";
+      const cityName =
+        formattedLocation.address?.city ||
+        data.address?.city ||
+        data.city ||
+        "Unknown City";
+      const latitude = formattedLocation.lat || data.latitude || 0;
+      const longitude = formattedLocation.lng || data.longitude || 0;
+
+      // console.log(`Station ${doc.id}:`, {
+      //   name: stationName,
+      //   city: cityName,
+      //   lat: latitude,
+      //   lng: longitude,
+      //   hasFormattedLocation: !!data.formattedLocation,
+      //   phoneNumber: data.phoneNumber,
+      //   isActive: data.isActive,
+      // });
+
+      // Only add stations with valid coordinates
+      if (latitude !== 0 && longitude !== 0) {
+        fuelStations.push({
+          id: doc.id,
+          stationName,
+          cityName,
+          latitude,
+          longitude,
+          formattedLocation: data.formattedLocation,
+          // Include all additional fields from the document
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          isActive: data.isActive,
+          type: data.type,
+          options: data.options,
+          balance: data.balance,
+          uId: data.uId,
+          createdDate: data.createdDate,
+          createdUserId: data.createdUserId,
+        });
+      }
+    });
+
+    console.log(
+      `✅ Fetched ${fuelStations.length} fuel stations with valid coordinates from carstations collection`
+    );
+
+    return fuelStations;
+  } catch (error) {
+    console.error("❌ Error fetching fuel stations:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch fuel stations filtered by current user's email
+ * Only returns stations where createdUserId matches current user's email
+ * @returns Promise with array of user's fuel stations
+ */
+export const fetchUserFuelStations = async (): Promise<FuelStation[]> => {
+  try {
+    console.log("📍 Fetching user's fuel stations from Firestore...");
+    
+    // Get current user
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) {
+      console.log("⚠️ No authenticated user found");
+      return [];
+    }
+    
+    const userEmail = currentUser.email;
+    console.log("👤 Current user email:", userEmail);
+
+    // Query with filter at Firestore level
+    const carStationsRef = collection(db, "carstations");
+    const q = query(
+      carStationsRef,
+      where("createdUserId", "==", userEmail)
+    );
+    
+    const querySnapshot = await getDocs(q);
     const fuelStations: FuelStation[] = [];
 
     querySnapshot.forEach((doc) => {
@@ -4231,6 +4413,9 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
         lat: latitude,
         lng: longitude,
         hasFormattedLocation: !!data.formattedLocation,
+        phoneNumber: data.phoneNumber,
+        isActive: data.isActive,
+        createdUserId: data.createdUserId,
       });
 
       // Only add stations with valid coordinates
@@ -4242,17 +4427,29 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
           latitude,
           longitude,
           formattedLocation: data.formattedLocation,
+          // Include all additional fields from the document
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          isActive: data.isActive,
+          type: data.type,
+          options: data.options,
+          balance: data.balance,
+          uId: data.uId,
+          createdDate: data.createdDate,
+          createdUserId: data.createdUserId,
         });
       }
     });
 
     console.log(
-      `✅ Fetched ${fuelStations.length} fuel stations with valid coordinates from carstations collection`
+      `✅ Fetched ${fuelStations.length} fuel stations for user ${userEmail}`
     );
 
     return fuelStations;
   } catch (error) {
-    console.error("❌ Error fetching fuel stations:", error);
+    console.error("❌ Error fetching user fuel stations:", error);
     throw error;
   }
 };
@@ -4262,6 +4459,228 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
  * Filtered by current user's company
  * @returns Promise with array of invoice data
  */
+/**
+ * Fetch fuel categories from Firestore categories collection
+ * Filters by parentId to get fuel subcategories
+ * @returns Promise with array of fuel category options
+ */
+export const fetchFuelCategories = async (): Promise<any[]> => {
+  try {
+    console.log("🔍 Fetching fuel categories from Firestore...");
+    
+    const categoriesRef = collection(db, "categories");
+    const q = query(categoriesRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
+    
+    const categories: any[] = [];
+    querySnapshot.forEach((doc) => {
+      categories.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+    
+    console.log(`✅ Fetched ${categories.length} categories from Firestore`);
+    return categories;
+  } catch (error) {
+    console.error("❌ Error fetching fuel categories:", error);
+    throw error;
+  }
+};
+
+/**
+ * Add a new car station to Firestore carstations collection
+ * 1. Creates Firebase Auth account for station
+ * 2. Parses location data from Google Maps link
+ * 3. Fetches selected categories with full details
+ * 4. Saves complete station document
+ * @param stationData - Station form data
+ * @returns Promise with the created station document
+ */
+export const addCarStation = async (stationData: AddStationData) => {
+  try {
+    console.log("🏪 Adding new car station via Cloud Function...");
+    console.log("Station data:", stationData);
+
+    // 1. Get current user (service distributer) - stays logged in!
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+    const serviceDistributerEmail = currentUser.email;
+    console.log("👤 Service distributer email:", serviceDistributerEmail);
+
+    // 2. Parse Google Maps link to get lat/lng
+    console.log("📍 Parsing Google Maps location...");
+    const coordinates = parseGoogleMapsLink(stationData.location);
+    if (!coordinates) {
+      throw new Error("Invalid Google Maps link format. Please provide a valid Google Maps URL with coordinates.");
+    }
+    console.log("✅ Coordinates parsed:", coordinates);
+
+    // 3. Fetch full category details for selected categories
+    console.log("🔍 Fetching category details...");
+    const allCategories = await fetchFuelCategories();
+    const selectedCategoryDetails = allCategories.filter(category => 
+      stationData.selectedCategories.includes(category.id)
+    );
+    
+    if (selectedCategoryDetails.length === 0) {
+      throw new Error("No valid categories found for selected category IDs");
+    }
+    console.log(`✅ Found ${selectedCategoryDetails.length} category details`);
+
+    // 4. Build formattedLocation object
+    const formattedLocation = {
+      lat: coordinates.lat,
+      lng: coordinates.lng,
+      name: stationData.address,
+      address: {
+        city: stationData.address.split(',')[0] || stationData.address,
+        country: "Saudi Arabia",
+        road: stationData.address,
+        postcode: "",
+        state: "",
+        stateDistrict: "",
+        countryCode: "SA"
+      },
+      placeId: "",
+      id: stationData.email,
+      addresstype: "",
+      category: "",
+      display_name: stationData.address,
+      extratags: {},
+      importance: 0,
+      licence: "",
+      namedetails: {},
+      osm_id: 0,
+      osm_type: "",
+      place_rank: 30
+    };
+
+    // 5. Build options array from categories
+    const options = selectedCategoryDetails.map(category => {
+      const priceData = stationData.categoryPrices[category.id] || {
+        price: 0,
+        companyPrice: 0,
+        desc: ""
+      };
+
+      return {
+        categoryId: category.id,
+        categoryName: {
+          ar: category.name?.ar || category.label || "",
+          en: category.name?.en || category.label || ""
+        },
+        categoryParentId: category.parentId || category.id,
+        companyPrice: priceData.companyPrice,
+        desc: {
+          ar: priceData.desc,
+          en: priceData.desc
+        },
+        price: priceData.price,
+        refId: category.refId || "",
+        title: {
+          ar: category.name?.ar || category.label || "",
+          en: category.name?.en || category.label || ""
+        }
+      };
+    });
+
+    // 6. Prepare station document
+    const stationDocument = {
+      name: stationData.stationName,
+      email: stationData.email,
+      phoneNumber: stationData.phone,
+      address: stationData.address,
+      formattedLocation: formattedLocation,
+      options: options,
+      createdUserId: serviceDistributerEmail,
+      createdDate: serverTimestamp(),
+      balance: 0,
+      isActive: true,
+      type: "carStation",
+      tokens: [],
+      commercialRegistration: "",
+      taxCertificate: "",
+      location: null,
+      status: "approved"
+    };
+
+    console.log("📄 Station document prepared:", stationDocument);
+
+    // 6. Call Cloud Function to create Firebase Auth account via HTTP
+    console.log("☁️ Creating Firebase Auth account via Cloud Function...");
+    const idToken = await currentUser.getIdToken();
+    
+    const requestData = {
+      email: stationData.email,
+      password: stationData.secretNumber,
+      display_name: stationData.stationName,
+      user_type: "station",
+      phone_number: stationData.phone,
+      photo_url: ""
+    };
+
+    const response = await fetch('https://us-central1-car-station-6393f.cloudfunctions.net/createUserFunction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${result.message || 'Unknown error'}`);
+    }
+
+    const stationUid = result.data.uid;
+    console.log("✅ Firebase Auth account created:", stationUid);
+
+    // 7. Add UID to station document
+    const stationDocumentWithUid = {
+      ...stationDocument,
+      uId: stationUid
+    };
+
+    console.log("📄 Station document prepared:", stationDocumentWithUid);
+
+    // 8. Add to carstations collection using email as document ID
+    console.log("💾 Adding station document to carstations collection...");
+    const stationDocRef = doc(db, "carstations", stationData.email);
+    await setDoc(stationDocRef, stationDocumentWithUid);
+    console.log("✅ Station document added to carstations collection");
+
+    return {
+      id: stationData.email,
+      ...stationDocumentWithUid,
+      uId: stationUid
+    };
+
+  } catch (error) {
+    console.error("❌ Error creating station:", error);
+    
+    // Provide user-friendly error messages
+    if (error instanceof Error) {
+      if (error.message.includes("email-already-in-use")) {
+        throw new Error("This email is already registered. Please use a different email address.");
+      } else if (error.message.includes("weak-password")) {
+        throw new Error("Password is too weak. Please choose a stronger password.");
+      } else if (error.message.includes("invalid-email")) {
+        throw new Error("Invalid email format. Please enter a valid email address.");
+      } else if (error.message.includes("Google Maps")) {
+        throw error; // Re-throw location parsing errors as-is
+      }
+
+    }
+    
+    throw error;
+  }
+};
+
 export const fetchInvoices = async (): Promise<any[]> => {
   try {
     console.log("📄 Fetching invoices from Firestore...");
@@ -4319,12 +4738,11 @@ export const fetchInvoices = async (): Promise<any[]> => {
         try {
           const dateObj = date.toDate ? date.toDate() : new Date(date);
           const day = String(dateObj.getDate()).padStart(2, "0");
-          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
           const year = dateObj.getFullYear();
-          const hours = String(dateObj.getHours()).padStart(2, "0");
+          const hoursNum = dateObj.getHours();
           const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-          const ampm = hours >= 12 ? "م" : "ص";
-          const displayHours = hours % 12 || 12;
+          const ampm = hoursNum >= 12 ? "م" : "ص";
+          const displayHours = hoursNum % 12 || 12;
 
           const monthNames = [
             "يناير",
@@ -5035,3 +5453,383 @@ export const fetchStationsCompanyRequests = async (): Promise<
     throw error;
   }
 };
+
+export const fetchFuelStationRequests = async (currentUserEmail: string): Promise<any[]> => {
+  try {
+    console.log("⛽ Fetching fuel station requests from Firestore...");
+
+    if (!currentUserEmail) {
+      console.log("❌ No user email provided.");
+      return [];
+    }
+
+    // Fetch stationscompany-orders collection
+    const ordersRef = collection(db, "stationscompany-orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    const allOrders: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrders.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total orders found:", allOrders.length);
+
+    // Filter orders by current user (service distributer)
+    // Check if carStation.createdUserId matches current user's email
+    const filteredOrders = allOrders.filter((order) => {
+      const carStationCreatedUserId = order.carStation?.createdUserId;
+      
+      const match = carStationCreatedUserId && 
+        carStationCreatedUserId.toLowerCase() === currentUserEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered orders for current user:", filteredOrders.length);
+
+    // Transform orders to match the FuelStationRequest interface
+    const transformedOrders = filteredOrders.map((order) => {
+      // Format date
+      const formatDate = (date: any): string => {
+        if (!date) return "غير محدد";
+        try {
+          const dateObj = date.toDate ? date.toDate() : new Date(date);
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          const year = dateObj.getFullYear();
+          const hoursNum = dateObj.getHours();
+          const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+          const ampm = hoursNum >= 12 ? "م" : "ص";
+          const displayHours = hoursNum % 12 || 12;
+
+          const monthNames = [
+            "يناير",
+            "فبراير",
+            "مارس",
+            "أبريل",
+            "مايو",
+            "يونيو",
+            "يوليو",
+            "أغسطس",
+            "سبتمبر",
+            "أكتوبر",
+            "نوفمبر",
+            "ديسمبر",
+          ];
+
+          return `${day} ${
+            monthNames[dateObj.getMonth()]
+          } ${year} - ${displayHours}:${minutes} ${ampm}`;
+        } catch (error) {
+          return "غير محدد";
+        }
+      };
+
+      return {
+        id: order.id,
+        transactionNumber: order.refId || order.refDocId || order.id,
+        stationName: order.carStation?.name || "غير محدد",
+        clientName: order.client?.name || "غير محدد",
+        workerName: order.fuelStationsWorker?.name || "غير محدد",
+        fuelType: order.selectedOption?.title?.ar || order.selectedOption?.desc?.ar || "غير محدد",
+        totalLiters: order.totalLitre?.toString() || "0",
+        creationDate: formatDate(order.orderDate),
+        rawDate: order.orderDate,
+        // Keep original order data for calculations
+        originalOrder: order,
+      };
+    });
+
+    console.log("✅ Fuel station requests transformed:", transformedOrders.length);
+
+    return transformedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching fuel station requests:", error);
+    throw error;
+  }
+};
+
+/**
+ * Wait for auth state to be initialized
+ * @returns Promise with current user or null
+ */
+const waitForAuthState = (): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    // If user is already available, return immediately
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+
+    // Otherwise, wait for auth state change
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe(); // Clean up listener
+      if (user) {
+        resolve(user);
+      } else {
+        reject(new Error("No authenticated user found"));
+      }
+    });
+  });
+};
+
+/**
+ * Fetch service distributer statistics
+ * Calculates fuel cost, total liters, unique clients, unique workers, and station count
+ * @returns Promise with statistics data
+ */
+export const fetchServiceDistributerStatistics = async (): Promise<{
+  fuelCost: { total: number; breakdown: Array<{ type: string; amount: number; color: string }> };
+  totalLiters: { total: number; breakdown: Array<{ type: string; amount: number; color: string }> };
+  uniqueClients: number;
+  uniqueWorkers: number;
+  totalStations: number;
+}> => {
+  try {
+    console.log("\n📊 ========================================");
+    console.log("CALCULATING SERVICE DISTRIBUTER STATISTICS");
+    console.log("========================================\n");
+
+    // Wait for auth state to be ready
+    console.log("⏳ Waiting for auth state...");
+    const currentUser = await waitForAuthState();
+    console.log("✅ Auth state ready, current user:", currentUser.email);
+    
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+
+    const currentUserEmail = currentUser.email;
+    console.log("👤 Current user email:", currentUserEmail);
+
+    // Fetch all required data in parallel
+    const [orders, stations] = await Promise.all([
+      fetchFuelStationRequests(currentUserEmail),
+      fetchFuelStations(),
+    ]);
+
+    console.log(`📦 Total orders: ${orders.length}`);
+    console.log(`🏪 Total stations: ${stations.length}`);
+
+    // Filter stations by createdUserId
+    const userStations = stations.filter((station) => {
+      const createdUserId = station.createdUserId || "";
+      return createdUserId.toLowerCase() === currentUserEmail.toLowerCase();
+    });
+    console.log(`🏪 User stations: ${userStations.length}`);
+
+    // Initialize fuel type maps
+    const fuelCostMap: { [key: string]: number } = {
+      ديزل: 0,
+      "بنزين 95": 0,
+      "بنزين 91": 0,
+    };
+
+    const totalLitersMap: { [key: string]: number } = {
+      ديزل: 0,
+      "بنزين 95": 0,
+      "بنزين 91": 0,
+    };
+
+    // Track unique clients and workers
+    const uniqueClientsSet = new Set<string>();
+    const uniqueWorkersSet = new Set<string>();
+
+    // Process each order
+    orders.forEach((order, index) => {
+      const originalOrder = order.originalOrder || {};
+
+      // Extract fuel type
+      const fuelTypeAr = originalOrder.selectedOption?.title?.ar || "";
+      const fuelTypeEn = originalOrder.selectedOption?.title?.en || "";
+
+      // Map fuel type to standard categories
+      let mappedType = "";
+      if (
+        fuelTypeAr.includes("ديزل") ||
+        fuelTypeEn.toLowerCase().includes("diesel")
+      ) {
+        mappedType = "ديزل";
+      } else if (
+        fuelTypeAr.includes("95") ||
+        fuelTypeEn.includes("95")
+      ) {
+        mappedType = "بنزين 95";
+      } else if (
+        fuelTypeAr.includes("91") ||
+        fuelTypeEn.includes("91")
+      ) {
+        mappedType = "بنزين 91";
+      }
+
+      if (mappedType && (fuelCostMap.hasOwnProperty(mappedType) || totalLitersMap.hasOwnProperty(mappedType))) {
+        // Calculate cost
+        const cost = parseFloat(originalOrder.totalPrice) || 0;
+        fuelCostMap[mappedType] += cost;
+
+        // Calculate liters
+        const liters = parseFloat(originalOrder.totalLitre) || 0;
+        totalLitersMap[mappedType] += liters;
+      }
+
+      // Track unique clients
+      if (originalOrder.client?.email) {
+        uniqueClientsSet.add(originalOrder.client.email);
+      }
+
+      // Track unique workers
+      if (originalOrder.fuelStationsWorker?.email) {
+        uniqueWorkersSet.add(originalOrder.fuelStationsWorker.email);
+      }
+    });
+
+    // Build breakdown arrays with colors
+    const colorMap: { [key: string]: string } = {
+      ديزل: "text-color-mode-text-icons-t-orange",
+      "بنزين 95": "text-color-mode-text-icons-t-red",
+      "بنزين 91": "text-color-mode-text-icons-t-green",
+    };
+
+    const fuelCostBreakdown = Object.entries(fuelCostMap).map(([type, amount]) => ({
+      type,
+      amount: Math.round(amount * 100) / 100, // Round to 2 decimal places
+      color: colorMap[type],
+    }));
+
+    const totalLitersBreakdown = Object.entries(totalLitersMap).map(([type, amount]) => ({
+      type,
+      amount: Math.round(amount * 100) / 100,
+      color: colorMap[type],
+    }));
+
+    const totalFuelCost = Object.values(fuelCostMap).reduce((sum, val) => sum + val, 0);
+    const totalLitersTotal = Object.values(totalLitersMap).reduce((sum, val) => sum + val, 0);
+
+    const result = {
+      fuelCost: {
+        total: Math.round(totalFuelCost * 100) / 100,
+        breakdown: fuelCostBreakdown,
+      },
+      totalLiters: {
+        total: Math.round(totalLitersTotal * 100) / 100,
+        breakdown: totalLitersBreakdown,
+      },
+      uniqueClients: uniqueClientsSet.size,
+      uniqueWorkers: uniqueWorkersSet.size,
+      totalStations: userStations.length,
+    };
+
+    console.log("\n📊 SERVICE DISTRIBUTER STATISTICS:");
+    console.log("=====================================");
+    console.log("Fuel Cost:", result.fuelCost);
+    console.log("Total Liters:", result.totalLiters);
+    console.log("Unique Clients:", result.uniqueClients);
+    console.log("Unique Workers:", result.uniqueWorkers);
+    console.log("Total Stations:", result.totalStations);
+    console.log("=====================================\n");
+
+    return result;
+  } catch (error) {
+    console.error("❌ Error calculating service distributer statistics:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch service distributer financial reports from stationscompany-orders collection
+ * Filters by carStation.createdUserId matching current user's email
+ * @returns Promise with array of financial report data
+ */
+export const fetchServiceDistributerFinancialReports = async (): Promise<any[]> => {
+  try {
+    console.log("📊 Fetching service distributer financial reports from stationscompany-orders...");
+
+    // Wait for auth state to be ready
+    console.log("⏳ Waiting for auth state...");
+    const currentUser = await waitForAuthState();
+    console.log("✅ Auth state ready, current user:", currentUser.email);
+    
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+
+    const currentUserEmail = currentUser.email;
+
+    // ⚠️ NOTE: Firestore doesn't support querying nested fields like "carStation.createdUserId"
+    // We have to fetch all orders and filter client-side
+    // This is a known limitation of Firestore queries
+    const ordersRef = collection(db, "stationscompany-orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allOrders: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrders.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total orders found:", allOrders.length);
+
+    // Filter orders by current user (service distributer)
+    // Check if carStation.createdUserId matches current user's email
+    const filteredOrders = allOrders.filter((order) => {
+      const carStationCreatedUserId = order.carStation?.createdUserId;
+      
+      const match = carStationCreatedUserId && 
+        carStationCreatedUserId.toLowerCase() === currentUserEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered orders for current user:", filteredOrders.length);
+    console.log(`📊 Efficiency: Fetched ${allOrders.length} orders, filtered to ${filteredOrders.length} (${filteredOrders.length > 0 ? Math.round((filteredOrders.length / allOrders.length) * 100) : 0}% match rate)`);
+
+    // Transform orders to financial report format
+    const financialReports = filteredOrders.map((order) => {
+      // Extract values from selectedOption
+      const selectedOption = order.selectedOption || {};
+      
+      return {
+        id: order.id || Date.now().toString(),
+        // نوع المنتج (Product Type) - from selectedOption.categoryName
+        productType: selectedOption.categoryName?.ar || selectedOption.categoryName?.en || "غير محدد",
+        
+        // رقم المنتج (Product Number) - from selectedOption.refId
+        productNumber: selectedOption.refId || "-",
+        
+        // اسم المنتج (Product Name) - from selectedOption.title
+        productName: selectedOption.title?.ar || selectedOption.title?.en || "-",
+        
+        // الكمية (Quantity) - from totalLitre
+        quantity: order.totalLitre?.toString() || "0",
+        
+        // القيمة (ر.س) (Value) - from selectedOption.price
+        value: selectedOption.price?.toString() || "0",
+        
+        // الوحدة (Unit)
+        unit: "لتر",
+        
+        // رقم العملية (Operation Number) - from refId
+        operationNumber: order.refId || order.refDocId || order.id || "-",
+        
+        // Keep original order for reference
+        originalOrder: order,
+      };
+    });
+
+    console.log("✅ Service distributer financial reports transformed:", financialReports.length);
+
+    return financialReports;
+  } catch (error) {
+    console.error("❌ Error fetching service distributer financial reports:", error);
+    throw error;
+  }
+};
+
