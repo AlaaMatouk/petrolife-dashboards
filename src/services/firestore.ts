@@ -413,6 +413,275 @@ export const fetchOrders = async () => {
 };
 
 /**
+ * Fetch orders data for a specific company from Firestore orders collection
+ * Filtered by companyUid matching the provided company ID or email
+ * Enriched with driver data from companies-drivers collection
+ * @param companyId - The company ID or email to filter orders by
+ * @returns Promise with filtered and enriched orders data for the specific company
+ */
+export const fetchOrdersForCompany = async (companyId: string) => {
+  try {
+    console.log("\n🔄 ========================================");
+    console.log("📊 FETCHING ORDERS DATA FOR COMPANY:", companyId);
+    console.log("========================================");
+
+    const ordersRef = collection(db, "orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    const allOrdersData: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrdersData.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("✅ DATA FETCHED SUCCESSFULLY!");
+    console.log(`📌 Total Documents Found: ${allOrdersData.length}`);
+
+    // Filter orders where companyUid matches the provided company ID or email
+    const filteredOrders = allOrdersData.filter((order) => {
+      const companyUid = order.companyUid;
+
+      // Check if companyUid matches the provided company ID
+      const idMatch = companyUid && companyId && companyUid === companyId;
+
+      // Check if companyUid matches the provided company email
+      const emailMatch =
+        companyUid &&
+        companyId &&
+        companyUid.toLowerCase() === companyId.toLowerCase();
+
+      return idMatch || emailMatch;
+    });
+
+    console.log("✅ FILTERED ORDERS DATA:");
+    console.log(
+      `📌 Total Orders for Company ${companyId}:`,
+      filteredOrders.length
+    );
+
+    if (filteredOrders.length > 0) {
+      console.log("\n📋 Sample Filtered Order:");
+      console.log("Address Check:");
+      console.log("- city:", filteredOrders[0].city);
+      console.log("- city.name:", filteredOrders[0].city?.name);
+      console.log("- city.name.ar:", filteredOrders[0].city?.name?.ar);
+      console.log("- city.name.en:", filteredOrders[0].city?.name?.en);
+      console.log("- address field:", filteredOrders[0].address);
+    }
+
+    // Enrich orders with driver data
+    const enrichedOrders = await Promise.all(
+      filteredOrders.map(async (order) => {
+        let driverPhone = "-";
+        let driverName = "-";
+
+        // Get driver email from assignedDriver
+        const driverEmail = order.assignedDriver?.email;
+
+        if (driverEmail) {
+          try {
+            // Fetch driver data from companies-drivers by email
+            const driversRef = collection(db, "companies-drivers");
+            const driverQuery = query(
+              driversRef,
+              where("email", "==", driverEmail)
+            );
+            const driverSnapshot = await getDocs(driverQuery);
+
+            if (!driverSnapshot.empty) {
+              const driverData = driverSnapshot.docs[0].data();
+              driverPhone = driverData.phoneNumber || driverData.phone || "-";
+              driverName = driverData.name || "-";
+            }
+          } catch (err) {
+            console.error(
+              "Error fetching driver data for order:",
+              order.id,
+              err
+            );
+          }
+        }
+
+        return {
+          ...order,
+          enrichedDriverName: driverName,
+          enrichedDriverPhone: driverPhone,
+        };
+      })
+    );
+
+    console.log("✅ ENRICHED ORDERS DATA:");
+    console.log(`📌 Total Enriched Orders: ${enrichedOrders.length}`);
+
+    return enrichedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching orders data for company:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch orders data for a specific client from Firestore orders collection
+ * Filtered by clientId or clientEmail matching the provided client identifier
+ * @param clientId - The client ID or email to filter orders by
+ * @returns Promise with filtered and enriched orders data for the specific client
+ */
+export const fetchOrdersForClient = async (clientId: string) => {
+  try {
+    console.log("\n🔄 ========================================");
+    console.log("FETCHING ORDERS FOR CLIENT:", clientId);
+    console.log("========================================");
+
+    const ordersRef = collection(db, "orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    console.log(`📊 Orders query snapshot size: ${querySnapshot.size}`);
+    console.log(`📊 Orders query snapshot empty: ${querySnapshot.empty}`);
+
+    const allOrdersData: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const orderData = {
+        id: doc.id,
+        ...doc.data(),
+      };
+      allOrdersData.push(orderData);
+
+      // Log first few orders for debugging
+      if (allOrdersData.length <= 3) {
+        console.log(`\n📦 Order ${allOrdersData.length}:`);
+        console.log(`  - ID: ${orderData.id}`);
+        console.log(`  - ClientId: ${orderData.clientId || "N/A"}`);
+        console.log(`  - ClientEmail: ${orderData.clientEmail || "N/A"}`);
+        console.log(`  - CompanyUid: ${orderData.companyUid || "N/A"}`);
+        console.log(`  - TotalPrice: ${orderData.totalPrice || "N/A"}`);
+        console.log(`  - OrderDate: ${orderData.orderDate || "N/A"}`);
+      }
+    });
+
+    console.log("✅ ORDERS DATA FETCHED SUCCESSFULLY!");
+    console.log(`📌 Total Orders Found: ${allOrdersData.length}`);
+
+    // Filter orders where client.email matches the provided client email
+    const filteredOrders = allOrdersData.filter((order) => {
+      const orderClientEmail = order.client?.email || order.clientEmail;
+      const orderClientId = order.clientId;
+      const orderCompanyUid = order.companyUid;
+
+      // Primary filter: Check if client.email matches the provided clientId (which should be email)
+      const emailMatch =
+        orderClientEmail && clientId && orderClientEmail === clientId;
+
+      // Fallback filters for other possible identifiers
+      const idMatch = orderClientId && clientId && orderClientId === clientId;
+      const uidMatch =
+        orderCompanyUid && clientId && orderCompanyUid === clientId;
+
+      const matches = emailMatch || idMatch || uidMatch;
+
+      if (matches) {
+        console.log(`\n✅ MATCHING ORDER FOUND:`);
+        console.log(`  - Order ID: ${order.id}`);
+        console.log(`  - Client Email: ${orderClientEmail}`);
+        console.log(`  - ClientId: ${orderClientId}`);
+        console.log(`  - CompanyUid: ${orderCompanyUid}`);
+        console.log(`  - TotalPrice: ${order.totalPrice}`);
+        console.log(
+          `  - Match Type: ${emailMatch ? "EMAIL" : idMatch ? "ID" : "UID"}`
+        );
+      }
+
+      return matches;
+    });
+
+    console.log(
+      `\n📌 FILTERED ORDERS FOR CLIENT ${clientId}: ${filteredOrders.length}`
+    );
+
+    if (filteredOrders.length === 0) {
+      console.log("⚠️ WARNING: No orders found for this client!");
+      console.log("🔍 Available client identifiers in orders:");
+
+      // Check different possible email field locations
+      const uniqueClientEmailsFromClient = [
+        ...new Set(allOrdersData.map((o) => o.client?.email).filter(Boolean)),
+      ];
+      const uniqueClientEmailsDirect = [
+        ...new Set(allOrdersData.map((o) => o.clientEmail).filter(Boolean)),
+      ];
+      const uniqueClientIds = [
+        ...new Set(allOrdersData.map((o) => o.clientId).filter(Boolean)),
+      ];
+      const uniqueCompanyUids = [
+        ...new Set(allOrdersData.map((o) => o.companyUid).filter(Boolean)),
+      ];
+
+      console.log(
+        "  - Client Emails (client.email):",
+        uniqueClientEmailsFromClient.slice(0, 5)
+      );
+      console.log(
+        "  - Client Emails (clientEmail):",
+        uniqueClientEmailsDirect.slice(0, 5)
+      );
+      console.log("  - ClientIds:", uniqueClientIds.slice(0, 5));
+      console.log("  - CompanyUids:", uniqueCompanyUids.slice(0, 5));
+      console.log(`  - Searching for: "${clientId}"`);
+    }
+
+    // Enrich orders with driver data
+    const enrichedOrders = await Promise.all(
+      filteredOrders.map(async (order) => {
+        let driverPhone = "-";
+        let driverName = "-";
+
+        // Get driver email from assignedDriver
+        const driverEmail = order.assignedDriver?.email;
+
+        if (driverEmail) {
+          try {
+            // Query companies-drivers collection for driver info
+            const driversRef = collection(db, "companies-drivers");
+            const driverQuery = query(
+              driversRef,
+              where("email", "==", driverEmail)
+            );
+            const driverSnapshot = await getDocs(driverQuery);
+
+            if (!driverSnapshot.empty) {
+              const driverDoc = driverSnapshot.docs[0];
+              const driverData = driverDoc.data();
+              driverName = driverData.name || "-";
+              driverPhone = driverData.phone || "-";
+            }
+          } catch (driverError) {
+            console.warn("⚠️ Error fetching driver data:", driverError);
+          }
+        }
+
+        return {
+          ...order,
+          driverName,
+          driverPhone,
+        };
+      })
+    );
+
+    console.log(`📌 Total Enriched Orders: ${enrichedOrders.length}`);
+
+    return enrichedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching orders data for client:", error);
+    throw error;
+  }
+};
+
+/**
  * Create a new delivery order in Firestore
  * @param orderData - Order form data
  * @returns Promise with the created order document
@@ -1920,7 +2189,8 @@ export const fetchUserSubscriptions = async (): Promise<any[]> => {
     // Query by company.email (nested field)
     const q = query(
       subscriptionsCollection,
-      where("company.email", "==", companyEmail)
+      where("company.email", "==", companyEmail),
+      orderBy("createdDate", "desc")
     );
     const subscriptionsSnapshot = await getDocs(q);
 
@@ -2087,7 +2357,8 @@ export const fetchServices = async (): Promise<any[]> => {
     console.log("📋 Fetching services from Firestore...");
 
     const servicesCollection = collection(db, "services");
-    const servicesSnapshot = await getDocs(servicesCollection);
+    const q = query(servicesCollection, orderBy("createdDate", "desc"));
+    const servicesSnapshot = await getDocs(q);
 
     const services = servicesSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -2162,6 +2433,81 @@ export const fetchWalletChargeRequests = async () => {
     return enrichedRequests;
   } catch (error) {
     console.error("❌ Error fetching wallet charge requests:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch admin wallet reports data from wallets-requests collection
+ * @returns Promise with admin wallet reports data
+ */
+export const fetchAdminWalletReports = async () => {
+  try {
+    console.log("\n🔄 Fetching admin wallet reports from wallets-requests...");
+
+    const requestsRef = collection(db, "wallets-requests");
+    const q = query(requestsRef, orderBy("actionDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    const allRequestsData: any[] = [];
+
+    // Helper function to format Firestore timestamp
+    const formatDate = (timestamp: any): string => {
+      if (!timestamp) return "-";
+
+      try {
+        if (timestamp.toDate && typeof timestamp.toDate === "function") {
+          return new Date(timestamp.toDate()).toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        if (timestamp instanceof Date) {
+          return timestamp.toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        return new Date(timestamp).toLocaleString("ar-EG", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (error) {
+        return String(timestamp);
+      }
+    };
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      allRequestsData.push({
+        id: doc.id, // رقم العملية
+        date: formatDate(data.actionDate), // التاريخ (formatted)
+        clientType: data.requestedUser?.type || "-", // نوع العميل
+        clientName: data.requestedUser?.name || "-", // اسم العميل
+        operationNumber: doc.id, // رقم العملية (document ID)
+        operationType: "-", // نوع العملية (leave as "-" for now)
+        debit: data.value || "-", // مدين
+        credit: "-", // دائن (leave as "-" for now)
+        balance: data.requestedUser?.balance || "-", // الرصيد (ر.س)
+        rawDate: data.actionDate, // Store raw date for sorting
+      });
+    });
+
+    console.log(
+      `✅ Total admin wallet reports found: ${allRequestsData.length}`
+    );
+    return allRequestsData;
+  } catch (error) {
+    console.error("❌ Error fetching admin wallet reports:", error);
     throw error;
   }
 };
@@ -2305,24 +2651,48 @@ export const fetchCurrentCompany = async (): Promise<any> => {
  */
 export const fetchAllClients = async (): Promise<any[]> => {
   try {
-    console.log("\n👥 Fetching ALL clients data from Firestore...");
+    console.log("\n👥 ========================================");
+    console.log("FETCHING ALL CLIENTS DATA FROM FIRESTORE");
+    console.log("========================================");
 
     const clientsRef = collection(db, "clients");
-    const querySnapshot = await getDocs(clientsRef);
+    const q = query(clientsRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    console.log(`📊 Query snapshot size: ${querySnapshot.size}`);
+    console.log(`📊 Query snapshot empty: ${querySnapshot.empty}`);
 
     const clientsData: any[] = [];
 
     querySnapshot.forEach((doc) => {
-      clientsData.push({
+      const clientData = {
         id: doc.id,
         ...doc.data(),
-      });
+      };
+      clientsData.push(clientData);
+
+      // Log each client's key fields
+      console.log(`\n👤 Client ${clientsData.length}:`);
+      console.log(`  - ID: ${clientData.id}`);
+      console.log(`  - Name: ${clientData.name || "N/A"}`);
+      console.log(`  - Email: ${clientData.email || "N/A"}`);
+      console.log(`  - Phone: ${clientData.phoneNumber || "N/A"}`);
+      console.log(`  - UID: ${clientData.uid || "N/A"}`);
+      console.log(`  - IsActive: ${clientData.isActive}`);
+      console.log(`  - CreatedDate: ${clientData.createdDate || "N/A"}`);
     });
 
-    console.log(`✅ Fetched ${clientsData.length} clients`);
+    console.log(`\n✅ TOTAL CLIENTS FETCHED: ${clientsData.length}`);
+
+    if (clientsData.length === 0) {
+      console.log("⚠️ WARNING: No clients found in the collection!");
+      console.log("🔍 Checking if 'clients' collection exists...");
+    }
+
     return clientsData;
   } catch (error) {
     console.error("❌ Error fetching all clients:", error);
+    console.error("Error details:", error);
     throw error;
   }
 };
@@ -2611,7 +2981,8 @@ export const fetchSupervisorsFromUsers = async (): Promise<any[]> => {
     console.log("====================================");
 
     const usersRef = collection(db, "users");
-    const querySnapshot = await getDocs(usersRef);
+    const q = query(usersRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
 
     const supervisors: any[] = [];
 
@@ -2659,7 +3030,9 @@ export const fetchAllCompaniesWithCounts = async (): Promise<any[]> => {
     // Fetch companies, cars, and drivers in parallel
     const [companiesSnapshot, carsSnapshot, driversSnapshot] =
       await Promise.all([
-        getDocs(collection(db, "companies")),
+        getDocs(
+          query(collection(db, "companies"), orderBy("createdDate", "desc"))
+        ),
         getDocs(collection(db, "companies-cars")),
         getDocs(collection(db, "companies-drivers")),
       ]);
@@ -4414,6 +4787,669 @@ export const fetchInvoices = async (): Promise<any[]> => {
     return transformedInvoices;
   } catch (error) {
     console.error("❌ Error fetching invoices:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch comprehensive statistics for a specific company
+ * @param companyId - The ID of the company to get statistics for
+ * @returns Promise with company-specific statistics
+ */
+export const fetchCompanyStatistics = async (companyId: string) => {
+  try {
+    console.log("\n📊 Fetching company statistics for:", companyId);
+
+    // First, get the company data to extract the email
+    const companyDocRef = doc(db, "companies", companyId);
+    const companyDoc = await getDoc(companyDocRef);
+
+    if (!companyDoc.exists()) {
+      throw new Error("Company not found");
+    }
+
+    const companyData = companyDoc.data();
+    const companyEmail = companyData.email || "";
+    const companyUid = companyData.uId || companyId; // Use uId or fallback to companyId
+
+    if (!companyEmail && !companyUid) {
+      throw new Error("Company email and UID not found");
+    }
+
+    console.log("Company email:", companyEmail);
+    console.log("Company UID:", companyUid);
+
+    // Fetch all orders
+    const orders = await fetchAllOrders();
+
+    // Filter orders for this specific company by UID or email
+    const companyOrders = orders.filter((order) => {
+      const orderCompanyUid = order.companyUid;
+      const orderEmail =
+        order.userEmail ||
+        order.email ||
+        order.companyEmail ||
+        order.createdUserId ||
+        "";
+
+      // Check if companyUid matches (primary method)
+      const uidMatch =
+        orderCompanyUid && companyUid && orderCompanyUid === companyUid;
+
+      // Check if email matches (fallback method)
+      const emailMatch =
+        orderEmail &&
+        companyEmail &&
+        orderEmail.toLowerCase() === companyEmail.toLowerCase();
+
+      return uidMatch || emailMatch;
+    });
+
+    console.log(`📦 Total orders for company: ${companyOrders.length}`);
+
+    // Get wallet balance from companies collection
+    const walletBalance = companyData.balance || companyData.walletBalance || 0;
+    console.log(
+      `💰 Wallet balance from companies collection: ${walletBalance}`
+    );
+
+    // Calculate total purchase cost by summing totalPrice from filtered orders
+    const totalPurchaseCost = companyOrders.reduce((total, order) => {
+      const price = parseFloat(order.totalPrice || order.price || 0);
+      return total + price;
+    }, 0);
+    console.log(`💳 Total purchase cost calculated: ${totalPurchaseCost}`);
+
+    // Calculate fuel statistics for this company
+    const fuelStats = calculateFuelStatistics
+      ? calculateFuelStatistics(companyOrders)
+      : null;
+    console.log("Fuel stats:", fuelStats);
+
+    // Calculate car wash statistics for this company
+    const carWashStats = calculateCarWashStatistics
+      ? calculateCarWashStatistics(companyOrders)
+      : null;
+    console.log("Car wash stats:", carWashStats);
+
+    // Calculate tire change operations
+    const tireChangeStats = calculateTireChangeStatistics
+      ? calculateTireChangeStatistics(companyOrders)
+      : null;
+    console.log("Tire change stats:", tireChangeStats);
+
+    // Calculate oil change operations
+    const oilChangeStats = calculateOilChangeStatistics
+      ? calculateOilChangeStatistics(companyOrders)
+      : null;
+    console.log("Oil change stats:", oilChangeStats);
+
+    // Get company-specific car and driver counts
+    const [carsSnapshot, driversSnapshot] = await Promise.all([
+      getDocs(collection(db, "companies-cars")),
+      getDocs(collection(db, "companies-drivers")),
+    ]);
+
+    let carsCount = 0;
+    carsSnapshot.forEach((carDoc) => {
+      const carData = carDoc.data();
+      const carEmail =
+        carData.email || carData.companyEmail || carData.createdUserId || "";
+      const carUid = carData.uId || carData.companyUid || "";
+
+      // Check by UID first, then by email
+      const uidMatch = carUid && companyUid && carUid === companyUid;
+      const emailMatch =
+        carEmail &&
+        companyEmail &&
+        carEmail.toLowerCase() === companyEmail.toLowerCase();
+
+      if (uidMatch || emailMatch) {
+        carsCount++;
+      }
+    });
+
+    let driversCount = 0;
+    let activeDrivers = 0;
+    let inactiveDrivers = 0;
+    driversSnapshot.forEach((driverDoc) => {
+      const driverData = driverDoc.data();
+      const driverEmail =
+        driverData.createdUserId ||
+        driverData.email ||
+        driverData.companyEmail ||
+        "";
+      const driverUid = driverData.uId || driverData.companyUid || "";
+
+      // Check by UID first, then by email
+      const uidMatch = driverUid && companyUid && driverUid === companyUid;
+      const emailMatch =
+        driverEmail &&
+        companyEmail &&
+        driverEmail.toLowerCase() === companyEmail.toLowerCase();
+
+      if (uidMatch || emailMatch) {
+        driversCount++;
+        if (driverData.status === "active" || driverData.isActive === true) {
+          activeDrivers++;
+        } else {
+          inactiveDrivers++;
+        }
+      }
+    });
+
+    console.log(`🚗 Total cars found: ${carsCount}`);
+    console.log(
+      `👥 Total drivers found: ${driversCount} (Active: ${activeDrivers}, Inactive: ${inactiveDrivers})`
+    );
+
+    // Calculate completed/canceled orders
+    const completedOrders = companyOrders.filter(
+      (order) =>
+        order.status === "completed" ||
+        order.orderStatus === "completed" ||
+        order.status === "مكتمل"
+    ).length;
+
+    const canceledOrders = companyOrders.filter(
+      (order) =>
+        order.status === "canceled" ||
+        order.orderStatus === "canceled" ||
+        order.status === "ملغي"
+    ).length;
+
+    const statistics = {
+      // Wallet balance
+      walletBalance: walletBalance || 0,
+
+      // Total purchase cost
+      totalPurchaseCost: totalPurchaseCost,
+
+      // Fuel usage statistics
+      fuelUsage: {
+        diesel:
+          fuelStats?.fuelTypes?.find((f) => f.type === "ديزل")?.totalLitres ||
+          0,
+        gasoline95:
+          fuelStats?.fuelTypes?.find((f) => f.type === "بنزين 95")
+            ?.totalLitres || 0,
+        gasoline91:
+          fuelStats?.fuelTypes?.find((f) => f.type === "بنزين 91")
+            ?.totalLitres || 0,
+        total: fuelStats?.totalLitres || 0,
+      },
+
+      // Driver statistics
+      drivers: {
+        active: activeDrivers,
+        inactive: inactiveDrivers,
+        total: driversCount,
+      },
+
+      // Car statistics - count actual cars by size
+      cars: await calculateCompanyCarsBySize(companyEmail, companyUid),
+
+      // Order statistics
+      orders: {
+        completed: completedOrders,
+        canceled: canceledOrders,
+        total: companyOrders.length,
+      },
+
+      // Car wash statistics
+      carWash: {
+        small: carWashStats?.sizes?.find((s) => s.name === "صغيرة")?.count || 0,
+        medium:
+          carWashStats?.sizes?.find((s) => s.name === "متوسطة")?.count || 0,
+        large: carWashStats?.sizes?.find((s) => s.name === "كبيرة")?.count || 0,
+        vip: carWashStats?.sizes?.find((s) => s.name === "VIP")?.count || 0,
+        total: carWashStats?.totalOrders || 0,
+      },
+
+      // Tire change statistics
+      tireChange: {
+        small:
+          tireChangeStats?.sizes?.find((s) => s.name === "صغيرة")?.count || 0,
+        medium:
+          tireChangeStats?.sizes?.find((s) => s.name === "متوسطة")?.count || 0,
+        large:
+          tireChangeStats?.sizes?.find((s) => s.name === "كبيرة")?.count || 0,
+        vip: tireChangeStats?.sizes?.find((s) => s.name === "VIP")?.count || 0,
+        total: tireChangeStats?.totalOrders || 0,
+      },
+
+      // Oil change statistics
+      oilChange: {
+        small:
+          oilChangeStats?.sizes?.find((s) => s.name === "صغيرة")?.count || 0,
+        medium:
+          oilChangeStats?.sizes?.find((s) => s.name === "متوسطة")?.count || 0,
+        large:
+          oilChangeStats?.sizes?.find((s) => s.name === "كبيرة")?.count || 0,
+        vip: oilChangeStats?.sizes?.find((s) => s.name === "VIP")?.count || 0,
+        total: oilChangeStats?.totalOrders || 0,
+      },
+    };
+
+    console.log("✅ Company statistics calculated:", statistics);
+    return statistics;
+  } catch (error) {
+    console.error("❌ Error fetching company statistics:", error);
+    throw error;
+  }
+};
+
+/**
+ * Calculate car statistics by size for a specific company
+ */
+const calculateCompanyCarsBySize = async (
+  companyEmail: string,
+  companyUid?: string
+) => {
+  try {
+    console.log("🚗 Calculating car statistics for company:", companyEmail);
+
+    const carsRef = collection(db, "companies-cars");
+    const carsSnapshot = await getDocs(carsRef);
+
+    let smallCount = 0;
+    let mediumCount = 0;
+    let largeCount = 0;
+    let vipCount = 0;
+
+    carsSnapshot.forEach((doc) => {
+      const carData = doc.data();
+      const carEmail = carData.email || carData.companyEmail || "";
+      const carUid = carData.uId || carData.companyUid || "";
+
+      // Check by UID first, then by email
+      const uidMatch = carUid && companyUid && carUid === companyUid;
+      const emailMatch =
+        carEmail &&
+        companyEmail &&
+        carEmail.toLowerCase() === companyEmail.toLowerCase();
+
+      if (uidMatch || emailMatch) {
+        const carSize = carData.size || carData.carSize || "";
+
+        switch (carSize.toLowerCase()) {
+          case "صغيرة":
+          case "small":
+            smallCount++;
+            break;
+          case "متوسطة":
+          case "medium":
+            mediumCount++;
+            break;
+          case "كبيرة":
+          case "large":
+            largeCount++;
+            break;
+          case "vip":
+            vipCount++;
+            break;
+          default:
+            // Default to medium if size is not specified
+            mediumCount++;
+            break;
+        }
+      }
+    });
+
+    const totalCars = smallCount + mediumCount + largeCount + vipCount;
+
+    console.log(
+      `🚗 Car counts - Small: ${smallCount}, Medium: ${mediumCount}, Large: ${largeCount}, VIP: ${vipCount}, Total: ${totalCars}`
+    );
+
+    return {
+      small: smallCount,
+      medium: mediumCount,
+      large: largeCount,
+      vip: vipCount,
+      total: totalCars,
+    };
+  } catch (error) {
+    console.error("Error calculating car statistics:", error);
+    return {
+      small: 0,
+      medium: 0,
+      large: 0,
+      vip: 0,
+      total: 0,
+    };
+  }
+};
+
+/**
+ * Calculate wallet balance for a specific company
+ */
+const calculateCompanyWalletBalance = async (
+  companyEmail: string
+): Promise<number> => {
+  try {
+    const walletsRef = collection(db, "wallets");
+    const q = query(walletsRef, where("userEmail", "==", companyEmail));
+    const querySnapshot = await getDocs(q);
+
+    let totalBalance = 0;
+    querySnapshot.forEach((doc) => {
+      const walletData = doc.data();
+      totalBalance += walletData.balance || 0;
+    });
+
+    return totalBalance;
+  } catch (error) {
+    console.error("Error calculating company wallet balance:", error);
+    return 0;
+  }
+};
+
+/**
+ * Service Provider (Stations Company) data interface
+ */
+export interface ServiceProviderData {
+  id: string;
+  clientCode: string;
+  providerName: string;
+  type: string;
+  phoneNumber: string;
+  email: string;
+  status: string;
+  stationsCount: number;
+  ordersCount: number;
+  uId?: string;
+}
+
+/**
+ * Fetch all stations company data with related counts
+ * @returns Promise with array of service provider data
+ */
+export const fetchStationsCompanyData = async (): Promise<
+  ServiceProviderData[]
+> => {
+  try {
+    console.log("🏢 Fetching stations company data with related counts...");
+
+    // Fetch all collections in parallel for better performance
+    const [stationsCompanySnapshot, carStationsSnapshot, ordersSnapshot] =
+      await Promise.all([
+        getDocs(collection(db, "stationscompany")),
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+    console.log(
+      `📊 Fetched ${stationsCompanySnapshot.size} stations company documents`
+    );
+    console.log(
+      `🏪 Fetched ${carStationsSnapshot.size} car stations documents`
+    );
+    console.log(`📋 Fetched ${ordersSnapshot.size} orders documents`);
+
+    // Process stations company data
+    const serviceProvidersData: ServiceProviderData[] = [];
+
+    stationsCompanySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Get company UID for counting related data
+      const companyUid = data.uId || data.uid || doc.id;
+
+      // Count related car stations by matching company email with createdUserId
+      let stationsCount = 0;
+      const companyEmail = data.email;
+      console.log(
+        `🔍 Checking car stations for company: ${data.name} (${companyEmail})`
+      );
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyEmail) {
+          stationsCount++;
+          console.log(
+            `✅ Found matching car station: ${
+              stationData.name || stationDoc.id
+            }`
+          );
+        }
+      });
+      console.log(`📊 Total car stations for ${data.name}: ${stationsCount}`);
+
+      // Count related orders by matching company email with order.carStation.createdUserId
+      let ordersCount = 0;
+      console.log(
+        `🔍 Checking orders for company: ${data.name} (${companyEmail})`
+      );
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const carStationCreatedUserId = orderData.carStation?.createdUserId;
+        if (carStationCreatedUserId === companyEmail) {
+          ordersCount++;
+          console.log(`✅ Found matching order: ${orderDoc.id}`);
+        }
+      });
+      console.log(`📊 Total orders for ${data.name}: ${ordersCount}`);
+
+      // Create service provider data object
+      const serviceProvider: ServiceProviderData = {
+        id: data.id || doc.id,
+        clientCode: data.id || data.uId || doc.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+
+      serviceProvidersData.push(serviceProvider);
+    });
+
+    console.log(
+      `✅ Processed ${serviceProvidersData.length} service providers with counts`
+    );
+
+    return serviceProvidersData;
+  } catch (error) {
+    console.error("❌ Error fetching stations company data:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a single stations company by ID
+ * @param id - The company ID
+ * @returns Promise with service provider data or null
+ */
+export const fetchStationsCompanyById = async (
+  id: string
+): Promise<ServiceProviderData | null> => {
+  try {
+    console.log(`🔍 Fetching stations company with ID: ${id}`);
+
+    // Try to find by document ID first
+    const docRef = doc(db, "stationscompany", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const companyUid = data.uId || data.uid || docSnap.id;
+
+      // Count related data
+      const [carStationsSnapshot, ordersSnapshot] = await Promise.all([
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+      let stationsCount = 0;
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyUid) {
+          stationsCount++;
+        }
+      });
+
+      let ordersCount = 0;
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const orderCreatedUserId =
+          orderData.createdUserId || orderData.uId || orderData.uid;
+        if (orderCreatedUserId === companyUid) {
+          ordersCount++;
+        }
+      });
+
+      return {
+        id: data.id || docSnap.id,
+        clientCode: data.id || data.uId || docSnap.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+    }
+
+    // If not found by document ID, try to find by custom ID field
+    const q = query(collection(db, "stationscompany"), where("id", "==", id));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+      const companyUid = data.uId || data.uid || doc.id;
+
+      // Count related data (same logic as above)
+      const [carStationsSnapshot, ordersSnapshot] = await Promise.all([
+        getDocs(collection(db, "carstations")),
+        getDocs(collection(db, "stationscompany-orders")),
+      ]);
+
+      let stationsCount = 0;
+      carStationsSnapshot.forEach((stationDoc) => {
+        const stationData = stationDoc.data();
+        const stationCreatedUserId =
+          stationData.createdUserId || stationData.uId || stationData.uid;
+        if (stationCreatedUserId === companyUid) {
+          stationsCount++;
+        }
+      });
+
+      let ordersCount = 0;
+      ordersSnapshot.forEach((orderDoc) => {
+        const orderData = orderDoc.data();
+        const orderCreatedUserId =
+          orderData.createdUserId || orderData.uId || orderData.uid;
+        if (orderCreatedUserId === companyUid) {
+          ordersCount++;
+        }
+      });
+
+      return {
+        id: data.id || doc.id,
+        clientCode: data.id || data.uId || doc.id,
+        providerName: data.name || "غير محدد",
+        type: data.type || "غير محدد",
+        phoneNumber: data.phoneNumber || data.phone || "-",
+        email: data.email || "-",
+        status: data.status || "نشط",
+        stationsCount,
+        ordersCount,
+        uId: companyUid,
+      };
+    }
+
+    console.log(`❌ No stations company found with ID: ${id}`);
+    return null;
+  } catch (error) {
+    console.error("❌ Error fetching stations company by ID:", error);
+    throw error;
+  }
+};
+
+/**
+ * Interface for stations company join request data
+ */
+export interface StationsCompanyRequestData {
+  id: string;
+  providerName: string;
+  type: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  stations: number;
+  status: string;
+  createdAt?: any;
+  updatedAt?: any;
+  [key: string]: any; // Allow additional fields
+}
+
+/**
+ * Fetch all stations company join requests from Firestore
+ * @returns Promise with array of join request data
+ */
+export const fetchStationsCompanyRequests = async (): Promise<
+  StationsCompanyRequestData[]
+> => {
+  try {
+    console.log("📋 Fetching stations company join requests...");
+
+    // Fetch all documents from stations-company-requests collection
+    const requestsSnapshot = await getDocs(
+      collection(db, "stations-company-requests")
+    );
+
+    console.log(`📊 Fetched ${requestsSnapshot.size} join request documents`);
+
+    // Process join requests data
+    const joinRequestsData: StationsCompanyRequestData[] = [];
+
+    requestsSnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Transform the data to match our interface
+      const requestData: StationsCompanyRequestData = {
+        id: doc.id,
+        providerName:
+          data.providerName || data.name || data.companyName || "غير محدد",
+        type: data.type || data.providerType || data.serviceType || "غير محدد",
+        address: data.address || data.location || "غير محدد",
+        phoneNumber:
+          data.phoneNumber || data.phone || data.mobile || "غير محدد",
+        email: data.email || data.emailAddress || "غير محدد",
+        stations:
+          data.stations || data.stationsCount || data.numberOfStations || 0,
+        status: data.status || data.requestStatus || "معلق",
+        createdAt: data.createdAt || data.created_at,
+        updatedAt: data.updatedAt || data.updated_at,
+        ...data, // Include all other fields
+      };
+
+      joinRequestsData.push(requestData);
+    });
+
+    // Sort by creation date (newest first)
+    joinRequestsData.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log(
+      `✅ Successfully fetched ${joinRequestsData.length} join requests`
+    );
+    return joinRequestsData;
+  } catch (error) {
+    console.error("❌ Error fetching stations company join requests:", error);
     throw error;
   }
 };

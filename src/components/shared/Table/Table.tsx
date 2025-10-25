@@ -1,5 +1,6 @@
 import React from "react";
 import { SlidersHorizontal } from "lucide-react";
+import { LoadingSpinner } from "../Spinner/LoadingSpinner";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -30,12 +31,9 @@ export const Table = <T extends Record<string, any>>({
   loading = false,
   emptyMessage = "لا توجد بيانات",
 }: TableProps<T>) => {
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-color-mode-text-icons-t-sec">جاري التحميل...</div>
-      </div>
+      <LoadingSpinner size="md" message="جاري التحميل..." className="py-8" />
     );
   }
 
@@ -50,24 +48,30 @@ export const Table = <T extends Record<string, any>>({
   // Reverse columns for RTL layout
   const reversedColumns = [...columns].reverse();
 
-  const hasAnyLabels = columns.some(column => column.label);
+  const hasAnyLabels = columns.some((column) => column.label);
 
   return (
     <div className={`w-full ${className}`}>
       <div className="overflow-x-auto" dir="rtl">
-        <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+        <table
+          className="w-full"
+          style={{ borderCollapse: "separate", borderSpacing: 0 }}
+        >
           {hasAnyLabels && (
             <thead className="">
               <tr>
                 {reversedColumns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-4 py-3 text-center  bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${column.width || "w-auto"} ${headerClassName}`}
+                    className={`px-4 py-3 text-center  bg-gray-50 border-b border-gray-200 font-medium text-gray-700 text-sm whitespace-nowrap ${
+                      column.width || "w-auto"
+                    } ${headerClassName}`}
                   >
                     {column.label && (
                       <div className="flex items-center justify-start gap-2">
                         <span>{column.label}</span>
-                        {(column.key === "accountStatus" || column.key === "stationStatus") && (
+                        {(column.key === "accountStatus" ||
+                          column.key === "stationStatus") && (
                           <SlidersHorizontal className="w-4 h-4 text-gray-400" />
                         )}
                       </div>
@@ -82,18 +86,22 @@ export const Table = <T extends Record<string, any>>({
               <tr
                 key={rowIndex}
                 className={`hover:bg-gray-50 transition-colors ${rowClassName}`}
-                style={{ 
-                  borderBottom: '1px solid var(--border-light, #e5e7eb)',
-                  borderBottomWidth: '1px',
-                  borderBottomStyle: 'solid',
-                  borderBottomColor: 'var(--border-light, #e5e7eb)'
+                style={{
+                  borderBottom: "1px solid var(--border-light, #e5e7eb)",
+                  borderBottomWidth: "1px",
+                  borderBottomStyle: "solid",
+                  borderBottomColor: "var(--border-light, #e5e7eb)",
                 }}
               >
                 {reversedColumns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-4 py-3 text-sm text-center ${column.width || "w-auto"} ${cellClassName}`}
-                    style={{ borderBottom: '1px solid var(--border-light, #e5e7eb)' }}
+                    className={`px-4 py-3 text-sm text-center ${
+                      column.width || "w-auto"
+                    } ${cellClassName}`}
+                    style={{
+                      borderBottom: "1px solid var(--border-light, #e5e7eb)",
+                    }}
                   >
                     <div className="flex items-center justify-start">
                       {column.render

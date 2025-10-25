@@ -1,17 +1,21 @@
 import { Building2, ArrowLeft, History } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataTableSection } from "../../../sections/DataTableSection";
 import exportIcon from "../../../../assets/imgs/icons/export-icon.svg";
 import companyStatis from "../../../../assets/imgs/icons/company-statis.svg";
 import StatsCardsSection from "../../StatsCardsSection";
 import { statsData, defaultSelectedOptions } from "../../statsData";
+import {
+  fetchCompanyStatistics,
+  fetchOrdersForCompany,
+} from "../../../../services/firestore";
 
 interface CompanyInfoProps {
   companyData: any;
 }
 
-// Mock data type for company activity log
+// Data type for company activity log (transformed from orders)
 interface CompanyActivity {
   id: number;
   operationNumber: string;
@@ -19,63 +23,84 @@ interface CompanyActivity {
   driverName: string;
   operationDate: string;
   operationCost: number;
-  operationStatus: number;
+  cumulative: number;
   export: string;
 }
 
-// Mock data for company activity log
-const mockCompanyActivities: CompanyActivity[] = [
-  {
-    id: 1,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 2,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 3,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 4,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-  {
-    id: 5,
-    operationNumber: "21A254  ",
-    operationType: "وقود 91",
-    driverName: "محمد عبد الله",
-    operationDate: "2025-01-01",
-    operationCost: 20,
-    operationStatus: 200,
-    export: "تصدير",
-  },
-];
+// Helper function to format date
+const formatDate = (date: any): string => {
+  if (!date) return "-";
+
+  try {
+    if (date.toDate && typeof date.toDate === "function") {
+      return new Date(date.toDate()).toLocaleString("ar-EG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (date instanceof Date) {
+      return date.toLocaleString("ar-EG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return new Date(date).toLocaleString("ar-EG", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    return String(date);
+  }
+};
+
+// Helper function to get service title
+const getServiceTitle = (order: any): string => {
+  if (order.service?.title?.ar) return order.service.title.ar;
+  if (order.service?.title?.en) return order.service.title.en;
+  if (order.selectedOption?.title?.ar) return order.selectedOption.title.ar;
+  if (order.selectedOption?.title?.en) return order.selectedOption.title.en;
+  return "وقود";
+};
+
+// Convert orders to company activity format
+const convertOrdersToCompanyActivities = (orders: any[]): CompanyActivity[] => {
+  // Sort by date descending (newest first)
+  const sortedOrders = [...orders].sort((a, b) => {
+    const dateA = a.orderDate?.toDate
+      ? a.orderDate.toDate()
+      : new Date(a.orderDate || 0);
+    const dateB = b.orderDate?.toDate
+      ? b.orderDate.toDate()
+      : new Date(b.orderDate || 0);
+    return dateB - dateA;
+  });
+
+  // Calculate cumulative totals
+  let cumulative = 0;
+  return sortedOrders.map((order, index) => {
+    cumulative += order.totalPrice || 0;
+
+    return {
+      id: index + 1, // Generate numeric ID
+      operationNumber: order.refId || order.id || "-",
+      operationType: getServiceTitle(order),
+      driverName: order.enrichedDriverName || order.assignedDriver?.name || "-",
+      operationDate: formatDate(order.orderDate || order.createdDate),
+      operationCost: order.totalPrice || 0,
+      cumulative: cumulative,
+      export: "تصدير",
+    };
+  });
+};
 
 // Columns configuration for company activity log
 const activityColumns = [
@@ -90,7 +115,7 @@ const activityColumns = [
     ),
   },
   {
-    key: "operationStatus",
+    key: "cumulative",
     label: "تراكمي العمليات (ر.س)",
     priority: "low" as const,
   },
@@ -121,13 +146,56 @@ const activityColumns = [
   },
 ];
 
-// Mock data fetching function
-const fetchCompanyActivities = async (): Promise<CompanyActivity[]> => {
-  return mockCompanyActivities;
+// Real data fetching function for company activities
+const fetchCompanyActivities = async (
+  companyId: string
+): Promise<CompanyActivity[]> => {
+  try {
+    console.log("Fetching company activities for company:", companyId);
+    const orders = await fetchOrdersForCompany(companyId);
+    const activities = convertOrdersToCompanyActivities(orders);
+    console.log("Company activities loaded:", activities.length);
+    return activities;
+  } catch (error) {
+    console.error("Error fetching company activities:", error);
+    return [];
+  }
 };
 
 export const CompanyInfo = ({ companyData }: CompanyInfoProps): JSX.Element => {
   const navigate = useNavigate();
+  const [companyStatistics, setCompanyStatistics] = useState<any>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  // Fetch company statistics when component mounts or companyData changes
+  useEffect(() => {
+    const loadCompanyStatistics = async () => {
+      if (!companyData?.id) {
+        console.log("No company ID provided, skipping statistics fetch");
+        setIsLoadingStats(false);
+        return;
+      }
+
+      try {
+        console.log("Loading statistics for company:", companyData.id);
+        setIsLoadingStats(true);
+        setStatsError(null);
+
+        // Fetch statistics for the selected company
+        const stats = await fetchCompanyStatistics(companyData.id);
+        console.log("Company statistics loaded:", stats);
+        setCompanyStatistics(stats);
+      } catch (err: any) {
+        console.error("Error loading company statistics:", err);
+        setStatsError(err.message || "Failed to load company statistics");
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    loadCompanyStatistics();
+  }, [companyData?.id]);
 
   // Helper function to get value or dash
   const getValueOrDash = (value: any): string => {
@@ -261,11 +329,69 @@ export const CompanyInfo = ({ companyData }: CompanyInfoProps): JSX.Element => {
           <img src={companyStatis} />
           احصائيات الشركة
         </h1>
-        <StatsCardsSection
-          style="mb-0"
-          statsData={statsData}
-          defaultSelectedOptions={defaultSelectedOptions}
-        />
+
+        {/* Loading State for Statistics */}
+        {isLoadingStats && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-600 text-sm [direction:rtl]">
+                جاري تحميل إحصائيات الشركة...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State for Statistics */}
+        {statsError && !isLoadingStats && (
+          <div className="p-6 bg-red-50 border border-red-200 rounded-lg mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">!</span>
+              </div>
+              <h3 className="text-red-800 font-semibold [direction:rtl]">
+                خطأ في تحميل الإحصائيات
+              </h3>
+            </div>
+            <p className="text-red-700 text-sm [direction:rtl]">{statsError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        )}
+
+        {/* Statistics Cards - Show real data when available, otherwise show static data */}
+        {!isLoadingStats && (
+          <StatsCardsSection
+            style="mb-0"
+            statsData={statsData}
+            defaultSelectedOptions={defaultSelectedOptions}
+            // Pass real company statistics data for the selected company (if available)
+            totalClientsBalance={companyStatistics?.walletBalance}
+            purchaseCostData={companyStatistics?.totalPurchaseCost}
+            fuelUsageData={companyStatistics?.fuelUsage}
+            fuelCostData={companyStatistics?.fuelCost}
+            carWashData={companyStatistics?.carWash}
+            tireChangeData={companyStatistics?.tireChange}
+            oilChangeData={companyStatistics?.oilChange}
+            driversData={companyStatistics?.drivers}
+            carsData={companyStatistics?.cars}
+            ordersData={companyStatistics?.orders}
+          />
+        )}
+
+        {/* Show message when using static data */}
+        {!isLoadingStats && !statsError && !companyStatistics && (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mt-4">
+            <p className="text-yellow-800 text-sm [direction:rtl] text-center">
+              لا توجد بيانات إحصائيات متاحة لهذه الشركة. يتم عرض البيانات
+              الافتراضية.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Company Activity Log Section - Using DataTableSection */}
@@ -276,7 +402,9 @@ export const CompanyInfo = ({ companyData }: CompanyInfoProps): JSX.Element => {
           entityNamePlural="أنشطة"
           icon={History}
           columns={activityColumns}
-          fetchData={fetchCompanyActivities}
+          fetchData={() =>
+            fetchCompanyActivities(companyData?.id || companyData?.email || "")
+          }
           addNewRoute=""
           viewDetailsRoute={(id) => `/company-activity/${id}`}
           loadingMessage="جاري تحميل سجل الشركة..."
