@@ -4703,16 +4703,26 @@ export const fetchStationsCompanyData = async (): Promise<
       // Get company UID for counting related data
       const companyUid = data.uId || data.uid || doc.id;
 
-      // Count related car stations
+      // Count related car stations by matching company email with createdUserId
       let stationsCount = 0;
+      const companyEmail = data.email;
+      console.log(
+        `🔍 Checking car stations for company: ${data.name} (${companyEmail})`
+      );
       carStationsSnapshot.forEach((stationDoc) => {
         const stationData = stationDoc.data();
         const stationCreatedUserId =
           stationData.createdUserId || stationData.uId || stationData.uid;
-        if (stationCreatedUserId === companyUid) {
+        if (stationCreatedUserId === companyEmail) {
           stationsCount++;
+          console.log(
+            `✅ Found matching car station: ${
+              stationData.name || stationDoc.id
+            }`
+          );
         }
       });
+      console.log(`📊 Total car stations for ${data.name}: ${stationsCount}`);
 
       // Count related orders
       let ordersCount = 0;
