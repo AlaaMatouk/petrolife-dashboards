@@ -1,130 +1,47 @@
 import React from "react";
 import { DataTableSection } from "../../../sections/DataTableSection/DataTableSection";
 import { FileText } from "lucide-react";
+import { fetchAllOrders } from "../../../../services/firestore";
 
-// Dummy data for sales reports
-const dummyFinancialData = [
-  {
-    id: 1,
-    unit: "لتر",
-    quantity: "20",
-    productNumber: "21536",
-    productName: "بنزين 91",
-    carNumber: "أ-123-456",
-    carType: "سيارة",
-    driverName: "أحمد محمد",
-    clientName: "الشركة المتحدة العالمية",
-    code: "21A254",
-  },
-  {
-    id: 2,
-    unit: "لتر",
-    quantity: "15",
-    productNumber: "21537",
-    productName: "بنزين 95",
-    carNumber: "ب-789-012",
-    carType: "شاحنة",
-    driverName: "محمد علي",
-    clientName: "مؤسسة النور التجارية",
-    code: "21A255",
-  },
-  {
-    id: 3,
-    unit: "لتر",
-    quantity: "25",
-    productNumber: "21538",
-    productName: "ديزل",
-    carNumber: "ج-345-678",
-    carType: "حافلة",
-    driverName: "سعد أحمد",
-    clientName: "شركة الخليج للنقل",
-    code: "21A256",
-  },
-  {
-    id: 4,
-    unit: "لتر",
-    quantity: "30",
-    productNumber: "21539",
-    productName: "بنزين 91",
-    carNumber: "د-901-234",
-    carType: "سيارة",
-    driverName: "خالد محمد",
-    clientName: "مجموعة الصالح التجارية",
-    code: "21A257",
-  },
-  {
-    id: 5,
-    unit: "لتر",
-    quantity: "18",
-    productNumber: "21540",
-    productName: "بنزين 95",
-    carNumber: "هـ-567-890",
-    carType: "شاحنة",
-    driverName: "عبدالله سعد",
-    clientName: "مؤسسة النور التجارية",
-    code: "21A258",
-  },
-  {
-    id: 6,
-    unit: "لتر",
-    quantity: "22",
-    productNumber: "21541",
-    productName: "ديزل",
-    carNumber: "و-123-456",
-    carType: "حافلة",
-    driverName: "فهد أحمد",
-    clientName: "شركة الخليج للنقل",
-    code: "21A259",
-  },
-  {
-    id: 7,
-    unit: "لتر",
-    quantity: "35",
-    productNumber: "21542",
-    productName: "بنزين 91",
-    carNumber: "ز-789-012",
-    carType: "سيارة",
-    driverName: "ناصر محمد",
-    clientName: "الشركة المتحدة العالمية",
-    code: "21A260",
-  },
-  {
-    id: 8,
-    unit: "لتر",
-    quantity: "12",
-    productNumber: "21543",
-    productName: "بنزين 95",
-    carNumber: "ح-345-678",
-    carType: "شاحنة",
-    driverName: "مشعل علي",
-    clientName: "مجموعة الصالح التجارية",
-    code: "21A261",
-  },
-  {
-    id: 9,
-    unit: "لتر",
-    quantity: "28",
-    productNumber: "21544",
-    productName: "ديزل",
-    carNumber: "ط-901-234",
-    carType: "حافلة",
-    driverName: "بندر سعد",
-    clientName: "شركة الخليج للنقل",
-    code: "21A262",
-  },
-  {
-    id: 10,
-    unit: "لتر",
-    quantity: "40",
-    productNumber: "21545",
-    productName: "بنزين 91",
-    carNumber: "ي-567-890",
-    carType: "سيارة",
-    driverName: "عمر أحمد",
-    clientName: "الشركة المتحدة العالمية",
-    code: "21A263",
-  },
-];
+// Helper function to extract text from language objects or return string
+const extractText = (value: any): string => {
+  if (!value) return "-";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    // Handle language objects with ar/en keys
+    if (value.ar && value.ar.trim() !== "") return value.ar;
+    if (value.en && value.en.trim() !== "") return value.en;
+    // Handle other object structures
+    if (value.name) {
+      if (typeof value.name === "string" && value.name.trim() !== "")
+        return value.name;
+      if (value.name.ar && value.name.ar.trim() !== "") return value.name.ar;
+      if (value.name.en && value.name.en.trim() !== "") return value.name.en;
+    }
+    // If all values are empty, return "-"
+    return "-";
+  }
+  return String(value);
+};
+
+// Transform orders data to match table structure
+const transformOrdersData = (orders: any[]) => {
+  return orders.map((order) => ({
+    id: order.id,
+    refId: order.refId || order.id,
+    clientName:
+      extractText(order.client?.name) ||
+      order.assignedDriver?.createdUserId ||
+      "-",
+    driverName: extractText(order.assignedDriver?.name) || "-",
+    carType: extractText(order.assignedDriver?.car?.carType?.name) || "-",
+    carNumber: extractText(order.assignedDriver?.car?.plateNumber) || "-",
+    productName: extractText(order.service?.title) || "-",
+    productNumber: extractText(order.service?.serviceId) || "-",
+    quantity: order.totalLitre || "-",
+    unit: extractText(order.service?.unit) || "-",
+  }));
+};
 
 // Table columns configuration
 const tableColumns = [
@@ -177,120 +94,43 @@ const tableColumns = [
     priority: "high",
   },
   {
-    key: "code",
+    key: "refId",
     label: "كود",
-    width: "w-[100px] min-w-[100px]",
+    width: "w-[120px] min-w-[120px]",
     priority: "high",
   },
 ];
 
-// Filter options for the sales report
-const filterOptions = [
-  {
-    label: "اسم المنتج",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "بنزين 91", label: "بنزين 91" },
-      { value: "بنزين 95", label: "بنزين 95" },
-      { value: "ديزل", label: "ديزل" },
-    ],
-  },
-  {
-    label: "اسم العميل",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "الشركة المتحدة العالمية", label: "الشركة المتحدة العالمية" },
-      { value: "مؤسسة النور التجارية", label: "مؤسسة النور التجارية" },
-      { value: "شركة الخليج للنقل", label: "شركة الخليج للنقل" },
-      { value: "مجموعة الصالح التجارية", label: "مجموعة الصالح التجارية" },
-    ],
-  },
-  {
-    label: "كود العميل",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "21A254", label: "21A254" },
-      { value: "21A255", label: "21A255" },
-      { value: "21A256", label: "21A256" },
-    ],
-  },
-  {
-    label: "نوع العميل",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "شركة", label: "شركة" },
-      { value: "مؤسسة", label: "مؤسسة" },
-      { value: "فرد", label: "فرد" },
-    ],
-  },
+// No filter options needed since we're displaying all orders
+const filterOptions: any[] = [];
 
-  {
-    label: "نوع التقرير",
-    value: "تحليلي",
-    options: [
-      { value: "تحليلي", label: "تحليلي" },
-      { value: "تفصيلي", label: "تفصيلي" },
-      { value: "ملخص", label: "ملخص" },
-    ],
-  },
-
-  {
-    label: "رقم العملية",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "21A254", label: "21A254" },
-      { value: "21A255", label: "21A255" },
-      { value: "21A256", label: "21A256" },
-    ],
-  },
-  {
-    label: "كود السائق",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "21A254", label: "21A254" },
-      { value: "21A255", label: "21A255" },
-      { value: "21A256", label: "21A256" },
-    ],
-  },
-  {
-    label: "رقم المركبة",
-    value: "الكل",
-    options: [
-      { value: "الكل", label: "الكل" },
-      { value: "21A254", label: "21A254" },
-      { value: "21A255", label: "21A255" },
-      { value: "21A256", label: "21A256" },
-    ],
-  },
-];
-
-// Mock function to simulate data fetching
+// Function to fetch and transform orders data
 const fetchFinancialData = async () => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return dummyFinancialData;
+  try {
+    const orders = await fetchAllOrders();
+    return transformOrdersData(orders);
+  } catch (error) {
+    console.error("Error fetching financial data:", error);
+    throw error;
+  }
 };
 
 export const FinancialReport: React.FC = () => {
   return (
     <div className="flex flex-col w-full items-start gap-5">
       <DataTableSection
-        title="تقارير المبيعات"
-        entityName="تقرير"
-        entityNamePlural="تقارير"
+        title="التقارير المالية - جميع الطلبات"
+        entityName="طلب"
+        entityNamePlural="طلبات"
         icon={FileText}
         columns={tableColumns}
         fetchData={fetchFinancialData}
         addNewRoute="/admin-financial-reports/add"
-        viewDetailsRoute={(id: number) => `/admin-financial-reports/${id}`}
-        loadingMessage="جاري تحميل تقارير المبيعات..."
-        errorMessage="فشل في تحميل تقارير المبيعات"
+        viewDetailsRoute={(id: string | number) =>
+          `/admin-financial-reports/${id}`
+        }
+        loadingMessage="جاري تحميل جميع الطلبات..."
+        errorMessage="فشل في تحميل الطلبات"
         itemsPerPage={10}
         showTimeFilter={false}
         showAddButton={false}
