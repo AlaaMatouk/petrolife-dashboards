@@ -182,6 +182,12 @@ const transformOrdersData = (orders: any[]) => {
     productNumber: extractText(order.service?.serviceId) || "-",
     quantity: order.totalLitre || "-",
     unit: extractText(order.service?.unit) || "-",
+    // Additional fields with correct paths
+    serviceFees: order.selectedOption?.companyPrice || "-",
+    serviceProviderName: extractText(order.carStation?.name) || "-",
+    productType: extractText(order.selectedOption?.category?.name) || "-",
+    productNumberFromCategory:
+      order.selectedOption?.category?.onyxProductId || "-",
   }));
 };
 
