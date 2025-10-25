@@ -2436,6 +2436,81 @@ export const fetchWalletChargeRequests = async () => {
 };
 
 /**
+ * Fetch admin wallet reports data from wallets-requests collection
+ * @returns Promise with admin wallet reports data
+ */
+export const fetchAdminWalletReports = async () => {
+  try {
+    console.log("\n🔄 Fetching admin wallet reports from wallets-requests...");
+
+    const requestsRef = collection(db, "wallets-requests");
+    const q = query(requestsRef, orderBy("actionDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    const allRequestsData: any[] = [];
+
+    // Helper function to format Firestore timestamp
+    const formatDate = (timestamp: any): string => {
+      if (!timestamp) return "-";
+
+      try {
+        if (timestamp.toDate && typeof timestamp.toDate === "function") {
+          return new Date(timestamp.toDate()).toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        if (timestamp instanceof Date) {
+          return timestamp.toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        return new Date(timestamp).toLocaleString("ar-EG", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (error) {
+        return String(timestamp);
+      }
+    };
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      allRequestsData.push({
+        id: doc.id, // رقم العملية
+        date: formatDate(data.actionDate), // التاريخ (formatted)
+        clientType: data.requestedUser?.type || "-", // نوع العميل
+        clientName: data.requestedUser?.name || "-", // اسم العميل
+        operationNumber: doc.id, // رقم العملية (document ID)
+        operationType: "-", // نوع العملية (leave as "-" for now)
+        debit: data.value || "-", // مدين
+        credit: "-", // دائن (leave as "-" for now)
+        balance: data.requestedUser?.balance || "-", // الرصيد (ر.س)
+        rawDate: data.actionDate, // Store raw date for sorting
+      });
+    });
+
+    console.log(
+      `✅ Total admin wallet reports found: ${allRequestsData.length}`
+    );
+    return allRequestsData;
+  } catch (error) {
+    console.error("❌ Error fetching admin wallet reports:", error);
+    throw error;
+  }
+};
+
+/**
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */
