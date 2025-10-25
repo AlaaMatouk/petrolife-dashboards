@@ -4724,16 +4724,20 @@ export const fetchStationsCompanyData = async (): Promise<
       });
       console.log(`📊 Total car stations for ${data.name}: ${stationsCount}`);
 
-      // Count related orders
+      // Count related orders by matching company email with order.carStation.createdUserId
       let ordersCount = 0;
+      console.log(
+        `🔍 Checking orders for company: ${data.name} (${companyEmail})`
+      );
       ordersSnapshot.forEach((orderDoc) => {
         const orderData = orderDoc.data();
-        const orderCreatedUserId =
-          orderData.createdUserId || orderData.uId || orderData.uid;
-        if (orderCreatedUserId === companyUid) {
+        const carStationCreatedUserId = orderData.carStation?.createdUserId;
+        if (carStationCreatedUserId === companyEmail) {
           ordersCount++;
+          console.log(`✅ Found matching order: ${orderDoc.id}`);
         }
       });
+      console.log(`📊 Total orders for ${data.name}: ${ordersCount}`);
 
       // Create service provider data object
       const serviceProvider: ServiceProviderData = {
