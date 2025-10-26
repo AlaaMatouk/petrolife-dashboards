@@ -102,7 +102,7 @@ function ServiceDistributerStationLocations() {
     >
       <div className="flex flex-col w-full items-start gap-5">
         <div className="w-full">
-          <StationLocationsMap title="مواقع المحطات (42)"/>
+          <StationLocationsMap title="مواقع المحطات"/>
         </div>
         <DataTableSection<Station>
           title="المحطات"

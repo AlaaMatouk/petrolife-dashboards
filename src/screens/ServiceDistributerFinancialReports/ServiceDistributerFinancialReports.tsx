@@ -2,6 +2,7 @@ import { LayoutSimple } from '../../components/shared/Layout/LayoutSimple'
 import { serviceDistributerNavigationMenuData, userInfo, serviceDistributerFinancialReportsData, serviceDistributerFinancialReportsFilterOptions } from '../../constants/data'
 import { FileText } from 'lucide-react'
 import { DataTableSection } from '../../components/sections/DataTableSection'
+import { fetchServiceDistributerFinancialReports } from '../../services/firestore'
 
 // Financial Report interface
 interface FinancialReport {
@@ -70,8 +71,24 @@ function ServiceDistributerFinancialReports() {
 
   // Fetch data function for financial reports
   const fetchFinancialReportsData = async (): Promise<FinancialReport[]> => {
-    // TODO: Replace with actual API call when ready
-    return Promise.resolve(serviceDistributerFinancialReportsData as FinancialReport[]);
+    try {
+      const reports = await fetchServiceDistributerFinancialReports();
+      // Map the API data to the expected format
+      return reports.map(report => ({
+        id: parseInt(report.id) || Date.now(),
+        productType: report.productType,
+        productNumber: report.productNumber,
+        productName: report.productName,
+        quantity: report.quantity,
+        value: report.value,
+        unit: report.unit,
+        operationNumber: report.operationNumber,
+      }));
+    } catch (error) {
+      console.error("Error fetching financial reports:", error);
+      // Return mock data as fallback
+      return serviceDistributerFinancialReportsData as FinancialReport[];
+    }
   };
 
   // Handle status toggle (if needed)

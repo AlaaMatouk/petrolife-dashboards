@@ -1,11 +1,13 @@
 import { LayoutSimple } from '../../components/shared/Layout/LayoutSimple'
-import { serviceDistributerNavigationMenuData, userInfo, fuelStationRequestsData } from '../../constants/data'
+import { serviceDistributerNavigationMenuData, userInfo } from '../../constants/data'
 import { Fuel } from 'lucide-react'
 import { DataTableSection } from '../../components/sections/DataTableSection'
+import { fetchFuelStationRequests } from '../../services/firestore'
+import { auth } from '../../config/firebase'
 
 // Fuel Station Request interface
 interface FuelStationRequest {
-  id: number;
+  id: string;
   transactionNumber: string;
   stationName: string;
   clientName: string;
@@ -70,12 +72,23 @@ function FuelStationRequests() {
 
   // Fetch data function for fuel station requests
   const fetchFuelStationRequestsData = async (): Promise<FuelStationRequest[]> => {
-    // TODO: Replace with actual API call when ready
-    return Promise.resolve(fuelStationRequestsData as FuelStationRequest[]);
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser?.email) {
+        console.error('No user logged in');
+        return [];
+      }
+
+      const orders = await fetchFuelStationRequests(currentUser.email);
+      return orders as FuelStationRequest[];
+    } catch (error) {
+      console.error('Error fetching fuel station requests:', error);
+      return [];
+    }
   };
 
   // Handle status toggle (if needed)
-  const handleToggleStatus = (requestId: number) => {
+  const handleToggleStatus = (requestId: string | number) => {
     console.log(`Toggle status for fuel station request ${requestId}`);
     // TODO: Implement actual status toggle API call
   };
