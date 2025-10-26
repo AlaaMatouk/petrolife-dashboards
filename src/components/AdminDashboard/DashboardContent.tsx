@@ -19,6 +19,9 @@ import {
   getCarWashOperationsBySize,
   getTotalUsersByType,
   getCompaniesCountByType,
+  getTireChangeOperationsBySize,
+  getOilChangeOperationsBySize,
+  getMostConsumingCompanies,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -359,13 +362,7 @@ const driversData = [
   { name: "محمد أحمد", email: "test@test.com", price: 2543 },
   { name: "محمد أحمد", email: "test@test.com", price: 2543 },
 ];
-const companiesData = [
-  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
-  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
-  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
-  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
-  { name: "شركة الصالح", email: "test@test.com", price: 2543 },
-];
+// companiesData will be fetched from real data
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
@@ -608,6 +605,35 @@ export const DashboardContent = (): JSX.Element => {
   const [loadingCompaniesCountData, setLoadingCompaniesCountData] =
     useState(true);
 
+  // State for tire change operations data
+  const [tireChangeData, setTireChangeData] = useState<CarWashData>({
+    small: 0,
+    medium: 0,
+    large: 0,
+    vip: 0,
+  });
+  const [loadingTireChangeData, setLoadingTireChangeData] = useState(true);
+
+  // State for oil change operations data
+  const [oilChangeData, setOilChangeData] = useState<CarWashData>({
+    small: 0,
+    medium: 0,
+    large: 0,
+    vip: 0,
+  });
+  const [loadingOilChangeData, setLoadingOilChangeData] = useState(true);
+
+  // State for most consuming companies data
+  const [companiesData, setCompaniesData] = useState<
+    {
+      name: string;
+      email: string;
+      price: number;
+      image?: string;
+    }[]
+  >([]);
+  const [loadingCompaniesData, setLoadingCompaniesData] = useState(true);
+
   // Fetch all dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -618,17 +644,32 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingCarWashData(true);
         setLoadingUsersData(true);
         setLoadingCompaniesCountData(true);
+        setLoadingTireChangeData(true);
+        setLoadingOilChangeData(true);
+        setLoadingCompaniesData(true);
 
         // Fetch all data in parallel
-        const [balance, fuelData, fuelCost, carWash, users, companiesCount] =
-          await Promise.all([
-            getTotalClientsBalance(),
-            getTotalFuelUsageByType(),
-            getTotalFuelCostByType(),
-            getCarWashOperationsBySize(),
-            getTotalUsersByType(),
-            getCompaniesCountByType(),
-          ]);
+        const [
+          balance,
+          fuelData,
+          fuelCost,
+          carWash,
+          users,
+          companiesCount,
+          tireChange,
+          oilChange,
+          consumingCompanies,
+        ] = await Promise.all([
+          getTotalClientsBalance(),
+          getTotalFuelUsageByType(),
+          getTotalFuelCostByType(),
+          getCarWashOperationsBySize(),
+          getTotalUsersByType(),
+          getCompaniesCountByType(),
+          getTireChangeOperationsBySize(),
+          getOilChangeOperationsBySize(),
+          getMostConsumingCompanies(),
+        ]);
 
         setTotalClientsBalance(balance);
         setFuelUsageData(fuelData);
@@ -636,6 +677,9 @@ export const DashboardContent = (): JSX.Element => {
         setCarWashData(carWash);
         setUsersData(users);
         setCompaniesCountData(companiesCount);
+        setTireChangeData(tireChange);
+        setOilChangeData(oilChange);
+        setCompaniesData(consumingCompanies);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -668,6 +712,19 @@ export const DashboardContent = (): JSX.Element => {
           viaRepresentatives: 0,
           total: 0,
         });
+        setTireChangeData({
+          small: 0,
+          medium: 0,
+          large: 0,
+          vip: 0,
+        });
+        setOilChangeData({
+          small: 0,
+          medium: 0,
+          large: 0,
+          vip: 0,
+        });
+        setCompaniesData([]);
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
@@ -675,6 +732,9 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingCarWashData(false);
         setLoadingUsersData(false);
         setLoadingCompaniesCountData(false);
+        setLoadingTireChangeData(false);
+        setLoadingOilChangeData(false);
+        setLoadingCompaniesData(false);
       }
     };
 
@@ -693,6 +753,8 @@ export const DashboardContent = (): JSX.Element => {
         carWashData={carWashData}
         usersData={usersData}
         companiesData={companiesCountData}
+        tireChangeData={tireChangeData}
+        oilChangeData={oilChangeData}
       />
 
       {/* Consumption Section */}

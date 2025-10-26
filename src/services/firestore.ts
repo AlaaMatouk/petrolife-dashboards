@@ -3200,6 +3200,108 @@ export const getTotalUsersByType = async (): Promise<{
 };
 
 /**
+ * Get the most consuming companies based on orders
+ * Calculates total money spent per company from all their orders
+ * @returns Promise with array of companies sorted by consumption (descending)
+ */
+export const getMostConsumingCompanies = async (): Promise<
+  {
+    name: string;
+    email: string;
+    price: number;
+    image?: string;
+  }[]
+> => {
+  try {
+    console.log("\n📊 CALCULATING MOST CONSUMING COMPANIES");
+    console.log("====================================");
+
+    // Fetch all companies and orders in parallel
+    const [companiesSnapshot, ordersSnapshot] = await Promise.all([
+      getDocs(collection(db, "companies")),
+      fetchAllOrders(),
+    ]);
+
+    console.log(`🏢 Total companies: ${companiesSnapshot.size}`);
+    console.log(`📦 Total orders: ${ordersSnapshot.length}`);
+
+    // Create a map to store company consumption data
+    const companyConsumptionMap = new Map<
+      string,
+      { totalSpent: number; name: string; email: string; image?: string }
+    >();
+
+    // Process each company
+    companiesSnapshot.forEach((companyDoc) => {
+      const companyData = companyDoc.data();
+      const companyEmail = companyData.email || "";
+      const companyId = companyDoc.id;
+
+      if (companyEmail) {
+        companyConsumptionMap.set(companyId, {
+          totalSpent: 0,
+          name: companyData.name || companyData.brandName || "-",
+          email: companyEmail,
+          image:
+            companyData.logo || companyData.image || companyData.profileImage,
+        });
+      }
+    });
+
+    // Calculate total spent per company from orders
+    ordersSnapshot.forEach((order) => {
+      const companyUid = order.companyUid;
+
+      if (companyUid) {
+        // Check if this order belongs to any company
+        companyConsumptionMap.forEach((value, key) => {
+          // Match by company ID or email
+          const isMatch =
+            companyUid === key ||
+            companyUid === value.email ||
+            companyUid.toLowerCase() === value.email.toLowerCase();
+
+          if (isMatch) {
+            // Calculate total cost from order
+            const totalCost =
+              order.totalCost ??
+              order.totalPrice ??
+              order.price ??
+              order.amount ??
+              0;
+
+            const cost = parseFloat(String(totalCost)) || 0;
+            value.totalSpent += cost;
+          }
+        });
+      }
+    });
+
+    // Convert map to array and sort by total spent (descending)
+    const companiesArray = Array.from(companyConsumptionMap.values())
+      .filter((company) => company.totalSpent > 0) // Only include companies with consumption
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .slice(0, 5) // Get top 5
+      .map((company) => ({
+        name: company.name,
+        email: company.email,
+        price: Math.round(company.totalSpent),
+        image: company.image,
+      }));
+
+    console.log(
+      `✅ Top ${companiesArray.length} most consuming companies calculated`
+    );
+    console.log("====================================\n");
+
+    return companiesArray;
+  } catch (error) {
+    console.error("❌ Error calculating most consuming companies:", error);
+    return [];
+  }
+};
+
+/**
  * Calculate car wash operations by car size from all orders
  * Uses same logic as companies dashboard calculateCarWashStatistics but without filtering by company
  * @returns Promise with car wash operations breakdown
@@ -3332,6 +3434,188 @@ export const getCarWashOperationsBySize = async (): Promise<{
     };
   } catch (error) {
     console.error("❌ Error calculating car wash operations:", error);
+    return {
+      small: 0,
+      medium: 0,
+      large: 0,
+      vip: 0,
+    };
+  }
+};
+
+/**
+ * Calculate tire change operations by car size from all orders
+ * Uses same logic as companies dashboard calculateTireChangeStatistics but without filtering by company
+ * @returns Promise with tire change operations breakdown
+ */
+export const getTireChangeOperationsBySize = async (): Promise<{
+  small: number;
+  medium: number;
+  large: number;
+  vip: number;
+}> => {
+  try {
+    const orders = await fetchAllOrders();
+
+    console.log("\n🚗 TIRE CHANGE OPERATIONS CALCULATION");
+    console.log("====================================");
+    console.log(`📦 Total orders: ${orders.length}`);
+
+    // Filter tire change orders using same logic as companies dashboard
+    const checkTireService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === "string" ? value : "";
+      return (
+        str.includes("تغيير الإطارات") ||
+        str.includes("Tire Change") ||
+        str.includes("تغيير إطار") ||
+        str.includes("Change Tire") ||
+        str.includes("إطارات") ||
+        str.includes("Tires") ||
+        str.toLowerCase().includes("tire") ||
+        str.toLowerCase().includes("tyre")
+      );
+    };
+
+    const tireOrders = orders.filter(
+      (order) =>
+        checkTireService(order.service?.title?.ar) ||
+        checkTireService(order.service?.title?.en) ||
+        checkTireService(order.service?.name?.ar) ||
+        checkTireService(order.service?.name?.en) ||
+        checkTireService(order.category?.ar) ||
+        checkTireService(order.category?.en) ||
+        checkTireService(order.selectedOption?.title?.ar) ||
+        checkTireService(order.selectedOption?.title?.en) ||
+        checkTireService(order.selectedOption?.name?.ar) ||
+        checkTireService(order.selectedOption?.name?.en) ||
+        checkTireService(order.selectedOption?.label)
+    );
+
+    console.log(`🎯 Tire change orders found: ${tireOrders.length}`);
+
+    // Group by car size
+    const sizeMap: Record<string, number> = {
+      صغيرة: 0,
+      متوسطة: 0,
+      كبيرة: 0,
+      VIP: 0,
+    };
+
+    tireOrders.forEach((order) => {
+      // Extract car size from multiple possible paths
+      let carSize = order.car?.size || order.size || "";
+
+      if (carSize) {
+        const normalizedSize = normalizeCarSize(carSize);
+        if (sizeMap.hasOwnProperty(normalizedSize)) {
+          sizeMap[normalizedSize]++;
+        }
+      }
+    });
+
+    console.log("Tire change stats:", sizeMap);
+
+    return {
+      small: sizeMap.صغيرة,
+      medium: sizeMap.متوسطة,
+      large: sizeMap.كبيرة,
+      vip: sizeMap.VIP,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating tire change operations:", error);
+    return {
+      small: 0,
+      medium: 0,
+      large: 0,
+      vip: 0,
+    };
+  }
+};
+
+/**
+ * Calculate oil change operations by car size from all orders
+ * Uses same logic as companies dashboard calculateOilChangeStatistics but without filtering by company
+ * @returns Promise with oil change operations breakdown
+ */
+export const getOilChangeOperationsBySize = async (): Promise<{
+  small: number;
+  medium: number;
+  large: number;
+  vip: number;
+}> => {
+  try {
+    const orders = await fetchAllOrders();
+
+    console.log("\n🛢️ OIL CHANGE OPERATIONS CALCULATION");
+    console.log("====================================");
+    console.log(`📦 Total orders: ${orders.length}`);
+
+    // Filter oil change orders - looking for specific category names and service titles
+    const checkOilService = (value: any): boolean => {
+      if (!value) return false;
+      const str = typeof value === "string" ? value : "";
+      return (
+        str === "الزيوت" ||
+        str === "زيوت" ||
+        str === "زيت بترولايف" ||
+        str === "زيت الماكينة" ||
+        str.includes("زيت الماكينة") ||
+        str.includes("الزيوت") ||
+        str.includes("زيوت")
+      );
+    };
+
+    const oilOrders = orders.filter((order) => {
+      // Check category name (Ar and En)
+      const categoryMatches =
+        checkOilService(order.category?.ar) ||
+        checkOilService(order.category?.en) ||
+        checkOilService(order.service?.category?.name?.ar) ||
+        checkOilService(order.service?.category?.name?.en) ||
+        checkOilService(order.selectedOption?.category?.name?.ar) ||
+        checkOilService(order.selectedOption?.category?.name?.en);
+
+      // Check service title specifically for "زيت الماكينة"
+      const serviceTitleMatches =
+        checkOilService(order.service?.title?.ar) ||
+        checkOilService(order.service?.title?.en);
+
+      return categoryMatches || serviceTitleMatches;
+    });
+
+    console.log(`🎯 Oil change orders found: ${oilOrders.length}`);
+
+    // Group by car size
+    const sizeMap: Record<string, number> = {
+      صغيرة: 0,
+      متوسطة: 0,
+      كبيرة: 0,
+      VIP: 0,
+    };
+
+    oilOrders.forEach((order) => {
+      // Extract car size from multiple possible paths
+      let carSize = order.car?.size || order.size || "";
+
+      if (carSize) {
+        const normalizedSize = normalizeCarSize(carSize);
+        if (sizeMap.hasOwnProperty(normalizedSize)) {
+          sizeMap[normalizedSize]++;
+        }
+      }
+    });
+
+    console.log("Oil change stats:", sizeMap);
+
+    return {
+      small: sizeMap.صغيرة,
+      medium: sizeMap.متوسطة,
+      large: sizeMap.كبيرة,
+      vip: sizeMap.VIP,
+    };
+  } catch (error) {
+    console.error("❌ Error calculating oil change operations:", error);
     return {
       small: 0,
       medium: 0,
@@ -5151,6 +5435,194 @@ export const acceptStationsCompanyRequest = async (
       error
     );
     throw error;
+  }
+};
+
+/**
+ * Calculate fuel consumption by type for a specific station
+ * @param stationEmail - The station email or UID to calculate consumption for
+ * @returns Promise with fuel consumption breakdown by type
+ */
+export const calculateStationFuelConsumption = async (
+  stationEmail: string
+): Promise<{
+  fuel91Consumed: number;
+  fuel95Consumed: number;
+  dieselConsumed: number;
+}> => {
+  try {
+    console.log(`⛽ Calculating fuel consumption for station: ${stationEmail}`);
+
+    // Fetch all orders using the same method as company dashboard
+    const orders = await fetchAllOrders();
+
+    console.log(`📦 Total orders fetched: ${orders.length}`);
+
+    let fuel91Consumed = 0;
+    let fuel95Consumed = 0;
+    let dieselConsumed = 0;
+
+    // Filter orders for this specific station (same pattern as company dashboard)
+    const stationOrders = orders.filter((order) => {
+      const orderStationEmail =
+        order.carStation?.email ||
+        order.stationEmail ||
+        order.createdUserId ||
+        "";
+
+      const orderStationId = order.carStation?.id || order.stationId;
+
+      // Check if station email matches (primary method)
+      const emailMatch =
+        orderStationEmail &&
+        stationEmail &&
+        orderStationEmail.toLowerCase() === stationEmail.toLowerCase();
+
+      // Check if station ID matches (fallback method)
+      const idMatch =
+        orderStationId && stationEmail && orderStationId === stationEmail;
+
+      return emailMatch || idMatch;
+    });
+
+    console.log(`📍 Orders matched to station: ${stationOrders.length}`);
+
+    // Use the same calculation method as company dashboard
+    stationOrders.forEach((order) => {
+      // Extract fuel type with multiple fallbacks (same as company dashboard)
+      let fuelType = "";
+      if (order?.selectedOption?.name?.ar) {
+        fuelType = order.selectedOption.name.ar;
+      } else if (order?.selectedOption?.name?.en) {
+        fuelType = order.selectedOption.name.en;
+      } else if (order?.selectedOption?.label) {
+        fuelType = order.selectedOption.label;
+      } else if (order?.selectedOption?.title?.ar) {
+        fuelType = order.selectedOption.title.ar;
+      } else if (order?.selectedOption?.title?.en) {
+        fuelType = order.selectedOption.title.en;
+      } else if (order?.service?.title?.ar) {
+        fuelType = order.service.title.ar;
+      } else if (order?.service?.title?.en) {
+        fuelType = order.service.title.en;
+      } else if (order?.fuelType) {
+        fuelType = order.fuelType;
+      } else if (order?.productType) {
+        fuelType = order.productType;
+      }
+
+      // Extract litres from multiple possible fields (same as company dashboard)
+      const rawLitres =
+        order?.totalLitre ??
+        order?.totalLiter ??
+        order?.quantity ??
+        order?.selectedOption?.quantity ??
+        order?.liters ??
+        0;
+      const liters = parseFloat(String(rawLitres)) || 0;
+
+      // Categorize by fuel type (same as company dashboard)
+      const normalizedType = String(fuelType).toLowerCase().trim();
+
+      if (
+        normalizedType.includes("ديزل") ||
+        normalizedType.includes("diesel")
+      ) {
+        dieselConsumed += liters;
+      } else if (
+        normalizedType.includes("95") ||
+        normalizedType.includes("بنزين 95") ||
+        normalizedType.includes("gasoline 95")
+      ) {
+        fuel95Consumed += liters;
+      } else if (
+        normalizedType.includes("91") ||
+        normalizedType.includes("بنزين 91") ||
+        normalizedType.includes("gasoline 91")
+      ) {
+        fuel91Consumed += liters;
+      }
+    });
+
+    console.log(
+      `✅ Station ${stationEmail} consumption: 91=${fuel91Consumed}L, 95=${fuel95Consumed}L, Diesel=${dieselConsumed}L`
+    );
+
+    return {
+      fuel91Consumed,
+      fuel95Consumed,
+      dieselConsumed,
+    };
+  } catch (error) {
+    console.error(
+      `❌ Error calculating fuel consumption for station ${stationEmail}:`,
+      error
+    );
+    return {
+      fuel91Consumed: 0,
+      fuel95Consumed: 0,
+      dieselConsumed: 0,
+    };
+  }
+};
+
+/**
+ * Fetch stations for a specific service provider
+ * @param providerEmail - The email or UID of the service provider
+ * @returns Promise with array of station data
+ */
+export const fetchProviderStations = async (
+  providerEmail: string
+): Promise<any[]> => {
+  try {
+    console.log(`🏪 Fetching stations for provider: ${providerEmail}`);
+
+    // Fetch all carstations documents
+    const carStationsSnapshot = await getDocs(collection(db, "carstations"));
+
+    const stations: any[] = [];
+
+    // Process each station
+    for (const stationDoc of carStationsSnapshot.docs) {
+      const stationData = stationDoc.data();
+      const stationCreatedUserId =
+        stationData.createdUserId || stationData.uId || stationData.uid;
+
+      // Match stations that belong to this provider
+      if (stationCreatedUserId === providerEmail) {
+        // Get the station email to match with orders
+        const stationEmail =
+          stationData.email || stationCreatedUserId || stationDoc.id;
+
+        console.log(
+          `🔍 Calculating consumption for station: ${stationData.name}, email: ${stationEmail}`
+        );
+
+        // Calculate fuel consumption for this station
+        const consumption = await calculateStationFuelConsumption(stationEmail);
+
+        stations.push({
+          id: stationDoc.id,
+          stationName: stationData.name || "-",
+          address: stationData.address || stationData.location || "-",
+          fuel91Consumed: consumption.fuel91Consumed,
+          fuel95Consumed: consumption.fuel95Consumed,
+          dieselConsumed: consumption.dieselConsumed,
+          stationStatus: {
+            active: stationData.isActive !== false,
+            text: stationData.isActive !== false ? "نشط" : "متوقف",
+          },
+        });
+      }
+    }
+
+    console.log(
+      `✅ Found ${stations.length} stations for provider ${providerEmail}`
+    );
+    return stations;
+  } catch (error) {
+    console.error("❌ Error fetching provider stations:", error);
+    return [];
   }
 };
 
