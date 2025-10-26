@@ -2589,6 +2589,113 @@ export const fetchAllAdminWalletRequests = async () => {
 };
 
 /**
+ * Fetch all fuel delivery requests (توصيل الوقود) for admin dashboard
+ * Filters by service.title.ar == "توصيل الوقود" or serviceId == "76WpaQ5NQs4TJUQJn6hV"
+ * @returns Promise with all fuel delivery requests data
+ */
+export const fetchAdminFuelDeliveryRequests = async () => {
+  try {
+    console.log(
+      "\n🔄 Fetching admin fuel delivery requests from orders collection..."
+    );
+
+    const ordersRef = collection(db, "orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+
+    const allOrdersData: any[] = [];
+
+    // Helper function to format Firestore timestamp
+    const formatDate = (timestamp: any): string => {
+      if (!timestamp) return "-";
+
+      try {
+        if (timestamp.toDate && typeof timestamp.toDate === "function") {
+          return new Date(timestamp.toDate()).toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        if (timestamp instanceof Date) {
+          return timestamp.toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        return new Date(timestamp).toLocaleString("ar-EG", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (error) {
+        return String(timestamp);
+      }
+    };
+
+    // Filter for fuel delivery orders
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Check if this is a fuel delivery order
+      const isFuelDelivery =
+        data.service?.title?.ar === "توصيل الوقود" ||
+        data.service?.title?.en === "Fuel Delivery" ||
+        data.serviceId === "76WpaQ5NQs4TJUQJn6hV";
+
+      if (isFuelDelivery) {
+        // Extract fuel type from selectedOption
+        let fuelType = "-";
+        if (data.selectedOption?.title?.ar) {
+          fuelType = data.selectedOption.title.ar;
+        } else if (data.selectedOption?.title?.en) {
+          fuelType = data.selectedOption.title.en;
+        } else if (data.selectedOption?.name?.ar) {
+          fuelType = data.selectedOption.name.ar;
+        } else if (data.selectedOption?.name?.en) {
+          fuelType = data.selectedOption.name.en;
+        }
+
+        // Extract delivery address from location
+        let deliveryAddress = "-";
+        if (data.location?.address) {
+          deliveryAddress = data.location.address;
+        } else if (data.address) {
+          deliveryAddress = data.address;
+        }
+
+        allOrdersData.push({
+          id: doc.id,
+          requestNumber: data.refId || doc.id, // رقم العملية
+          driverName: "-", // السائق الحالي
+          driverType: "-", // نوع السائق
+          fuelType: fuelType, // نوع الوقود
+          quantity: data.totalLitre?.toString() || "0", // الكمية (لتر)
+          deliveryAddress: deliveryAddress, // عنوان التوصيل
+          requestDate: formatDate(data.orderDate), // تاريخ الطلب
+          status: data.status || "-", // حالة الطلب
+        });
+      }
+    });
+
+    console.log(
+      `✅ Total admin fuel delivery requests found: ${allOrdersData.length}`
+    );
+    return allOrdersData;
+  } catch (error) {
+    console.error("❌ Error fetching admin fuel delivery requests:", error);
+    throw error;
+  }
+};
+
+/**
  * Fetch current company data from Firestore companies collection
  * @returns Promise with the current company data
  */
