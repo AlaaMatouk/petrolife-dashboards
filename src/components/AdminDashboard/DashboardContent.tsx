@@ -24,6 +24,7 @@ import {
   getMostConsumingCompanies,
   getMostConsumingClients,
   getMostUsedStations,
+  getLatestOrders,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -351,56 +352,20 @@ const FuelConsumptionByCitiesSection = () => {
 // stationsData, driversData and companiesData will be fetched from real data
 
 // Latest Orders Table
-const LatestOrdersSection = () => {
+const LatestOrdersSection = ({
+  ordersData,
+}: {
+  ordersData: {
+    code: string;
+    client: string;
+    service: string;
+    litre: string;
+    totalCost: string;
+    date: string;
+    status: string;
+  }[];
+}) => {
   const [selectedButton, setSelectedButton] = useState(0);
-
-  const ordersData = [
-    {
-      code: "21A254",
-      client: "احمد محمد",
-      service: "وقود طوارئ",
-      litre: "20",
-      totalCost: "213",
-      date: "21 فبراير 2025 - 5:05 ص",
-      status: "جاري المراجعة",
-    },
-    {
-      code: "21A254",
-      client: "احمد محمد",
-      service: "وقود طوارئ",
-      litre: "20",
-      totalCost: "213",
-      date: "21 فبراير 2025 - 5:05 ص",
-      status: "جاري المراجعة",
-    },
-    {
-      code: "21A254",
-      client: "احمد محمد",
-      service: "وقود طوارئ",
-      litre: "20",
-      totalCost: "213",
-      date: "21 فبراير 2025 - 5:05 ص",
-      status: "جاري المراجعة",
-    },
-    {
-      code: "21A254",
-      client: "احمد محمد",
-      service: "وقود طوارئ",
-      litre: "20",
-      totalCost: "213",
-      date: "21 فبراير 2025 - 5:05 ص",
-      status: "جاري المراجعة",
-    },
-    {
-      code: "21A254",
-      client: "احمد محمد",
-      service: "وقود طوارئ",
-      litre: "20",
-      totalCost: "213",
-      date: "21 فبراير 2025 - 5:05 ص",
-      status: "جاري المراجعة",
-    },
-  ];
 
   // Table columns for orders
   const ordersColumns = [
@@ -642,6 +607,20 @@ export const DashboardContent = (): JSX.Element => {
   >([]);
   const [loadingStationsData, setLoadingStationsData] = useState(true);
 
+  // State for latest orders data
+  const [latestOrdersData, setLatestOrdersData] = useState<
+    {
+      code: string;
+      client: string;
+      service: string;
+      litre: string;
+      totalCost: string;
+      date: string;
+      status: string;
+    }[]
+  >([]);
+  const [loadingLatestOrders, setLoadingLatestOrders] = useState(true);
+
   // Fetch all dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -657,6 +636,7 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingCompaniesData(true);
         setLoadingDriversData(true);
         setLoadingStationsData(true);
+        setLoadingLatestOrders(true);
 
         // Fetch all data in parallel
         const [
@@ -671,6 +651,7 @@ export const DashboardContent = (): JSX.Element => {
           consumingCompanies,
           consumingClients,
           usedStations,
+          latestOrders,
         ] = await Promise.all([
           getTotalClientsBalance(),
           getTotalFuelUsageByType(),
@@ -683,6 +664,7 @@ export const DashboardContent = (): JSX.Element => {
           getMostConsumingCompanies(),
           getMostConsumingClients(),
           getMostUsedStations(),
+          getLatestOrders(),
         ]);
 
         setTotalClientsBalance(balance);
@@ -696,6 +678,7 @@ export const DashboardContent = (): JSX.Element => {
         setCompaniesData(consumingCompanies);
         setDriversData(consumingClients);
         setStationsData(usedStations);
+        setLatestOrdersData(latestOrders);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -743,6 +726,7 @@ export const DashboardContent = (): JSX.Element => {
         setCompaniesData([]);
         setDriversData([]);
         setStationsData([]);
+        setLatestOrdersData([]);
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
@@ -755,6 +739,7 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingCompaniesData(false);
         setLoadingDriversData(false);
         setLoadingStationsData(false);
+        setLoadingLatestOrders(false);
       }
     };
 
@@ -803,7 +788,7 @@ export const DashboardContent = (): JSX.Element => {
       />
 
       {/* Latest Orders */}
-      <LatestOrdersSection />
+      <LatestOrdersSection ordersData={latestOrdersData} />
     </div>
   );
 };

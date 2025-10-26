@@ -3396,6 +3396,126 @@ export const getMostUsedStations = async (): Promise<
 };
 
 /**
+ * Get the latest orders for admin dashboard
+ * Fetches the most recent orders and transforms them for display
+ * @param limit - Number of orders to fetch (default: 5)
+ * @returns Promise with array of recent orders
+ */
+export const getLatestOrders = async (
+  limit: number = 5
+): Promise<
+  {
+    code: string;
+    client: string;
+    service: string;
+    litre: string;
+    totalCost: string;
+    date: string;
+    status: string;
+  }[]
+> => {
+  try {
+    console.log("\n📊 FETCHING LATEST ORDERS");
+    console.log("====================================");
+
+    // Fetch orders ordered by date descending
+    const orders = await fetchAllOrders();
+
+    // Sort by orderDate descending and take the first N orders
+    const latestOrders = orders.slice(0, limit);
+
+    console.log(`📦 Total orders fetched: ${orders.length}`);
+    console.log(`📋 Latest ${latestOrders.length} orders selected`);
+
+    // Transform orders to match table format
+    const transformedOrders = latestOrders.map((order) => {
+      // Get order code (ID or refId)
+      const code = order.id || order.refId || order.orderNumber || "-";
+
+      // Get client name
+      const clientName =
+        order.client?.name ||
+        order.client?.fullName ||
+        order.clientName ||
+        order.customer?.name ||
+        "-";
+
+      // Get service name
+      const serviceName =
+        order.selectedOption?.name?.ar ||
+        order.selectedOption?.name?.en ||
+        order.service?.title?.ar ||
+        order.service?.title?.en ||
+        order.selectedOption?.title?.ar ||
+        order.selectedOption?.title?.en ||
+        order.service?.name ||
+        order.category?.name?.ar ||
+        order.category?.name?.en ||
+        "-";
+
+      // Get litres
+      const litres =
+        order.totalLitre ||
+        order.quantity ||
+        order.selectedOption?.quantity ||
+        order.liters ||
+        "0";
+
+      // Get total cost
+      const totalCost =
+        order.totalCost ||
+        order.totalPrice ||
+        order.price ||
+        order.amount ||
+        "0";
+
+      // Format date
+      let formattedDate = "-";
+      if (order.orderDate) {
+        const date = order.orderDate.toDate
+          ? order.orderDate.toDate()
+          : new Date(order.orderDate);
+        formattedDate = new Intl.DateTimeFormat("ar-SA", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        }).format(date);
+      }
+
+      // Get status
+      const status =
+        order.status ||
+        order.orderStatus ||
+        (order.isCompleted
+          ? "مكتمل"
+          : order.isRejected
+          ? "ملغي"
+          : "جاري المراجعة");
+
+      return {
+        code,
+        client: clientName,
+        service: serviceName,
+        litre: String(litres),
+        totalCost: String(totalCost),
+        date: formattedDate,
+        status,
+      };
+    });
+
+    console.log(`✅ Transformed ${transformedOrders.length} orders`);
+    console.log("====================================\n");
+
+    return transformedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching latest orders:", error);
+    return [];
+  }
+};
+
+/**
  * Get the most consuming companies based on orders
  * Calculates total money spent per company from all their orders
  * @returns Promise with array of companies sorted by consumption (descending)
