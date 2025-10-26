@@ -49,7 +49,7 @@ export const ReceivedDeliveryReq = () => {
       viewDetailsRoute={(id) =>
         `/fuel-delivery-requests/received-delivery-requests/${id}`
       }
-      loadingMessage="جاري تحميل طلبات التوصيل المستلمة..."
+      loadingMessage="جاري تحميل طلبات التوصيل المعلقة..."
       itemsPerPage={10}
       showTimeFilter={false}
       showAddButton={false}

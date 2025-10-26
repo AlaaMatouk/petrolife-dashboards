@@ -2696,14 +2696,14 @@ export const fetchAdminFuelDeliveryRequests = async () => {
 };
 
 /**
- * Fetch received/done fuel delivery requests (توصيل الوقود) for admin dashboard
- * Filters by service.title.ar == "توصيل الوقود" AND status == "done"
- * @returns Promise with done fuel delivery requests data
+ * Fetch pending fuel delivery requests (توصيل الوقود) for admin dashboard
+ * Filters by service.title.ar == "توصيل الوقود" AND status == "pending"
+ * @returns Promise with pending fuel delivery requests data
  */
 export const fetchAdminReceivedDeliveryRequests = async () => {
   try {
     console.log(
-      "\n🔄 Fetching admin received delivery requests from orders collection..."
+      "\n🔄 Fetching admin pending delivery requests from orders collection..."
     );
 
     const ordersRef = collection(db, "orders");
@@ -2747,18 +2747,18 @@ export const fetchAdminReceivedDeliveryRequests = async () => {
       }
     };
 
-    // Filter for done fuel delivery orders
+    // Filter for pending fuel delivery orders
     querySnapshot.forEach((doc) => {
       const data = doc.data();
 
-      // Check if this is a done fuel delivery order
+      // Check if this is a pending fuel delivery order
       const isFuelDelivery =
         data.service?.title?.ar === "توصيل الوقود" ||
         data.service?.title?.en === "Fuel Delivery" ||
         data.serviceId === "76WpaQ5NQs4TJUQJn6hV";
-      const isDone = data.status === "done";
+      const isPending = data.status === "pending";
 
-      if (isFuelDelivery && isDone) {
+      if (isFuelDelivery && isPending) {
         // Extract fuel type from selectedOption
         let fuelType = "-";
         if (data.selectedOption?.title?.ar) {
@@ -2792,11 +2792,64 @@ export const fetchAdminReceivedDeliveryRequests = async () => {
     });
 
     console.log(
-      `✅ Total admin received delivery requests found: ${allOrdersData.length}`
+      `✅ Total admin pending delivery requests found: ${allOrdersData.length}`
     );
     return allOrdersData;
   } catch (error) {
-    console.error("❌ Error fetching admin received delivery requests:", error);
+    console.error("❌ Error fetching admin pending delivery requests:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a single order by ID from Firestore
+ * @param orderId - The ID of the order to fetch
+ * @returns Promise with the order data
+ */
+export const fetchOrderById = async (orderId: string) => {
+  try {
+    console.log(`🔄 Fetching order with ID: ${orderId}`);
+
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnapshot = await getDoc(orderRef);
+
+    if (!orderSnapshot.exists()) {
+      console.error("❌ Order not found:", orderId);
+      throw new Error("Order not found");
+    }
+
+    const orderData = {
+      id: orderSnapshot.id,
+      ...orderSnapshot.data(),
+    };
+
+    console.log("✅ Order fetched successfully:", orderData.id);
+    return orderData;
+  } catch (error) {
+    console.error("❌ Error fetching order:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update order status in Firestore
+ * @param orderId - The ID of the order to update
+ * @param newStatus - The new status to set (e.g., "done", "cancelled")
+ * @returns Promise with success boolean
+ */
+export const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  try {
+    console.log(`🔄 Updating order ${orderId} status to: ${newStatus}`);
+
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, {
+      status: newStatus,
+    });
+
+    console.log(`✅ Order ${orderId} status updated to: ${newStatus}`);
+    return true;
+  } catch (error) {
+    console.error("❌ Error updating order status:", error);
     throw error;
   }
 };
