@@ -22,6 +22,8 @@ import {
   getTireChangeOperationsBySize,
   getOilChangeOperationsBySize,
   getMostConsumingCompanies,
+  getMostConsumingClients,
+  getMostUsedStations,
 } from "../../services/firestore";
 
 // Context type for outlet (uncomment when using search functionality)
@@ -346,23 +348,7 @@ const FuelConsumptionByCitiesSection = () => {
   );
 };
 
-// Most Used Section
-const stationsData = [
-  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
-  { name: "محطة الصالح", email: "info@salah.com", price: 2543 },
-  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
-  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
-  { name: "محطة الصالح", email: "test@test.com", price: 2543 },
-];
-
-const driversData = [
-  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
-  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
-  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
-  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
-  { name: "محمد أحمد", email: "test@test.com", price: 2543 },
-];
-// companiesData will be fetched from real data
+// stationsData, driversData and companiesData will be fetched from real data
 
 // Latest Orders Table
 const LatestOrdersSection = () => {
@@ -634,6 +620,28 @@ export const DashboardContent = (): JSX.Element => {
   >([]);
   const [loadingCompaniesData, setLoadingCompaniesData] = useState(true);
 
+  // State for most consuming clients data
+  const [driversData, setDriversData] = useState<
+    {
+      name: string;
+      email: string;
+      price: number;
+      image?: string;
+    }[]
+  >([]);
+  const [loadingDriversData, setLoadingDriversData] = useState(true);
+
+  // State for most used stations data
+  const [stationsData, setStationsData] = useState<
+    {
+      name: string;
+      email: string;
+      price: number;
+      image?: string;
+    }[]
+  >([]);
+  const [loadingStationsData, setLoadingStationsData] = useState(true);
+
   // Fetch all dashboard data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -647,6 +655,8 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingTireChangeData(true);
         setLoadingOilChangeData(true);
         setLoadingCompaniesData(true);
+        setLoadingDriversData(true);
+        setLoadingStationsData(true);
 
         // Fetch all data in parallel
         const [
@@ -659,6 +669,8 @@ export const DashboardContent = (): JSX.Element => {
           tireChange,
           oilChange,
           consumingCompanies,
+          consumingClients,
+          usedStations,
         ] = await Promise.all([
           getTotalClientsBalance(),
           getTotalFuelUsageByType(),
@@ -669,6 +681,8 @@ export const DashboardContent = (): JSX.Element => {
           getTireChangeOperationsBySize(),
           getOilChangeOperationsBySize(),
           getMostConsumingCompanies(),
+          getMostConsumingClients(),
+          getMostUsedStations(),
         ]);
 
         setTotalClientsBalance(balance);
@@ -680,6 +694,8 @@ export const DashboardContent = (): JSX.Element => {
         setTireChangeData(tireChange);
         setOilChangeData(oilChange);
         setCompaniesData(consumingCompanies);
+        setDriversData(consumingClients);
+        setStationsData(usedStations);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setTotalClientsBalance(0);
@@ -725,6 +741,8 @@ export const DashboardContent = (): JSX.Element => {
           vip: 0,
         });
         setCompaniesData([]);
+        setDriversData([]);
+        setStationsData([]);
       } finally {
         setLoadingBalance(false);
         setLoadingFuelData(false);
@@ -735,6 +753,8 @@ export const DashboardContent = (): JSX.Element => {
         setLoadingTireChangeData(false);
         setLoadingOilChangeData(false);
         setLoadingCompaniesData(false);
+        setLoadingDriversData(false);
+        setLoadingStationsData(false);
       }
     };
 

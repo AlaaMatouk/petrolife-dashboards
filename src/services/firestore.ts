@@ -3200,6 +3200,202 @@ export const getTotalUsersByType = async (): Promise<{
 };
 
 /**
+ * Get the most consuming clients (individuals) based on orders
+ * Calculates total money spent per client from all their orders
+ * @returns Promise with array of clients sorted by consumption (descending)
+ */
+export const getMostConsumingClients = async (): Promise<
+  {
+    name: string;
+    email: string;
+    price: number;
+    image?: string;
+  }[]
+> => {
+  try {
+    console.log("\n📊 CALCULATING MOST CONSUMING CLIENTS");
+    console.log("====================================");
+
+    // Fetch all clients and orders in parallel
+    const [clientsSnapshot, ordersSnapshot] = await Promise.all([
+      fetchAllClients(),
+      fetchAllOrders(),
+    ]);
+
+    console.log(`👥 Total clients: ${clientsSnapshot.length}`);
+    console.log(`📦 Total orders: ${ordersSnapshot.length}`);
+
+    // Create a map to store client consumption data
+    const clientConsumptionMap = new Map<
+      string,
+      { totalSpent: number; name: string; email: string; image?: string }
+    >();
+
+    // Process each client
+    clientsSnapshot.forEach((client) => {
+      const clientEmail = client.email || "";
+      const clientId = client.id || client.uid || "";
+      const identifier = clientEmail || clientId;
+
+      if (identifier) {
+        clientConsumptionMap.set(identifier, {
+          totalSpent: 0,
+          name: client.name || client.fullName || "-",
+          email: clientEmail,
+          image: client.profileImage || client.image || client.photoURL,
+        });
+      }
+    });
+
+    // Calculate total spent per client from orders
+    ordersSnapshot.forEach((order) => {
+      const clientEmail = order.client?.email || order.clientEmail;
+      const clientId = order.clientId;
+      const orderIdentifier = clientEmail || clientId;
+
+      if (orderIdentifier) {
+        // Check if this order belongs to any client
+        clientConsumptionMap.forEach((value, key) => {
+          // Match by client email or ID
+          const isMatch =
+            orderIdentifier === key ||
+            orderIdentifier === value.email ||
+            orderIdentifier.toLowerCase() === value.email.toLowerCase();
+
+          if (isMatch) {
+            // Calculate total cost from order
+            const totalCost =
+              order.totalCost ??
+              order.totalPrice ??
+              order.price ??
+              order.amount ??
+              0;
+
+            const cost = parseFloat(String(totalCost)) || 0;
+            value.totalSpent += cost;
+          }
+        });
+      }
+    });
+
+    // Convert map to array and sort by total spent (descending)
+    const clientsArray = Array.from(clientConsumptionMap.values())
+      .filter((client) => client.totalSpent > 0) // Only include clients with consumption
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .slice(0, 5) // Get top 5
+      .map((client) => ({
+        name: client.name,
+        email: client.email,
+        price: Math.round(client.totalSpent),
+        image: client.image,
+      }));
+
+    console.log(
+      `✅ Top ${clientsArray.length} most consuming clients calculated`
+    );
+    console.log("====================================\n");
+
+    return clientsArray;
+  } catch (error) {
+    console.error("❌ Error calculating most consuming clients:", error);
+    return [];
+  }
+};
+
+/**
+ * Get the most used fuel stations based on orders
+ * Calculates total money spent per station from all their orders
+ * @returns Promise with array of stations sorted by consumption (descending)
+ */
+export const getMostUsedStations = async (): Promise<
+  {
+    name: string;
+    email: string;
+    price: number;
+    image?: string;
+  }[]
+> => {
+  try {
+    console.log("\n📊 CALCULATING MOST USED STATIONS");
+    console.log("====================================");
+
+    // Fetch all stations and orders in parallel
+    const [stationsSnapshot, ordersSnapshot] = await Promise.all([
+      getDocs(collection(db, "carstations")),
+      fetchAllOrders(),
+    ]);
+
+    console.log(`⛽ Total stations: ${stationsSnapshot.size}`);
+    console.log(`📦 Total orders: ${ordersSnapshot.length}`);
+
+    // Create a map to store station consumption data
+    const stationConsumptionMap = new Map<
+      string,
+      { totalSpent: number; name: string; email: string; image?: string }
+    >();
+
+    // Process each station
+    stationsSnapshot.forEach((stationDoc) => {
+      const stationData = stationDoc.data();
+      const stationEmail = stationData.email || "";
+
+      if (stationEmail) {
+        stationConsumptionMap.set(stationEmail, {
+          totalSpent: 0,
+          name: stationData.name || stationData.company || "-",
+          email: stationEmail,
+          image:
+            stationData.logo || stationData.image || stationData.profileImage,
+        });
+      }
+    });
+
+    // Calculate total spent per station from orders
+    ordersSnapshot.forEach((order) => {
+      const stationEmail = order.carStation?.email || order.stationEmail;
+
+      if (stationEmail) {
+        // Check if this order belongs to any station
+        if (stationConsumptionMap.has(stationEmail)) {
+          const station = stationConsumptionMap.get(stationEmail)!;
+
+          // Calculate total cost from order
+          const totalCost =
+            order.totalCost ??
+            order.totalPrice ??
+            order.price ??
+            order.amount ??
+            0;
+
+          const cost = parseFloat(String(totalCost)) || 0;
+          station.totalSpent += cost;
+        }
+      }
+    });
+
+    // Convert map to array and sort by total spent (descending)
+    const stationsArray = Array.from(stationConsumptionMap.values())
+      .filter((station) => station.totalSpent > 0) // Only include stations with consumption
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .slice(0, 5) // Get top 5
+      .map((station) => ({
+        name: station.name,
+        email: station.email,
+        price: Math.round(station.totalSpent),
+        image: station.image,
+      }));
+
+    console.log(`✅ Top ${stationsArray.length} most used stations calculated`);
+    console.log("====================================\n");
+
+    return stationsArray;
+  } catch (error) {
+    console.error("❌ Error calculating most used stations:", error);
+    return [];
+  }
+};
+
+/**
  * Get the most consuming companies based on orders
  * Calculates total money spent per company from all their orders
  * @returns Promise with array of companies sorted by consumption (descending)
