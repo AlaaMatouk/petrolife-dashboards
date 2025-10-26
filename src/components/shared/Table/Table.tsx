@@ -96,14 +96,14 @@ export const Table = <T extends Record<string, any>>({
                 {reversedColumns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-4 py-3 text-sm text-center ${
+                    className={`px-4 py-3 text-sm text-center align-middle ${
                       column.width || "w-auto"
                     } ${cellClassName}`}
                     style={{
                       borderBottom: "1px solid var(--border-light, #e5e7eb)",
                     }}
                   >
-                    <div className="flex items-center justify-start">
+                    <div className="flex items-center ">
                       {column.render
                         ? column.render(row[column.key], row, rowIndex)
                         : row[column.key]}

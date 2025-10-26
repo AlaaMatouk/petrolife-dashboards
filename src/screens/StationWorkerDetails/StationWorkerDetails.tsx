@@ -3,10 +3,13 @@ import { serviceDistributerNavigationMenuData, userInfo } from '../../constants/
 import { UserRound, Calendar } from 'lucide-react'
 import { InfoDisplay } from '../../components/sections/InfoDisplay'
 import { DataTableSection } from '../../components/sections/DataTableSection'
+import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { fetchFuelStationWorkerByEmail, fetchWorkerTransactions } from '../../services/firestore'
 
 // Worker Record interface
 interface WorkerRecord {
-  id: number;
+  id: string | number;
   transactionNumber: string;
   stationName: string;
   clientName: string;
@@ -17,16 +20,76 @@ interface WorkerRecord {
 }
 
 function StationWorkerDetails() {
-  // Mock worker data - replace with actual data fetching
-  const workerData = {
-    name: "محمد أحمد",
-    email: "hesham@gmail.com",
-    phone: "+96625458236",
-    city: "الرياض",
-    address: "12 ش الصالحين ، الرياض",
-    image: "hsgndkmmcjhd.jpg",
-    employeeId: "2153684"
-  };
+  const { id } = useParams<{ id: string }>()
+  const [workerData, setWorkerData] = useState<any>({
+    name: "جاري التحميل...",
+    email: "-",
+    phone: "-",
+    city: "-",
+    address: "-",
+    image: "",
+    employeeId: "-"
+  })
+  const [workerEmail, setWorkerEmail] = useState<string>("")
+
+  // Fetch worker data from Firestore
+  useEffect(() => {
+    const fetchWorkerData = async () => {
+      if (!id) {
+        console.error("No worker UID provided")
+        return
+      }
+
+      try {
+        console.log("📥 Fetching worker data for UID:", id)
+        
+        // Fetch worker using the UID
+        const workerData = await fetchFuelStationWorkerByEmail(id)
+
+        if (workerData) {
+          console.log("✅ Worker data fetched from Firestore:", workerData)
+          console.log("📋 Worker Data Structure:", {
+            name: workerData.name,
+            email: workerData.email,
+            phoneNumber: workerData.phoneNumber,
+            carStation: workerData.carStation,
+            stationsCompany: workerData.stationsCompany,
+            uId: workerData.uId,
+            image: workerData.image
+          })
+
+                     // Store worker email for fetching transactions
+           setWorkerEmail(workerData.email || id);
+
+                     // Map the data to match our workerData structure
+           setWorkerData({
+             name: workerData.name || "-",
+             email: workerData.email || id,
+             phone: workerData.phoneNumber || "-",
+             city: workerData.carStation?.name || workerData.stationsCompany?.name || "-",
+             address: workerData.carStation?.address || "-",
+             image: workerData.image || "",
+             employeeId: "-"
+           })
+        } else {
+          console.log("⚠️ No worker found with this email")
+          setWorkerData({
+            name: "غير موجود",
+            email: "-",
+            phone: "-",
+            city: "-",
+            address: "-",
+            image: "",
+            employeeId: "-"
+          })
+        }
+      } catch (error) {
+        console.error("❌ Error fetching worker data:", error)
+      }
+    }
+
+    fetchWorkerData()
+  }, [id])
 
   // Define the fields configuration for station worker
   // Order: Right to left as shown in the screenshot
@@ -90,89 +153,6 @@ function StationWorkerDetails() {
     console.log("Edit worker data");
   };
 
-  // Mock worker records data - replace with actual data fetching
-  const workerRecordsData: WorkerRecord[] = [
-    {
-      id: 1,
-      transactionNumber: "TXN001",
-      stationName: "محطة الرياض الرئيسية",
-      clientName: "أحمد محمد",
-      fuelType: "بنزين 95",
-      totalLiters: "50",
-      totalPrice: "125.50",
-      creationDate: "2024-01-15"
-    },
-    {
-      id: 2,
-      transactionNumber: "TXN002",
-      stationName: "محطة جدة الشمالية",
-      clientName: "سارة أحمد",
-      fuelType: "ديزل",
-      totalLiters: "75",
-      totalPrice: "187.25",
-      creationDate: "2024-01-14"
-    },
-    {
-      id: 3,
-      transactionNumber: "TXN003",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    },
-    {
-      id: 4,
-      transactionNumber: "TXN004",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    },
-    {
-      id: 5,
-      transactionNumber: "TXN005",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    },
-    {
-      id: 6,
-      transactionNumber: "TXN006",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    },
-    {
-      id: 7,
-      transactionNumber: "TXN007",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    },
-    {
-      id: 8,
-      transactionNumber: "TXN008",
-      stationName: "محطة الرياض الجنوبية",
-      clientName: "محمد علي",
-      fuelType: "بنزين 91",
-      totalLiters: "30",
-      totalPrice: "75.00",
-      creationDate: "2024-01-13"
-    }
-  ];
 
   // Define columns for worker records table
   const workerRecordColumns = [
@@ -228,12 +208,21 @@ function StationWorkerDetails() {
 
   // Fetch data function for worker records
   const fetchWorkerRecordsData = async (): Promise<WorkerRecord[]> => {
-    // TODO: Replace with actual API call when ready
-    return Promise.resolve(workerRecordsData);
+    if (!workerEmail) {
+      console.log("⚠️ No worker email available for fetching transactions");
+      return [];
+    }
+    try {
+      const transactions = await fetchWorkerTransactions(workerEmail);
+      return transactions;
+    } catch (error) {
+      console.error("❌ Error fetching worker records:", error);
+      return [];
+    }
   };
 
   // Handle status toggle (if needed)
-  const handleToggleStatus = (recordId: number) => {
+  const handleToggleStatus = (recordId: string | number) => {
     console.log(`Toggle status for worker record ${recordId}`);
     // TODO: Implement actual status toggle API call
   };
@@ -241,7 +230,7 @@ function StationWorkerDetails() {
   return (
     <LayoutSimple
       headerProps={{
-        title: "عمال المحطات / محمد أحمد ",
+        title: `عمال المحطات / ${workerData.name}`,
         titleIconSrc:<img src="/src/assets/imgs/icons/user-group.svg" />
         ,
         showSearch: true,
@@ -276,14 +265,13 @@ function StationWorkerDetails() {
           columns={workerRecordColumns}
           fetchData={fetchWorkerRecordsData}
           onToggleStatus={handleToggleStatus}
-          // addNewRoute not provided to hide add button
+          addNewRoute="/add-worker-record"
           viewDetailsRoute={(id) => `/worker-record/${id}`}
           loadingMessage="جاري تحميل بيانات سجل العامل..."
           errorMessage="فشل في تحميل بيانات سجل العامل."
           itemsPerPage={5}
           showTimeFilter={true}
-          showExportButton={false} // Hide export button
-          showAddButton={false} // Hide add button
+          showAddButton={false}
         />
       </div>
     </LayoutSimple>

@@ -52,16 +52,16 @@ const MostUsedSection = ({
         width: "min-w-[200px]",
         render: (_value: any, station: any) => (
           <div className="flex items-center gap-3">
-            <div className="text-right">
+            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+              <Fuel className="w-5 h-5 text-gray-500" />
+            </div>
+            <div className="text-right flex-1">
               <div className="font-medium text-gray-800 [direction:rtl] text-right">
                 {station?.name || 'N/A'}
               </div>
               <div className="text-sm text-gray-500 [direction:rtl] text-right">
                 {station?.address || 'N/A'}
               </div>
-            </div>
-            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-              <Fuel className="w-5 h-5 text-gray-500" />
             </div>
           </div>
         ),
@@ -85,16 +85,16 @@ const MostUsedSection = ({
         width: "min-w-full",
         render: (_value: any, driver: any) => (
           <div className="flex items-center gap-3">
-            <div className="text-right">
+            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+              <Users className="w-5 h-5 text-gray-500" />
+            </div>
+            <div className="text-right flex-1">
               <div className="font-medium text-gray-800 [direction:rtl] text-right">
                 {driver?.name || 'N/A'}
               </div>
               <div className="text-sm text-gray-500 [direction:rtl] text-right">
                 {driver?.phone || 'N/A'}
               </div>
-            </div>
-            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-              <Users className="w-5 h-5 text-gray-500" />
             </div>
           </div>
         ),

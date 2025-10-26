@@ -4,14 +4,9 @@ import {
   serviceDistributerNavigationMenuData,
   userInfo
 } from "../../constants/data";
-import {
-  Droplets,
-  Fuel,
-  Wallet
-} from "lucide-react";
 import dashboardIcon from "../../assets/imgs/icons/dashboard.svg";
 import { useState, useEffect } from "react";
-import { fetchServiceDistributerStatistics } from "../../services/firestore";
+import { fetchServiceDistributerStatistics, fetchTopClientsByConsumption, fetchTopStationsByConsumption } from "../../services/firestore";
 
 // Dashboard icon component
 const DashboardIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -77,6 +72,29 @@ export const ServiceDistributerDashboard = () => {
     }
   ]);
   const [loading, setLoading] = useState(true);
+  const [clientsData, setClientsData] = useState<any[]>([]);
+  const [stationsData, setStationsData] = useState<any[]>([]);
+
+  // Fetch top clients and stations data
+  useEffect(() => {
+    const loadTopData = async () => {
+      try {
+        console.log("🔄 Loading top clients data...");
+        const clients = await fetchTopClientsByConsumption();
+        console.log("✅ Top clients loaded:", clients);
+        setClientsData(clients);
+        
+        console.log("🔄 Loading top stations data...");
+        const stations = await fetchTopStationsByConsumption();
+        console.log("✅ Top stations loaded:", stations);
+        setStationsData(stations);
+      } catch (error) {
+        console.error("❌ Error loading top data:", error);
+      }
+    };
+
+    loadTopData();
+  }, []);
 
   useEffect(() => {
     const loadStatistics = async () => {
@@ -161,21 +179,9 @@ export const ServiceDistributerDashboard = () => {
     console.log("📈 statsData state changed:", statsData);
   }, [statsData]);
 
-  const stationsData = [
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محطة الصالح", address: "15 ش الرياض، الرياض", price: 2543, fuel: "542", type: "بنزين 91" },
-  ];
-
-  const driversData = [
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-    { name: "محمد أحمد", phone: "00965284358", cost: 2543, fuel: "542", type: "بنزين 91" },
-  ];
+  // Use real stations and clients data or fallback to empty arrays
+  const activeStationsData = stationsData.length > 0 ? stationsData : [];
+  const activeClientsData = clientsData.length > 0 ? clientsData : [];
 
   //   if (!isInitialized) {
   return (
@@ -201,8 +207,8 @@ export const ServiceDistributerDashboard = () => {
           <StationLocationsMap title="مواقع محطات بترولايف" />
           <DeliverySurveySection />
           <MostUsedSection 
-            stationsData={stationsData} 
-            driversData={driversData}
+            stationsData={activeStationsData} 
+            driversData={activeClientsData}
             stationsTitle="محطات الوقود الأكثر استخداما"
             driversTitle="الأفراد الأكثر استهلاكا"
           />

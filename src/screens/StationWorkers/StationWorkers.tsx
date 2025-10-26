@@ -2,10 +2,11 @@ import { DataTableSection } from "../../components/sections/DataTableSection";
 import { serviceDistributerNavigationMenuData, userInfo, workersData } from "../../constants/data";
 import { LayoutSimple } from "../../components/shared/Layout/LayoutSimple";
 import { UserRound } from "lucide-react";
+import { fetchFuelStationsWorkers } from "../../services/firestore";
 
 // Worker interface for Station Workers
 interface Worker {
-  id: number;
+  id: string | number;
   driverCode: string;
   driverName: string;
   phone: string;
@@ -63,12 +64,18 @@ export const StationWorkers = (): JSX.Element => {
 
   // Fetch data function for workers
   const fetchWorkersData = async (): Promise<Worker[]> => {
-    // TODO: Replace with actual API call when ready
-    return Promise.resolve(workersData as Worker[]);
+    try {
+      const workers = await fetchFuelStationsWorkers();
+      return workers as Worker[];
+    } catch (error) {
+      console.error("Error fetching workers:", error);
+      // Return mock data as fallback
+      return workersData as Worker[];
+    }
   };
 
   // Handle status toggle
-  const handleToggleStatus = (workerId: number) => {
+  const handleToggleStatus = (workerId: string | number) => {
     console.log(`Toggle status for worker ${workerId}`);
     // TODO: Implement actual status toggle API call
   };
