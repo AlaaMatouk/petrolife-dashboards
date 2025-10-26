@@ -3622,33 +3622,42 @@ export const fetchDriverById = async (driverId: string) => {
 };
 
 /**
- * Fetch multiple drivers by their IDs
+ * Fetch multiple drivers by their IDs from companies-drivers collection
  * @param driverIds - Array of driver document IDs
  * @returns Promise with array of driver data
  */
 export const fetchDriversByIds = async (driverIds: string[]) => {
   try {
     if (!driverIds || driverIds.length === 0) {
-      // console.log('No driver IDs provided');
+      console.log("No driver IDs provided");
       return [];
     }
 
-    // console.log('Fetching drivers by IDs:', driverIds);
-
-    const driverPromises = driverIds.map((id) =>
-      fetchDriverById(id).catch((err) => {
-        console.error(`Error fetching driver ${id}:`, err);
-        return null;
-      })
+    // Filter out null, undefined, and empty string IDs
+    const validDriverIds = driverIds.filter(
+      (id) => id && typeof id === "string" && id.trim() !== ""
     );
-    const drivers = await Promise.all(driverPromises);
 
-    // Filter out null values (failed fetches)
-    const validDrivers = drivers.filter((driver) => driver !== null);
+    if (validDriverIds.length === 0) {
+      console.log("No valid driver IDs found after filtering");
+      return [];
+    }
 
-    // console.log('Fetched drivers:', validDrivers);
+    console.log("Fetching drivers by IDs:", validDriverIds);
 
-    return validDrivers;
+    // Fetch all company drivers first
+    const allDrivers = await fetchCompaniesDrivers();
+    console.log("All company drivers fetched:", allDrivers.length);
+
+    // Filter drivers by matching their IDs with the provided driverIds
+    const carDrivers = allDrivers.filter((driver) =>
+      validDriverIds.includes(driver.id)
+    );
+
+    console.log("Car drivers found:", carDrivers.length);
+    console.log("Car drivers:", carDrivers);
+
+    return carDrivers;
   } catch (error) {
     console.error("Error fetching drivers by IDs:", error);
     throw error;
@@ -4835,6 +4844,14 @@ export const fetchStationsCompanyData = async (): Promise<
       `✅ Processed ${serviceProvidersData.length} service providers with counts`
     );
 
+    // Sort by creation date descending (newest first)
+    serviceProvidersData.sort((a, b) => {
+      // Try to get created date from metadata or fallback to 0
+      const dateA = (a as any).createdAt?.toDate?.() || new Date(0);
+      const dateB = (b as any).createdAt?.toDate?.() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
     return serviceProvidersData;
   } catch (error) {
     console.error("❌ Error fetching stations company data:", error);
@@ -4997,6 +5014,17 @@ export const fetchStationsCompanyRequests = async (): Promise<
 
     requestsSnapshot.forEach((doc) => {
       const data = doc.data();
+      const status = data.status || data.requestStatus || "معلق";
+
+      // Only include pending requests (exclude accepted and declined)
+      if (
+        status === "accepted" ||
+        status === "declined" ||
+        status === "مقبول" ||
+        status === "مرفوض"
+      ) {
+        return;
+      }
 
       // Transform the data to match our interface
       const requestData: StationsCompanyRequestData = {
@@ -5010,7 +5038,7 @@ export const fetchStationsCompanyRequests = async (): Promise<
         email: data.email || data.emailAddress || "غير محدد",
         stations:
           data.stations || data.stationsCount || data.numberOfStations || 0,
-        status: data.status || data.requestStatus || "معلق",
+        status: status,
         createdAt: data.createdAt || data.created_at,
         updatedAt: data.updatedAt || data.updated_at,
         ...data, // Include all other fields
@@ -5032,6 +5060,172 @@ export const fetchStationsCompanyRequests = async (): Promise<
     return joinRequestsData;
   } catch (error) {
     console.error("❌ Error fetching stations company join requests:", error);
+    throw error;
+  }
+};
+
+/**
+ * Accept a stations company join request
+ * Updates the request status to "accepted" and adds the company to stationscompany collection
+ * @param requestId - The ID of the request to accept
+ * @returns Promise<boolean> - Success status
+ */
+export const acceptStationsCompanyRequest = async (
+  requestId: string
+): Promise<boolean> => {
+  try {
+    console.log(`✅ Accepting stations company request: ${requestId}`);
+
+    // Get the request document
+    const requestRef = doc(db, "stations-company-requests", requestId);
+    const requestSnap = await getDoc(requestRef);
+
+    if (!requestSnap.exists()) {
+      console.error(`❌ Request with ID ${requestId} not found`);
+      return false;
+    }
+
+    const requestData = requestSnap.data();
+    console.log("📋 Request data:", requestData);
+
+    // Update the request status to "accepted"
+    await updateDoc(requestRef, {
+      status: "accepted",
+      updatedAt: serverTimestamp(),
+    });
+
+    console.log(`✅ Request ${requestId} status updated to accepted`);
+
+    // Add the company to stationscompany collection
+    const stationsCompanyData = {
+      providerName:
+        requestData.providerName ||
+        requestData.name ||
+        requestData.companyName ||
+        "غير محدد",
+      type:
+        requestData.type ||
+        requestData.providerType ||
+        requestData.serviceType ||
+        "غير محدد",
+      address: requestData.address || requestData.location || "غير محدد",
+      phoneNumber:
+        requestData.phoneNumber ||
+        requestData.phone ||
+        requestData.mobile ||
+        "غير محدد",
+      email: requestData.email || requestData.emailAddress || "غير محدد",
+      stations:
+        requestData.stations ||
+        requestData.stationsCount ||
+        requestData.numberOfStations ||
+        0,
+      status: "نشط", // Set as active
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    // Filter out undefined values from additional fields
+    const additionalFields = { ...requestData };
+    Object.keys(additionalFields).forEach((key) => {
+      if (additionalFields[key] === undefined) {
+        delete additionalFields[key];
+      }
+    });
+
+    // Merge additional fields (excluding undefined values)
+    const finalData = { ...stationsCompanyData, ...additionalFields };
+
+    // Add to stationscompany collection
+    const stationsCompanyRef = collection(db, "stationscompany");
+    const newCompanyDoc = await addDoc(stationsCompanyRef, finalData);
+
+    console.log(
+      `✅ Company added to stationscompany collection with ID: ${newCompanyDoc.id}`
+    );
+
+    return true;
+  } catch (error) {
+    console.error(
+      `❌ Error accepting stations company request ${requestId}:`,
+      error
+    );
+    throw error;
+  }
+};
+
+/**
+ * Fetch the count of pending requests from stations-company-requests collection
+ * @returns Promise<number> - Count of pending requests
+ */
+export const fetchPendingRequestsCount = async (): Promise<number> => {
+  try {
+    console.log("📊 Fetching pending requests count...");
+
+    // Fetch all documents from stations-company-requests collection
+    const requestsSnapshot = await getDocs(
+      collection(db, "stations-company-requests")
+    );
+
+    let pendingCount = 0;
+    requestsSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const status = data.status || data.requestStatus || "معلق";
+
+      // Only count pending requests (exclude accepted and declined)
+      if (
+        status !== "accepted" &&
+        status !== "declined" &&
+        status !== "مقبول" &&
+        status !== "مرفوض"
+      ) {
+        pendingCount++;
+      }
+    });
+
+    console.log(`✅ Pending requests count: ${pendingCount}`);
+    return pendingCount;
+  } catch (error) {
+    console.error("❌ Error fetching pending requests count:", error);
+    return 0;
+  }
+};
+
+/**
+ * Decline a stations company join request
+ * Updates the request status to "declined"
+ * @param requestId - The ID of the request to decline
+ * @returns Promise<boolean> - Success status
+ */
+export const declineStationsCompanyRequest = async (
+  requestId: string
+): Promise<boolean> => {
+  try {
+    console.log(`❌ Declining stations company request: ${requestId}`);
+
+    // Get the request document
+    const requestRef = doc(db, "stations-company-requests", requestId);
+    const requestSnap = await getDoc(requestRef);
+
+    if (!requestSnap.exists()) {
+      console.error(`❌ Request with ID ${requestId} not found`);
+      return false;
+    }
+
+    // Update the request status to "declined"
+    await updateDoc(requestRef, {
+      status: "declined",
+      updatedAt: serverTimestamp(),
+    });
+
+    console.log(`✅ Request ${requestId} status updated to declined`);
+
+    return true;
+  } catch (error) {
+    console.error(
+      `❌ Error declining stations company request ${requestId}:`,
+      error
+    );
     throw error;
   }
 };
