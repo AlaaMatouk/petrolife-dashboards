@@ -1,31 +1,119 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { serviceDistributerNavigationMenuData, userInfo } from '../../constants/data'
 import { LayoutSimple } from '../../components/shared/Layout/LayoutSimple'
 import { Eye, Car } from 'lucide-react'
 import { InfoDisplay } from '../../components/sections/InfoDisplay'
+import { fetchFuelStationOrderById } from '../../services/firestore'
 
 export function FuelStationRequestsDetails() {
-  // Mock fuel station request data - replace with actual data fetching
-  const fuelRequestData = {
-    transactionNumber: "214523625",
-    stationName: "محطة الرياض",
-    customerName: "محمد علي",
-    workerName: "خالد عبدالله",
-    fuelType: "ديزل",
-    totalLiters: "15",
-    totalPrice: "95",
-    orderDate: "21 فبراير 2025 - 5:05 ص"
-  };
+  const { id } = useParams<{ id: string }>()
+  const [fuelRequestData, setFuelRequestData] = useState<any>({
+    transactionNumber: "-",
+    stationName: "-",
+    customerName: "-",
+    workerName: "-",
+    fuelType: "-",
+    totalLiters: "-",
+    totalPrice: "-",
+    orderDate: "-"
+  })
+  const [vehicleData, setVehicleData] = useState<any>({
+    vehicleNumber: "-",
+    driverName: "-",
+    vehicleType: "-",
+    vehicleMake: "-",
+    vehicleModel: "-",
+    manufactureYear: "-"
+  })
+  const [loading, setLoading] = useState(true)
 
-  // Mock vehicle data - replace with actual data fetching
-  const vehicleData = {
-    vehicleNumber: "214523625",
-    driverName: "محمد علي",
-    vehicleType: "صغيرة",
-    vehicleMake: "تيوتا",
-    vehicleModel: "كرولا",
-    manufactureYear: "2020"
-  };
+  // Fetch order data from Firestore
+  useEffect(() => {
+    const fetchOrderData = async () => {
+      if (!id) {
+        console.error("No order ID provided")
+        setLoading(false)
+        return
+      }
+
+      try {
+        console.log("📥 Fetching order data for ID:", id)
+        
+        // Fetch order using the ID
+        const order = await fetchFuelStationOrderById(id)
+
+        if (order) {
+          console.log("✅ Order data fetched from Firestore:", order)
+
+          // Format date
+          const formatDate = (date: any): string => {
+            if (!date) return "-";
+            try {
+              const dateObj = date.toDate ? date.toDate() : new Date(date);
+              const day = String(dateObj.getDate()).padStart(2, "0");
+              const year = dateObj.getFullYear();
+              const hoursNum = dateObj.getHours();
+              const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+              const ampm = hoursNum >= 12 ? "م" : "ص";
+              const displayHours = hoursNum % 12 || 12;
+
+              const monthNames = [
+                "يناير",
+                "فبراير",
+                "مارس",
+                "أبريل",
+                "مايو",
+                "يونيو",
+                "يوليو",
+                "أغسطس",
+                "سبتمبر",
+                "أكتوبر",
+                "نوفمبر",
+                "ديسمبر",
+              ];
+
+              return `${day} ${
+                monthNames[dateObj.getMonth()]
+              } ${year} - ${displayHours}:${minutes} ${ampm}`;
+            } catch (error) {
+              return "-";
+            }
+          };
+
+          // Map fuel request data
+          setFuelRequestData({
+            transactionNumber: order.refId || order.id || "-",
+            stationName: order.carStation?.name || "-",
+            customerName: order.client?.name || "-",
+            workerName: order.fuelStationsWorker?.name || "-",
+            fuelType: order.selectedOption?.categoryName || order.selectedOption?.title?.ar || "-",
+            totalLiters: order.totalLitre?.toString() || "-",
+            totalPrice: order.totalPrice?.toString() || "-",
+            orderDate: formatDate(order.orderDate)
+          })
+
+          // Map vehicle data
+          setVehicleData({
+            vehicleNumber: order.clientCar?.carNumber || "-",
+            driverName: order.assignedDriver?.name || "-",
+            vehicleType: order.assignedDriver?.car?.size || "-",
+            vehicleMake: order.assignedDriver?.car?.carModel?.name || "-",
+            vehicleModel: order.assignedDriver?.carType?.name || "-",
+            manufactureYear: "-"
+          })
+        } else {
+          console.log("⚠️ No order found with this ID")
+        }
+      } catch (error) {
+        console.error("❌ Error fetching order data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchOrderData()
+  }, [id])
 
   // Define the fields configuration for fuel request
   // Using CSS Grid with 6 columns for flexible layouts
@@ -141,9 +229,9 @@ export function FuelStationRequestsDetails() {
   return (
     <LayoutSimple
       headerProps={{
-        title: "طلبات محطات الوقود / معاملة 2152368 ",
+        title: `طلبات محطات الوقود / معاملة ${fuelRequestData.transactionNumber}`,
         titleIconSrc: <Eye className="w-5 h-5 text-gray-500" />,
-        showSearch: true,
+        showSearch: false,
         searchProps: {
           onSearch: (query) => console.log("Search:", query),
         },

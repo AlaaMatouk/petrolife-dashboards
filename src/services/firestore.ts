@@ -546,7 +546,7 @@ export const fetchOrdersForClient = async (clientId: string) => {
     const allOrdersData: any[] = [];
 
     querySnapshot.forEach((doc) => {
-      const orderData = {
+      const orderData: any = {
         id: doc.id,
         ...doc.data(),
       };
@@ -2665,7 +2665,7 @@ export const fetchAllClients = async (): Promise<any[]> => {
     const clientsData: any[] = [];
 
     querySnapshot.forEach((doc) => {
-      const clientData = {
+      const clientData: any = {
         id: doc.id,
         ...doc.data(),
       };
@@ -4977,6 +4977,92 @@ export const fetchFuelStations = async (): Promise<FuelStation[]> => {
  * Only returns stations where createdUserId matches current user's email
  * @returns Promise with array of user's fuel stations
  */
+/**
+ * Fetch a single fuel station by ID
+ * @param stationId The ID of the station document
+ * @returns Promise with station data or null if not found
+ */
+export const fetchFuelStationById = async (stationId: string): Promise<FuelStation | null> => {
+  try {
+    console.log("📍 Fetching station by ID:", stationId);
+    
+    if (!stationId) {
+      console.error("❌ No station ID provided");
+      return null;
+    }
+
+    // Get current user for filtering
+    const currentUser = auth.currentUser;
+    if (!currentUser || !currentUser.email) {
+      console.log("⚠️ No authenticated user found");
+      return null;
+    }
+    
+    const userEmail = currentUser.email;
+
+    // Fetch the station document
+    const stationRef = doc(db, "carstations", stationId);
+    const stationSnap = await getDoc(stationRef);
+
+    if (!stationSnap.exists()) {
+      console.log("⚠️ No station found with ID:", stationId);
+      return null;
+    }
+
+    const data = stationSnap.data();
+
+    // Verify that the station belongs to the current user
+    if (data.createdUserId !== userEmail) {
+      console.log("⚠️ Station does not belong to current user");
+      return null;
+    }
+
+    // Extract location data from formattedLocation or direct fields
+    const formattedLocation = data.formattedLocation || {};
+    const stationName =
+      data.name || data.email || formattedLocation.name || "Unknown Station";
+    const cityName =
+      formattedLocation.address?.city ||
+      data.address?.city ||
+      data.city ||
+      "Unknown City";
+    const latitude = formattedLocation.lat || data.latitude || 0;
+    const longitude = formattedLocation.lng || data.longitude || 0;
+
+    console.log("✅ Station data fetched:", {
+      id: stationSnap.id,
+      name: stationName,
+      city: cityName,
+      email: data.email,
+      phoneNumber: data.phoneNumber
+    });
+
+    return {
+      id: stationSnap.id,
+      stationName,
+      cityName,
+      latitude,
+      longitude,
+      formattedLocation: data.formattedLocation,
+      // Include all additional fields from the document
+      name: data.name,
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      address: data.address,
+      isActive: data.isActive,
+      type: data.type,
+      options: data.options,
+      balance: data.balance,
+      uId: data.uId,
+      createdDate: data.createdDate,
+      createdUserId: data.createdUserId,
+    };
+  } catch (error) {
+    console.error("❌ Error fetching station by ID:", error);
+    return null;
+  }
+};
+
 export const fetchUserFuelStations = async (): Promise<FuelStation[]> => {
   try {
     console.log("📍 Fetching user's fuel stations from Firestore...");
@@ -5618,25 +5704,22 @@ export const fetchCompanyStatistics = async (companyId: string) => {
       // Tire change statistics
       tireChange: {
         small:
-          tireChangeStats?.sizes?.find((s) => s.name === "صغيرة")?.count || 0,
+          (tireChangeStats as any)?.sizes?.find((s: any) => s.name === "صغيرة")?.count || 0,
         medium:
-          tireChangeStats?.sizes?.find((s) => s.name === "متوسطة")?.count || 0,
+          (tireChangeStats as any)?.sizes?.find((s: any) => s.name === "متوسطة")?.count || 0,
         large:
-          tireChangeStats?.sizes?.find((s) => s.name === "كبيرة")?.count || 0,
-        vip: tireChangeStats?.sizes?.find((s) => s.name === "VIP")?.count || 0,
-        total: tireChangeStats?.totalOrders || 0,
+          (tireChangeStats as any)?.sizes?.find((s: any) => s.name === "كبيرة")?.count || 0,
+        vip: (tireChangeStats as any)?.sizes?.find((s: any) => s.name === "VIP")?.count || 0,
+        total: (tireChangeStats as any)?.totalOrders || 0,
       },
 
       // Oil change statistics
       oilChange: {
-        small:
-          oilChangeStats?.sizes?.find((s) => s.name === "صغيرة")?.count || 0,
-        medium:
-          oilChangeStats?.sizes?.find((s) => s.name === "متوسطة")?.count || 0,
-        large:
-          oilChangeStats?.sizes?.find((s) => s.name === "كبيرة")?.count || 0,
-        vip: oilChangeStats?.sizes?.find((s) => s.name === "VIP")?.count || 0,
-        total: oilChangeStats?.totalOrders || 0,
+        small: 0,
+        medium: 0,
+        large: 0,
+        vip: 0,
+        total: oilChangeStats?.totalLitres || 0,
       },
     };
 
@@ -6536,6 +6619,44 @@ export const fetchFuelStationRequests = async (currentUserEmail: string): Promis
 };
 
 /**
+ * Fetch a single order by ID from stationscompany-orders
+ * @param orderId - The order ID
+ * @returns Promise with the order data or null
+ */
+export const fetchFuelStationOrderById = async (orderId: string): Promise<any | null> => {
+  try {
+    console.log("📥 Fetching order by ID:", orderId);
+
+    if (!orderId) {
+      console.error("❌ No order ID provided");
+      return null;
+    }
+
+    // Fetch the order from stationscompany-orders collection
+    const orderRef = doc(db, "stationscompany-orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+
+    if (!orderSnap.exists()) {
+      console.log("⚠️ No order found with ID:", orderId);
+      return null;
+    }
+
+    const orderData = {
+      id: orderSnap.id,
+      ...orderSnap.data(),
+    };
+
+    console.log("✅ Order data fetched successfully!");
+    console.log("📦 Order data:", orderData);
+
+    return orderData;
+  } catch (error) {
+    console.error("❌ Error fetching order by ID:", error);
+    return null;
+  }
+};
+
+/**
  * Wait for auth state to be initialized
  * @returns Promise with current user or null
  */
@@ -6722,6 +6843,203 @@ export const fetchServiceDistributerStatistics = async (): Promise<{
 };
 
 /**
+ * Fetch fuel stations workers from Firestore
+ * Filters by carStation.createdUserId matching current user's email
+ * @returns Promise with array of worker data
+ */
+/**
+ * Fetch a single fuel station worker by UID
+ * @param workerUid The Firebase UID (uId field) of the worker
+ * @returns Promise with worker data or null if not found
+ */
+export const fetchFuelStationWorkerByEmail = async (workerUid: string): Promise<any | null> => {
+  try {
+    console.log("👷 Fetching single worker by UID:", workerUid);
+    
+    if (!workerUid) {
+      console.error("❌ No worker UID provided");
+      return null;
+    }
+
+    // Fetch all workers and find the one with matching uId
+    // Since documents are keyed by email, we need to query and filter
+    const workersRef = collection(db, "fuelStationsWorkers");
+    const querySnapshot = await getDocs(workersRef);
+
+    let workerData = null;
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.uId === workerUid) {
+        workerData = {
+          id: doc.id, // Keep the email as the document ID for reference
+          ...data,
+        };
+      }
+    });
+
+    if (!workerData) {
+      console.log("⚠️ No worker found with UID:", workerUid);
+      return null;
+    }
+
+    console.log("✅ Worker data fetched successfully!");
+    console.log("📦 Worker data:", workerData);
+
+    return workerData;
+  } catch (error) {
+    console.error("❌ Error fetching worker by UID:", error);
+    return null;
+  }
+};
+
+export const fetchFuelStationsWorkers = async (): Promise<any[]> => {
+  try {
+    console.log("👷 Fetching fuel stations workers from Firestore...");
+
+    // Wait for auth state to be ready
+    console.log("⏳ Waiting for auth state...");
+    const currentUser = await waitForAuthState();
+    console.log("✅ Auth state ready, current user:", currentUser.email);
+    
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+
+    const currentUserEmail = currentUser.email;
+
+    // ⚠️ NOTE: Firestore doesn't support querying nested fields like "carStation.createdUserId"
+    // We have to fetch all workers and filter client-side
+    const workersRef = collection(db, "fuelStationsWorkers");
+    const q = query(workersRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allWorkers: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allWorkers.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total workers found:", allWorkers.length);
+
+    // Filter workers by current user (service distributer)
+    // Check if carStation.createdUserId matches current user's email
+    const filteredWorkers = allWorkers.filter((worker) => {
+      const carStationCreatedUserId = worker.carStation?.createdUserId;
+      
+      const match = carStationCreatedUserId && 
+        carStationCreatedUserId.toLowerCase() === currentUserEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered workers for current user:", filteredWorkers.length);
+    console.log(`📊 Efficiency: Fetched ${allWorkers.length} workers, filtered to ${filteredWorkers.length} (${filteredWorkers.length > 0 ? Math.round((filteredWorkers.length / allWorkers.length) * 100) : 0}% match rate)`);
+
+    // Transform workers to standard format
+    // IMPORTANT: Use uId (Firebase UID) as the ID for cleaner URLs
+    const transformedWorkers = filteredWorkers.map((worker) => {
+      return {
+        id: worker.uId || worker.id, // Use uId (Firebase UID) as primary ID, fallback to email
+        driverCode: "-", // Keep blank for now
+        driverName: worker.name || "-",
+        phone: worker.phoneNumber || "-",
+        emailAddress: worker.email || "-",
+        station: worker.carStation?.name || worker.stationsCompany?.name || "-",
+        accountStatus: { 
+          active: worker.isActive === true,
+          text: worker.isActive === true ? "مفعل" : "معطل"
+        },
+        // Keep original worker data for details page
+        originalWorker: worker,
+      };
+    });
+
+    console.log("✅ Fuel stations workers transformed:", transformedWorkers.length);
+
+    return transformedWorkers;
+  } catch (error) {
+    console.error("❌ Error fetching fuel stations workers:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch fuel station workers for a specific station
+ * Filters by stationsCompany.email matching the station's email
+ * @param stationEmail - The email of the station
+ * @returns Promise with array of workers for that station
+ */
+export const fetchFuelStationWorkersByStationEmail = async (stationEmail: string): Promise<any[]> => {
+  try {
+    console.log("👷 Fetching fuel stations workers for station:", stationEmail);
+
+    if (!stationEmail) {
+      console.error("❌ No station email provided");
+      return [];
+    }
+
+    // ⚠️ NOTE: Firestore doesn't support querying nested fields like "stationsCompany.email"
+    // We have to fetch all workers and filter client-side
+    const workersRef = collection(db, "fuelStationsWorkers");
+    const q = query(workersRef, orderBy("createdDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allWorkers: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allWorkers.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total workers found:", allWorkers.length);
+
+    // Filter workers by station email
+    // Check if stationsCompany.email matches the station's email
+    const filteredWorkers = allWorkers.filter((worker) => {
+      const workerStationEmail = worker.stationsCompany?.email;
+      
+      const match = workerStationEmail && 
+        workerStationEmail.toLowerCase() === stationEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered workers for station:", filteredWorkers.length);
+    console.log(`📊 Efficiency: Fetched ${allWorkers.length} workers, filtered to ${filteredWorkers.length} (${filteredWorkers.length > 0 ? Math.round((filteredWorkers.length / allWorkers.length) * 100) : 0}% match rate)`);
+
+    // Transform workers to standard format
+    const transformedWorkers = filteredWorkers.map((worker) => {
+      return {
+        id: worker.uId || worker.id, // Use uId (Firebase UID) as primary ID, fallback to email
+        workerCode: "-", // Keep blank for now
+        workerName: worker.name || "-",
+        phone: worker.phoneNumber || "-",
+        email: worker.email || "-",
+        accountStatus: { 
+          active: worker.isActive === true,
+          text: worker.isActive === true ? "مفعل" : "معطل"
+        },
+        // Keep original worker data for details page
+        originalWorker: worker,
+      };
+    });
+
+    console.log("✅ Fuel stations workers transformed:", transformedWorkers.length);
+
+    return transformedWorkers;
+  } catch (error) {
+    console.error("❌ Error fetching fuel station workers by station email:", error);
+    throw error;
+  }
+};
+
+/**
  * Fetch service distributer financial reports from stationscompany-orders collection
  * Filters by carStation.createdUserId matching current user's email
  * @returns Promise with array of financial report data
@@ -6811,6 +7129,354 @@ export const fetchServiceDistributerFinancialReports = async (): Promise<any[]> 
     return financialReports;
   } catch (error) {
     console.error("❌ Error fetching service distributer financial reports:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch worker transactions from stationscompany-orders collection
+ * Filters by fuelStationWorker.email matching the provided worker email
+ * @param workerEmail - The email of the worker
+ * @returns Promise with array of worker transaction data
+ */
+export const fetchWorkerTransactions = async (workerEmail: string): Promise<any[]> => {
+  try {
+    console.log("👷 Fetching worker transactions for email:", workerEmail);
+
+    if (!workerEmail) {
+      console.error("❌ No worker email provided");
+      return [];
+    }
+
+    // Fetch all orders from stationscompany-orders collection
+    const ordersRef = collection(db, "stationscompany-orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allOrders: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrders.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total orders found:", allOrders.length);
+
+    // Filter orders by worker email
+    const filteredOrders = allOrders.filter((order) => {
+      const workerEmailInOrder = order.fuelStationWorker?.email || order.fuelStationsWorker?.email;
+      
+      const match = workerEmailInOrder && 
+        workerEmailInOrder.toLowerCase() === workerEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered orders for worker:", filteredOrders.length);
+
+    // Transform orders to match the WorkerRecord interface
+    const transformedOrders = filteredOrders.map((order) => {
+      // Format date
+      const formatDate = (date: any): string => {
+        if (!date) return "غير محدد";
+        try {
+          const dateObj = date.toDate ? date.toDate() : new Date(date);
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          const year = dateObj.getFullYear();
+          const hoursNum = dateObj.getHours();
+          const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+          const ampm = hoursNum >= 12 ? "م" : "ص";
+          const displayHours = hoursNum % 12 || 12;
+
+          const monthNames = [
+            "يناير",
+            "فبراير",
+            "مارس",
+            "أبريل",
+            "مايو",
+            "يونيو",
+            "يوليو",
+            "أغسطس",
+            "سبتمبر",
+            "أكتوبر",
+            "نوفمبر",
+            "ديسمبر",
+          ];
+
+          return `${day} ${
+            monthNames[dateObj.getMonth()]
+          } ${year} - ${displayHours}:${minutes} ${ampm}`;
+        } catch (error) {
+          return "غير محدد";
+        }
+      };
+
+      // Calculate total price (totalLitre * price per liter)
+      const totalLitre = order.totalLitre || 0;
+      const pricePerLitre = order.selectedOption?.price || 0;
+      const totalPrice = (totalLitre * pricePerLitre).toFixed(2);
+
+      return {
+        id: order.id,
+        transactionNumber: order.refId || order.refDocId || order.id,
+        stationName: order.carStation?.name || "غير محدد",
+        clientName: order.client?.name || "غير محدد",
+        fuelType: order.selectedOption?.title?.ar || order.selectedOption?.title?.en || "غير محدد",
+        totalLiters: totalLitre.toString(),
+        totalPrice: totalPrice,
+        creationDate: formatDate(order.orderDate),
+      };
+    });
+
+    console.log("✅ Worker transactions transformed:", transformedOrders.length);
+
+    return transformedOrders;
+  } catch (error) {
+    console.error("❌ Error fetching worker transactions:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch top clients by consumption from stationscompany-orders collection
+ * Groups orders by client email and calculates total consumption
+ * Returns top 5 clients by total consumption
+ * @returns Promise with array of top client data
+ */
+export const fetchTopClientsByConsumption = async (): Promise<any[]> => {
+  try {
+    console.log("📊 Fetching top clients by consumption...");
+
+    // Wait for auth state to be ready
+    console.log("⏳ Waiting for auth state...");
+    const currentUser = await waitForAuthState();
+    console.log("✅ Auth state ready, current user:", currentUser.email);
+    
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+
+    const currentUserEmail = currentUser.email;
+
+    // Fetch all orders from stationscompany-orders collection
+    const ordersRef = collection(db, "stationscompany-orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allOrders: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrders.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total orders found:", allOrders.length);
+
+    // Filter orders by current user (service distributer)
+    // Check if carStation.createdUserId matches current user's email
+    const filteredOrders = allOrders.filter((order) => {
+      const carStationCreatedUserId = order.carStation?.createdUserId;
+      
+      const match = carStationCreatedUserId && 
+        carStationCreatedUserId.toLowerCase() === currentUserEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered orders for current user:", filteredOrders.length);
+
+    // Group orders by client email and sum up consumption
+    const clientConsumptionMap = new Map<string, {
+      email: string;
+      name: string;
+      phone: string;
+      totalCost: number;
+      totalFuel: number;
+      orders: any[];
+    }>();
+
+    filteredOrders.forEach((order) => {
+      const clientEmail = order.client?.email || "";
+      const clientName = order.client?.name || "غير محدد";
+      const clientPhone = order.client?.phoneNumber || "";
+      const totalPrice = order.totalPrice || 0;
+      const totalLitre = order.totalLitre || 0;
+
+      if (clientEmail) {
+        if (clientConsumptionMap.has(clientEmail)) {
+          const existing = clientConsumptionMap.get(clientEmail)!;
+          existing.totalCost += totalPrice;
+          existing.totalFuel += totalLitre;
+          existing.orders.push(order);
+        } else {
+          clientConsumptionMap.set(clientEmail, {
+            email: clientEmail,
+            name: clientName,
+            phone: clientPhone,
+            totalCost: totalPrice,
+            totalFuel: totalLitre,
+            orders: [order]
+          });
+        }
+      }
+    });
+
+    // Convert map to array and sort by total cost
+    const topClients = Array.from(clientConsumptionMap.values())
+      .sort((a, b) => b.totalCost - a.totalCost)
+      .slice(0, 5) // Get top 5
+      .map((client, index) => ({
+        name: client.name,
+        phone: client.email || "-", // Use email as subtitle
+        cost: Math.round(client.totalCost), // Round to nearest integer
+        fuel: Math.round(client.totalFuel).toString(), // Convert to string for display
+        type: getMostUsedFuelType(client.orders),
+        rank: index + 1
+      }));
+
+    console.log("✅ Top clients aggregated:", topClients.length);
+
+    return topClients;
+  } catch (error) {
+    console.error("❌ Error fetching top clients by consumption:", error);
+    throw error;
+  }
+};
+
+/**
+ * Helper function to determine the most used fuel type from client orders
+ */
+const getMostUsedFuelType = (orders: any[]): string => {
+  const fuelTypeCount = new Map<string, number>();
+
+  orders.forEach((order) => {
+    const fuelType = order.selectedOption?.title?.ar || order.selectedOption?.title?.en || "";
+    if (fuelType) {
+      fuelTypeCount.set(fuelType, (fuelTypeCount.get(fuelType) || 0) + 1);
+    }
+  });
+
+  let maxCount = 0;
+  let mostUsedFuel = "غير محدد";
+
+  fuelTypeCount.forEach((count, fuelType) => {
+    if (count > maxCount) {
+      maxCount = count;
+      mostUsedFuel = fuelType;
+    }
+  });
+
+  return mostUsedFuel;
+};
+
+/**
+ * Fetch top stations by consumption from stationscompany-orders collection
+ * Groups orders by station (carStation) and calculates total consumption
+ * Returns top 5 stations by total consumption
+ * @returns Promise with array of top station data
+ */
+export const fetchTopStationsByConsumption = async (): Promise<any[]> => {
+  try {
+    console.log("🛣️ Fetching top stations by consumption...");
+
+    // Wait for auth state to be ready
+    console.log("⏳ Waiting for auth state...");
+    const currentUser = await waitForAuthState();
+    console.log("✅ Auth state ready, current user:", currentUser.email);
+    
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user found");
+    }
+
+    const currentUserEmail = currentUser.email;
+
+    // Fetch all orders from stationscompany-orders collection
+    const ordersRef = collection(db, "stationscompany-orders");
+    const q = query(ordersRef, orderBy("orderDate", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const allOrders: any[] = [];
+
+    querySnapshot.forEach((doc) => {
+      allOrders.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("📋 Total orders found:", allOrders.length);
+
+    // Filter orders by current user (service distributer)
+    // Check if carStation.createdUserId matches current user's email
+    const filteredOrders = allOrders.filter((order) => {
+      const carStationCreatedUserId = order.carStation?.createdUserId;
+      
+      const match = carStationCreatedUserId && 
+        carStationCreatedUserId.toLowerCase() === currentUserEmail.toLowerCase();
+
+      return match;
+    });
+
+    console.log("✅ Filtered orders for current user:", filteredOrders.length);
+
+    // Group orders by station email/name and sum up consumption
+    const stationConsumptionMap = new Map<string, {
+      name: string;
+      email: string;
+      address: string;
+      totalPrice: number;
+      totalFuel: number;
+      orders: any[];
+    }>();
+
+    filteredOrders.forEach((order) => {
+      const stationEmail = order.carStation?.email || "";
+      const stationName = order.carStation?.name || "غير محدد";
+      const stationAddress = order.carStation?.address || "";
+      const totalPrice = order.totalPrice || 0;
+      const totalLitre = order.totalLitre || 0;
+
+      if (stationEmail) {
+        if (stationConsumptionMap.has(stationEmail)) {
+          const existing = stationConsumptionMap.get(stationEmail)!;
+          existing.totalPrice += totalPrice;
+          existing.totalFuel += totalLitre;
+          existing.orders.push(order);
+        } else {
+          stationConsumptionMap.set(stationEmail, {
+            name: stationName,
+            email: stationEmail,
+            address: stationAddress,
+            totalPrice: totalPrice,
+            totalFuel: totalLitre,
+            orders: [order]
+          });
+        }
+      }
+    });
+
+    // Convert map to array and sort by total price
+    const topStations = Array.from(stationConsumptionMap.values())
+      .sort((a, b) => b.totalPrice - a.totalPrice)
+      .slice(0, 5) // Get top 5
+      .map((station, index) => ({
+        name: station.name,
+        address: station.email || "-", // Use email as subtitle
+        price: Math.round(station.totalPrice), // Round to nearest integer
+        fuel: Math.round(station.totalFuel).toString(), // Convert to string for display
+        type: getMostUsedFuelType(station.orders),
+        rank: index + 1
+      }));
+
+    console.log("✅ Top stations aggregated:", topStations.length);
+
+    return topStations;
+  } catch (error) {
+    console.error("❌ Error fetching top stations by consumption:", error);
     throw error;
   }
 };

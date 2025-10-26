@@ -4,10 +4,13 @@ import { Eye, UserRound } from 'lucide-react'
 import { InfoDisplay } from '../../components/sections/InfoDisplay'
 import { DataTableSection } from '../../components/sections/DataTableSection'
 import ConsumptionSection from '../../components/sections/ConsumptionSection'
+import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { fetchFuelStationById, fetchFuelStationWorkersByStationEmail } from '../../services/firestore'
 
 // Station Worker interface
 interface StationWorker {
-  id: number;
+  id: string | number;
   workerCode: string;
   workerName: string;
   phone: string;
@@ -16,16 +19,85 @@ interface StationWorker {
 }
 
 export const StationsDetails = () => {
-  // Mock station data - replace with actual data fetching
-  const stationData = {
-    name: "محطة الرياض",
-    email: "Riad@gmail.com",
-    phone: "23652368422536",
-    address: "12 شارع الوفاء العام، متفرع من ميدان النهضة ، محور الأحرار، مدينة الرياض",
-    location: "hdiemsjksjiwomxnsjwlsjkaoskdjdkje",
-    secretNumber: "1257863",
-    products: "بنزين 91 (15ر.س / لتر) - بنزين 95 (20 ر.س / لتر) - ديزل (10ر.س / لتر)"
-  };
+  const { id } = useParams<{ id: string }>()
+  const [stationData, setStationData] = useState<any>({
+    name: "جاري التحميل...",
+    email: "-",
+    phone: "-",
+    address: "-",
+    location: "-",
+    secretNumber: "-",
+    products: "-"
+  })
+  const [stationEmail, setStationEmail] = useState<string>("")
+  const [loading, setLoading] = useState(true)
+
+  // Fetch station data from Firestore
+  useEffect(() => {
+    const fetchStationData = async () => {
+      if (!id) {
+        console.error("No station ID provided")
+        setLoading(false)
+        return
+      }
+
+      try {
+        console.log("📥 Fetching station data for ID:", id)
+        
+        // Fetch station using the ID
+        const station = await fetchFuelStationById(id)
+
+        if (station) {
+          console.log("✅ Station data fetched from Firestore:", station)
+
+          // Extract products from options
+          const productsList: string[] = []
+          if (station.options && Array.isArray(station.options)) {
+            station.options.forEach((option: any) => {
+              const fuelName = option.title?.ar || option.title?.en || ""
+              const fuelPrice = option.price || 0
+              if (fuelName) {
+                productsList.push(`${fuelName} (${fuelPrice} ر.س / لتر)`)
+              }
+            })
+          }
+          const products = productsList.length > 0 ? productsList.join(" - ") : "-"
+
+                                // Map the data to match our stationData structure
+            const stationEmailValue = station.email || ""
+            setStationData({
+              name: station.stationName || station.name || "-",
+              email: stationEmailValue,
+              phone: station.phoneNumber || "-",
+              address: station.address || station.formattedLocation?.address?.city || "-",
+              location: station.formattedLocation?.name || station.cityName || "-",
+              secretNumber: "-",
+              products: products
+            })
+            
+            // Store station email to fetch workers later
+            setStationEmail(stationEmailValue)
+        } else {
+          console.log("⚠️ No station found with this ID")
+          setStationData({
+            name: "غير موجود",
+            email: "-",
+            phone: "-",
+            address: "-",
+            location: "-",
+            secretNumber: "-",
+            products: "-"
+          })
+        }
+      } catch (error) {
+        console.error("❌ Error fetching station data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStationData()
+  }, [id])
 
   // Define the fields configuration for station
   // Using CSS Grid with 6 columns for flexible layouts
@@ -84,90 +156,6 @@ export const StationsDetails = () => {
     console.log("Edit station data");
   };
 
-  // Mock station workers data - replace with actual data fetching
-  const stationWorkersData: StationWorker[] = [
-    {
-      id: 1,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 2,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 3,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 4,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: false, text: "معطل" }
-    },
-    {
-      id: 5,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: false, text: "معطل" }
-    },
-    {
-      id: 6,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 7,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 8,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: true, text: "مفعل" }
-    },
-    {
-      id: 9,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: false, text: "معطل" }
-    },
-    {
-      id: 10,
-      workerCode: "21A254",
-      workerName: "أحمد محمد",
-      phone: "00965284358",
-      email: "ahmedmohamed@gmail.com",
-      accountStatus: { active: false, text: "معطل" }
-    }
-  ];
-
   // Define columns for station workers table
   const stationWorkerColumns = [
     {
@@ -210,12 +198,25 @@ export const StationsDetails = () => {
 
   // Fetch data function for station workers
   const fetchStationWorkersData = async (): Promise<StationWorker[]> => {
-    // TODO: Replace with actual API call when ready
-    return Promise.resolve(stationWorkersData);
+    try {
+      if (!stationEmail) {
+        console.log("⚠️ No station email available yet")
+        return []
+      }
+      
+      console.log("📥 Fetching workers for station:", stationEmail)
+      const workers = await fetchFuelStationWorkersByStationEmail(stationEmail)
+      console.log("✅ Workers fetched:", workers.length)
+      
+      return workers
+    } catch (error) {
+      console.error("❌ Error fetching station workers:", error)
+      return []
+    }
   };
 
   // Handle status toggle
-  const handleToggleStatus = (workerId: number) => {
+  const handleToggleStatus = (workerId: string | number) => {
     console.log(`Toggle status for worker ${workerId}`);
     // TODO: Implement actual status toggle API call
   };
@@ -223,7 +224,7 @@ export const StationsDetails = () => {
   return (
     <LayoutSimple
       headerProps={{
-        title: "المحطات / محطة الرياض",
+        title: `المحطات / ${stationData.name}`,
         titleIconSrc: <Eye className="w-5 h-5 text-gray-500" />,
         showSearch: true,
         searchProps: {
