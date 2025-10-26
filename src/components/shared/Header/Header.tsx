@@ -10,12 +10,12 @@ import { CartDropdown } from "../Cart";
 // Breadcrumb route mapping
 const breadcrumbRoutes: Record<string, string> = {
   "لوحة التحكم": "/dashboard",
-  "التقــــــــــــــــارير": "/financialreports",
-  "محفظــــــــــــــتي": "/wallet",
-  "السيــــــــــــــارات": "/cars",
-  "الســـــــــــــــائقين": "/drivers",
-  "الاشتراكـــــــــــات": "/subscriptions",
-  "المشرفين": "/supervisors",
+  التقــــــــــــــــارير: "/financialreports",
+  محفظــــــــــــــتي: "/wallet",
+  السيــــــــــــــارات: "/cars",
+  الســـــــــــــــائقين: "/drivers",
+  الاشتراكـــــــــــات: "/subscriptions",
+  المشرفين: "/supervisors",
 };
 
 interface SearchBarProps {
@@ -167,12 +167,15 @@ const ProfileDropdown: React.FC = () => {
 };
 
 // Breadcrumb Component
-const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({ title, titleIconSrc }) => {
+const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({
+  title,
+  titleIconSrc,
+}) => {
   const navigate = useNavigate();
-  
+
   // Split title by "/" to create breadcrumbs
-  const parts = title.split("/").map(part => part.trim());
-  
+  const parts = title.split("/").map((part) => part.trim());
+
   const handleBreadcrumbClick = (part: string, index: number) => {
     // First part (index 0) is the parent (clickable)
     // Last part is the current page (not clickable)
@@ -183,7 +186,7 @@ const Breadcrumb: React.FC<{ title: string; titleIconSrc?: ReactNode }> = ({ tit
       }
     }
   };
-  
+
   return (
     <div className="flex items-center gap-2" dir="rtl">
       {titleIconSrc && <span>{titleIconSrc}</span>}
@@ -229,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label="Main navigation"
         >
           {/* Profile Dropdown - First on the left */}
-          {!admin && (<ProfileDropdown />)}
+          <ProfileDropdown />
 
           {/* Notification Dropdown */}
           <NotificationDropdown />

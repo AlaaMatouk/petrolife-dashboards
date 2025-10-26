@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PasswordInput from "../../../../components/shared/Inputs/PasswordInput";
 import EmailInput from "../../../../components/shared/Inputs/EmailInput";
 import { signInUser, signInWithGoogle } from "../../../../services/auth";
 import { useNavigate } from "react-router-dom";
 import { useGlobalState } from "../../../../context/GlobalStateContext";
+import { getUserRedirectPath } from "../../../../services/firestore";
+import { auth } from "../../../../config/firebase";
 
 interface LoginProps {
   onSwitch: () => void;
@@ -19,6 +21,30 @@ export default function Login({ onSwitch }: LoginProps) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Redirect already authenticated users based on their role
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      const currentUser = auth.currentUser;
+
+      if (currentUser && currentUser.email) {
+        try {
+          const redirectPath = await getUserRedirectPath(currentUser.email);
+          console.log(
+            "✅ User already authenticated, redirecting to:",
+            redirectPath
+          );
+          navigate(redirectPath);
+        } catch (error) {
+          console.error("❌ Error determining redirect path:", error);
+          // Default redirect if role check fails
+          navigate("/dashboard");
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [navigate]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError(""); // Clear error when user types
@@ -28,14 +54,14 @@ export default function Login({ onSwitch }: LoginProps) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
       const result = await signInUser(form.email, form.password);
       console.log("Login successful ✅", result.user);
-      
+
       // Update global state
       dispatch({
-        type: 'SET_USER',
+        type: "SET_USER",
         payload: {
           id: result.user.uid,
           name: result.user.displayName || result.user.email || "مستخدم",
@@ -44,12 +70,23 @@ export default function Login({ onSwitch }: LoginProps) {
           role: "admin",
         },
       });
-      dispatch({ type: 'SET_AUTHENTICATED', payload: true });
-      
-      navigate("/dashboard");
+      dispatch({ type: "SET_AUTHENTICATED", payload: true });
+
+      // Determine redirect path based on user role
+      if (result.user.email) {
+        const redirectPath = await getUserRedirectPath(result.user.email);
+        console.log("🔀 Redirecting to:", redirectPath);
+        navigate(redirectPath);
+      } else {
+        // Fallback to dashboard if no email
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Login error ❌:", error.message);
-      setError(error.message || "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور.");
+      setError(
+        error.message ||
+          "فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور."
+      );
     } finally {
       setLoading(false);
     }
@@ -58,14 +95,14 @@ export default function Login({ onSwitch }: LoginProps) {
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
-    
+
     try {
       const result = await signInWithGoogle();
       console.log("Google Login ✅", result.user);
-      
+
       // Update global state
       dispatch({
-        type: 'SET_USER',
+        type: "SET_USER",
         payload: {
           id: result.user.uid,
           name: result.user.displayName || result.user.email || "مستخدم",
@@ -74,9 +111,17 @@ export default function Login({ onSwitch }: LoginProps) {
           role: "admin",
         },
       });
-      dispatch({ type: 'SET_AUTHENTICATED', payload: true });
-      
-      navigate("/dashboard");
+      dispatch({ type: "SET_AUTHENTICATED", payload: true });
+
+      // Determine redirect path based on user role
+      if (result.user.email) {
+        const redirectPath = await getUserRedirectPath(result.user.email);
+        console.log("🔀 Redirecting to:", redirectPath);
+        navigate(redirectPath);
+      } else {
+        // Fallback to dashboard if no email
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Google login failed ❌", error.message);
       setError(error.message || "فشل تسجيل الدخول باستخدام Google.");
@@ -94,13 +139,16 @@ export default function Login({ onSwitch }: LoginProps) {
         <h1 className="font-bold text-[var(--form-header-title-color)] ">
           تسجيل الدخول
         </h1>
-        
+
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-right" role="alert">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-right"
+            role="alert"
+          >
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-        
+
         <EmailInput onChange={handleChange} value={form.email} />
         <PasswordInput onChange={handleChange} value={form.password} />
         <button
