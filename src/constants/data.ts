@@ -158,12 +158,12 @@ export const serviceDistributerNavigationMenuData = {
       icon: "/src/assets/imgs/icons/location-pin.svg",
       href: ROUTES.SERVICE_DISTRIBUTER_STATION_LOCATIONS,
     },
-    {
-      id: "invoices",
-      label: "الفواتيــــــــــــر",
-      icon: "/src/assets/imgs/icons/invoice.svg",
-      href: ROUTES.SERVICE_DISTRIBUTER_INVOICES,
-    },
+    // {
+    //   id: "invoices",
+    //   label: "الفواتيــــــــــــر",
+    //   icon: "/src/assets/imgs/icons/invoice.svg",
+    //   href: ROUTES.SERVICE_DISTRIBUTER_INVOICES,
+    // },
     // {
     //   id: "charge-requests",
     //   label: "الدعم الفني",
